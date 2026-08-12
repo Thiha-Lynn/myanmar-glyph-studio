@@ -1,0 +1,17 @@
+# build outputs
+build/
+pipeline/build/
+*.ttf
+*.otf
+!docs/**/*.ttf
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# editors / OS
+.DS_Store
+.vscode/
+.idea/

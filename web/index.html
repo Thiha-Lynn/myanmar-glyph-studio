@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Myanmar Glyph Studio — sketch your own Myanmar font</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark mm">က</span>
+    <div>
+      <h1>Myanmar Glyph Studio</h1>
+      <p class="tagline">Sketch over dimmed guides · export a real font · <span class="mm">မိမိစိတ်ကြိုက် ဖောင့်ရေးဆွဲပါ</span></p>
+    </div>
+  </div>
+  <div class="meta-fields">
+    <label>Font name <input id="fontName" type="text" spellcheck="false"></label>
+    <label>Your name <input id="authorName" type="text" spellcheck="false" placeholder="for the OFL credit"></label>
+  </div>
+  <div class="project-actions">
+    <button id="btnSave" class="btn" title="Download the project file (JSON) — this is your source of truth">Save project</button>
+    <button id="btnLoad" class="btn" title="Load a saved .glyphstudio.json project">Load</button>
+    <button id="btnExportTTF" class="btn primary" title="Export an installable draft TTF for testing">Export draft TTF</button>
+    <input id="fileInput" type="file" accept=".json,application/json" hidden>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="progress-line" id="totalProgress"></div>
+    <div id="glyphBrowser"></div>
+    <div class="sidebar-note">
+      <strong>Draft TTF</strong> is for quick testing only. To build a fully
+      shaping font (stacks, kinzi, mark positioning), save the project and run
+      the <code>pipeline/</code> build — see the README.
+    </div>
+  </aside>
+
+  <main class="workspace">
+    <div class="glyph-head">
+      <span id="glyphTitle" class="mm big"></span>
+      <div class="glyph-id">
+        <div id="glyphName" class="mono"></div>
+        <div id="glyphHint" class="hint"></div>
+      </div>
+      <div class="stepper">
+        <button id="btnPrev" class="btn" title="Previous glyph  [">←</button>
+        <button id="btnNext" class="btn" title="Next glyph  ]">→</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="tool-group">
+        <button id="toolPen" class="btn tool" title="Pen (P)">✏️ Pen</button>
+        <button id="toolEraser" class="btn tool" title="Eraser (E) — click a stroke to remove it">🧽 Erase</button>
+        <button id="btnUndo" class="btn" title="Undo (Ctrl/Cmd+Z)">↩</button>
+        <button id="btnRedo" class="btn" title="Redo (Ctrl/Cmd+Shift+Z)">↪</button>
+        <button id="btnClear" class="btn danger" title="Clear this glyph">Clear</button>
+      </div>
+      <div class="tool-group sliders">
+        <label>Pen <input id="penWidth" type="range" min="20" max="140" value="60"> <span id="penWidthVal">60</span></label>
+        <label>Guide <input id="guideOpacity" type="range" min="0" max="60" value="22"></label>
+        <label>Guide size <input id="guideSize" type="range" min="800" max="1200" value="1000"></label>
+        <label class="check"><input id="fillPreview" type="checkbox"> Fill preview</label>
+        <label>Advance <input id="advanceInput" type="number" min="0" max="2000" step="10" class="advance"></label>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="glyphCanvas"></canvas>
+    </div>
+
+    <div class="testdrive">
+      <label for="previewInput">Test drive</label>
+      <input id="previewInput" type="text" class="mm"
+        value="ကချင် မြန်မာစာ ၁၂၃" spellcheck="false">
+      <div id="previewText" class="mm preview"></div>
+    </div>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script src="vendor/opentype.min.js"></script>
+<script src="data/glyphs.js"></script>
+<script src="js/store.js"></script>
+<script src="js/outline.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/fontexport.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+name: Build fonts
+
+on:
+  push:
+    branches: [main]
+    paths: ["projects/**", "pipeline/**", ".github/workflows/build.yml"]
+  pull_request:
+    paths: ["projects/**", "pipeline/**"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install toolchain
+        run: pip install -r pipeline/requirements.txt
+
+      - name: Build every project font
+        run: |
+          shopt -s nullglob
+          found=0
+          for project in projects/*/*.glyphstudio.json; do
+            found=1
+            name=$(basename "$(dirname "$project")")
+            echo "::group::Building $name"
+            python3 pipeline/json_to_ufo.py "$project" "dist/$name"
+            fontmake -u dist/$name/*.ufo -o ttf --output-dir "dist/$name"
+            echo "::endgroup::"
+          done
+          if [ "$found" = 0 ]; then
+            echo "No projects/*/*.glyphstudio.json found — nothing to build."
+          fi
+
+      - name: Upload built fonts
+        if: hashFiles('dist/**/*.ttf') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonts
+          path: dist/**/*.ttf
