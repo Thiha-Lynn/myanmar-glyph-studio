@@ -1,0 +1,82 @@
+# Myanmar shaping test corpus — one test string per line.
+#
+# Render it against a built font:
+#     python3 proof.py build/MyFont-Regular.ttf test_corpus.txt proof.png
+# proof.py (and any tool that follows the same convention) skips blank
+# lines and lines starting with "#". How to read the results, group by
+# group: docs/TESTING.md.
+#
+# Glyphs you have not drawn yet come out as hollow boxes — expected for a
+# work-in-progress font. What must be right wherever glyphs DO exist:
+# stacking, reordering, and mark placement.
+
+# --- The classic pangram: all 33 consonants, in natural words. Exercises
+#     stacks (ဍ္ဎ, ဋ္ဌ), kinzi, medials, and most vowel signs in one line.
+သီဟိုဠ်မှ ဉာဏ်ကြီးရှင်သည် အာယုဝဍ္ဎနဆေးညွှန်းစာကို ဇလွန်ဈေးဘေး ဗာဒံပင်ထက် အဓိဋ္ဌာန်လျက် ဂဃနဏဖတ်ခဲ့သည်။
+
+# --- Stacked consonants: blwf must consume the virama (U+1039) and put
+#     the second consonant, small, directly below the first.
+က္က ဗုဒ္ဓ မန္တလေး
+
+# --- More stacks in everyday words (university, science). Also tests a
+#     below vowel landing next to a stack without collision.
+တက္ကသိုလ် သိပ္ပံ
+
+# --- Kinzi: nga + asat + virama reorders to a small mark ABOVE the
+#     following consonant (rphf). No full-size င should be visible.
+သင်္ဘော အင်္ဂါ
+
+# --- Kinzi stacking over a medial-ra cluster, and kinzi + anusvara.
+သင်္ကြန် စင်္ကြံ
+
+# --- The four medials, one at a time: ya (post-base hook), ra (wraps the
+#     base), wa (small circle below), ha (hook below).
+ကျ ကြ ကွ ကှ
+
+# --- Medial combinations: ya+wa, ra+wa, ra+wa+ha. Must attach without
+#     colliding with each other or the base.
+ကျွ ကြွ မြွှ
+
+# --- Narrow vs wide medial ra: ခ and မ are wide bases and should take the
+#     wide ြ variant (pres) when it is drawn; က and ပ stay narrow.
+ကြ ခြ ပြ မြ
+
+# --- Below vowels inside the medial-ra wrap (descender meets descender).
+ပြု ကြု မြူ
+
+# --- Pre-base vowel e (U+1031): stored after the consonant, rendered
+#     BEFORE it — including in front of a whole medial cluster (မြေ).
+ကေ မေ ကြေ မြေ
+
+# --- Below vowels u/uu, including bases with their own descender shapes.
+ကု ကူ နု ပူ
+
+# --- Tall aa (U+102B) after the tall-aa consonants; contrast with plain
+#     aa (U+102C) after က.
+ကာ ခါ ဂါ ငါ ဒါ ပါ ဝါ
+
+# --- Asat and tone marks: plain aa, visarga, final consonant + asat,
+#     anusvara + dot below.
+ကာ ကား ကတ် ကံ့
+
+# --- Composed vowels wrapping the base (ေ...ာ်), plus asat finals.
+ခေါ် ခေါက် ကိုက်
+
+# --- Independent vowels (letters in their own right, no base needed).
+ဣ ဤ ဥ ဦ ဧ ဩ ဪ
+
+# --- Great sa (U+103F), alone and in a word.
+ဿ ပိဿာ
+
+# --- Myanmar digits.
+၀၁၂၃၄၅၆၇၈၉
+
+# --- Punctuation and symbol-words: little/full section, locative,
+#     completed, "ditto" (၎င်း), genitive.
+၊ ။ ၌ ၍ ၎င်း ၏
+
+# --- Natural sentences: greeting (with kinzi), everyday prose, and a
+#     stack + digits + genitive in running text.
+မင်္ဂလာပါ။ ကျွန်ုပ်တို့ မြန်မာစာကို ချစ်ကြသည်။
+ရန်ကုန်မြို့တွင် လူဦးရေ များစွာ နေထိုင်ကြသည်။
+တက္ကသိုလ်ကျောင်းသားများသည် စာအုပ်များကို ဖတ်ကြ၏။

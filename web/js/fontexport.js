@@ -51,7 +51,7 @@
       var polys = window.Outline.glyphPolygons(data);
       if (!polys.length) return;
       var adv = data.advance;
-      if (!adv) {
+      if (adv == null) {
         var b = window.Outline.bounds(polys);
         adv = g.mark ? Math.max(0, Math.round(b.xMax)) : Math.round(b.xMax + 60);
         var guideAdv = measure(g);
@@ -60,7 +60,7 @@
       }
       var spec = {
         name: g.name,
-        advanceWidth: Math.max(1, adv),
+        advanceWidth: Math.max(0, adv),
         path: glyphPath(polys)
       };
       if (g.cp) spec.unicode = g.cp;

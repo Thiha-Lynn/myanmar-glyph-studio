@@ -1,3 +1,6 @@
 ufoLib2>=0.16
 fonttools>=4.50
 fontmake>=3.8
+# testing / proofing / sample generation (proof.py, make_sample.py)
+uharfbuzz>=0.39
+pillow>=10.0
