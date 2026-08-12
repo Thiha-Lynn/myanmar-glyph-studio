@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#a8352f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
 <title>Myanmar Glyph Studio — sketch your own Myanmar font</title>
 <link rel="stylesheet" href="css/app.css">
 </head>
@@ -20,14 +24,16 @@
     </div>
   </div>
   <div class="meta-fields">
-    <label>Font name <input id="fontName" type="text" spellcheck="false"></label>
-    <label>Your name <input id="authorName" type="text" spellcheck="false" placeholder="for the OFL credit"></label>
+    <label><span data-i18n="fontName">Font name</span> <input id="fontName" type="text" spellcheck="false"></label>
+    <label><span data-i18n="yourName">Your name</span> <input id="authorName" type="text" spellcheck="false" data-i18n-ph="yourNamePh" placeholder="for the OFL credit"></label>
   </div>
   <div class="project-actions">
-    <button id="btnHelp" class="btn" title="How to use your exported font">Help</button>
-    <button id="btnSave" class="btn" title="Download the project file (JSON) — this is your source of truth">Save</button>
-    <button id="btnLoad" class="btn" title="Load a saved .glyphstudio.json project">Load</button>
-    <button id="btnExportTTF" class="btn primary" title="Export an installable font file (TTF)">Export font</button>
+    <button id="btnLang" class="btn icon-btn" title="Switch language / ဘာသာစကား">မြ</button>
+    <button id="btnTheme" class="btn icon-btn" title="Theme: auto / light / dark">🌗</button>
+    <button id="btnHelp" class="btn" data-i18n="help" title="How to use your exported font">Help</button>
+    <button id="btnSave" class="btn" data-i18n="save" title="Download the project file (JSON) — this is your source of truth">Save</button>
+    <button id="btnLoad" class="btn" data-i18n="load" title="Load a saved .glyphstudio.json project">Load</button>
+    <button id="btnExportTTF" class="btn primary" data-i18n="exportFont" title="Export an installable font file (TTF)">Export font</button>
     <input id="fileInput" type="file" accept=".json,application/json" hidden>
   </div>
 </header>
@@ -55,17 +61,20 @@
       <div class="stepper">
         <button id="btnPrev" class="btn icon-btn" title="Previous glyph  [">←</button>
         <button id="btnNext" class="btn icon-btn" title="Next glyph  ]">→</button>
-        <button id="btnFocus" class="btn icon-btn" title="Focus mode — hide panels, just draw">⛶</button>
+        <button id="btnNextUndrawn" class="btn" data-i18n="nextUndrawn" title="Jump to the next glyph with no ink  (N)">Next empty</button>
+        <button id="btnFocus" class="btn icon-btn" title="Focus mode — hide panels, just draw  (F)">⛶</button>
       </div>
     </div>
 
     <div class="toolbar" id="toolbar">
       <div class="tool-group">
-        <button id="toolPen" class="btn tool" title="Pen (P)">✏️ Pen</button>
-        <button id="toolEraser" class="btn tool" title="Eraser (E) — tap a stroke to remove it">🧽 Erase</button>
+        <button id="toolPen" class="btn tool" title="Pen (P)">✏️ <span data-i18n="pen">Pen</span></button>
+        <button id="toolLine" class="btn tool" title="Straight line (L)">📏 <span data-i18n="line">Line</span></button>
+        <button id="toolCircle" class="btn tool" title="Circle — drag from center (O). Myanmar letters are built on circles!">⭕ <span data-i18n="circle">Circle</span></button>
+        <button id="toolEraser" class="btn tool" title="Eraser (E) — tap a stroke to remove it">🧽 <span data-i18n="erase">Erase</span></button>
         <button id="btnUndo" class="btn icon-btn" title="Undo (Ctrl/Cmd+Z)">↩</button>
         <button id="btnRedo" class="btn icon-btn" title="Redo (Ctrl/Cmd+Shift+Z)">↪</button>
-        <button id="btnClear" class="btn danger" title="Clear this glyph">Clear</button>
+        <button id="btnClear" class="btn danger" data-i18n="clear" title="Clear this glyph">Clear</button>
         <span class="tool-sep"></span>
         <button id="btnZoomOut" class="btn icon-btn" title="Zoom out">−</button>
         <button id="btnZoomIn" class="btn icon-btn" title="Zoom in">+</button>
@@ -73,28 +82,40 @@
         <button id="btnMoreTools" class="btn icon-btn more-tools" title="Pen &amp; guide settings">⚙</button>
       </div>
       <div class="tool-group sliders">
-        <label title="Stroke thickness in font units">Pen <input id="penWidth" type="range" min="20" max="140" value="60"> <span id="penWidthVal">60</span></label>
-        <label title="How strongly shaky input is steadied">Steady <input id="stabilizer" type="range" min="0" max="10" value="3"></label>
-        <label title="Guide visibility">Guide <input id="guideOpacity" type="range" min="0" max="60" value="22"></label>
-        <label title="Guide character size (font units)">Size <input id="guideSize" type="range" min="800" max="1200" value="1000"></label>
+        <label title="Stroke thickness in font units"><span data-i18n="penW">Pen</span> <input id="penWidth" type="range" min="20" max="140" value="60"> <span id="penWidthVal">60</span></label>
+        <label title="How strongly shaky input is steadied"><span data-i18n="steady">Steady</span> <input id="stabilizer" type="range" min="0" max="10" value="3"></label>
+        <label title="Guide visibility"><span data-i18n="guide">Guide</span> <input id="guideOpacity" type="range" min="0" max="60" value="22"></label>
+        <label title="Guide character size (font units)"><span data-i18n="size">Size</span> <input id="guideSize" type="range" min="800" max="1200" value="1000"></label>
       </div>
       <div class="tool-group checks">
-        <label class="check" title="Vary stroke width with stylus pressure"><input id="pressureToggle" type="checkbox" checked> Pen pressure</label>
-        <label class="check" title="Let fingers draw (off = fingers pan, stylus draws)"><input id="touchDraws" type="checkbox" checked> Finger draws</label>
-        <label class="check"><input id="fillPreview" type="checkbox"> Fill preview</label>
-        <label title="Horizontal space this glyph occupies (font units)">Advance <input id="advanceInput" type="number" min="0" max="2000" step="10" class="advance"></label>
+        <label class="check" title="Vary stroke width with stylus pressure"><input id="pressureToggle" type="checkbox" checked> <span data-i18n="penPressure">Pen pressure</span></label>
+        <label class="check" title="Let fingers draw (off = fingers pan, stylus draws)"><input id="touchDraws" type="checkbox" checked> <span data-i18n="fingerDraws">Finger draws</span></label>
+        <label class="check"><input id="fillPreview" type="checkbox"> <span data-i18n="fillPreview">Fill preview</span></label>
+      </div>
+      <div class="tool-group extras">
+        <label title="Show another drawn glyph as a translucent style reference"><span data-i18n="ghost">Ghost</span>
+          <select id="ghostSelect" class="sel mm"><option value="">—</option></select>
+        </label>
+        <label title="Copy the strokes of a drawn glyph onto this one"><span data-i18n="copyFrom">Copy from…</span>
+          <select id="copySelect" class="sel mm"><option value="">—</option></select>
+        </label>
+        <button id="btnCenter" class="btn" data-i18n="center" title="Center the ink horizontally in the advance width">Center</button>
+        <button id="btnSVG" class="btn" data-i18n="svg" title="Download this glyph as an SVG for design tools">SVG</button>
+        <label title="Horizontal space this glyph occupies (font units)"><span data-i18n="advance">Advance</span> <input id="advanceInput" type="number" min="0" max="2000" step="10" class="advance"></label>
       </div>
     </div>
 
     <div class="canvas-wrap">
       <canvas id="glyphCanvas"></canvas>
-      <div class="canvas-tip" id="canvasTip">Two fingers: pan &amp; zoom · wheel: zoom</div>
+      <div class="canvas-tip" id="canvasTip" data-i18n="canvasTip">Two fingers: pan &amp; zoom · wheel: zoom</div>
     </div>
 
     <div class="testdrive" id="testdrive">
-      <label for="previewInput">Test drive</label>
+      <label for="previewInput" data-i18n="testDrive">Test drive</label>
       <input id="previewInput" type="text" class="mm"
         value="ကချင် မြန်မာစာ ၁၂၃" spellcheck="false">
+      <span class="preset-label" data-i18n="presets">Try:</span>
+      <span id="presetRow" class="preset-row"></span>
       <div id="previewText" class="mm preview"></div>
     </div>
   </main>
@@ -135,6 +156,15 @@
   font-family: "MyFont";
   src: url("MyFont.ttf") format("truetype");
 }</pre>
+      <h3>Tools &amp; shortcuts</h3>
+      <ul>
+        <li><strong>P</strong> pen · <strong>L</strong> line · <strong>O</strong> circle · <strong>E</strong> eraser</li>
+        <li><strong>Ctrl/Cmd+Z</strong> undo · <strong>Ctrl/Cmd+Shift+Z</strong> redo</li>
+        <li><strong>[ ]</strong> previous / next glyph · <strong>N</strong> next empty glyph</li>
+        <li><strong>+ − 0</strong> zoom in / out / fit · <strong>F</strong> focus mode</li>
+        <li><strong>Ghost</strong> overlays a glyph you already drew (e.g. your က) so every letter keeps the same style; <strong>Copy from</strong> duplicates strokes between similar letters (ခ→ဂ, ပ→ဖ…).</li>
+        <li>On iPad: draw with the Apple Pencil (pressure varies the stroke), pan &amp; zoom with two fingers. Add the studio to your Home Screen — it works offline.</li>
+      </ul>
       <h3>Draft vs. full build</h3>
       <p>The in-browser export is a <em>draft</em>: perfect for testing your
       letterforms, but complex syllables (stacks like က္က, kinzi, vowel-mark
@@ -149,6 +179,7 @@
 
 <script src="vendor/opentype.min.js"></script>
 <script src="data/glyphs.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/store.js"></script>
 <script src="js/outline.js"></script>
 <script src="js/editor.js"></script>

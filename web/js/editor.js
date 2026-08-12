@@ -33,7 +33,8 @@
     penWidth: 60,      // font units
     guideOpacity: 0.22,
     guideSize: 1000,   // font units
-    tool: "pen",      // pen | eraser
+    tool: "pen",      // pen | line | circle | eraser
+    ghostName: null,   // another glyph's strokes shown as a style reference
     fillPreview: false,
     pressureEnabled: true,
     stabilizer: 3,     // 0 (off) … 10 (heavy)
@@ -202,9 +203,27 @@
 
       var p = this.toUnits(e);
       if (this.tool === "eraser") { this.eraseAt(p); return; }
+      if (this.tool === "line" || this.tool === "circle") {
+        this._shapeStart = p;
+        this.liveStroke = { width: this.penWidth, points: [p] };
+        this.render();
+        return;
+      }
       this._stabPoint = p.slice(0, 2);
       this.liveStroke = { width: this.penWidth, points: [this.inputPoint(e, p)] };
       this.render();
+    },
+
+    circlePoints: function (c, edge) {
+      var r = Math.max(4, Math.hypot(edge[0] - c[0], edge[1] - c[1]));
+      var n = Math.max(24, Math.min(72, Math.round(r / 10)));
+      var pts = [];
+      for (var i = 0; i <= n; i++) {
+        var a = (i / n) * Math.PI * 2;
+        pts.push([Math.round(c[0] + r * Math.cos(a)),
+                  Math.round(c[1] + r * Math.sin(a))]);
+      }
+      return pts;
     },
 
     inputPoint: function (e, unitP) {
@@ -270,6 +289,17 @@
       var p = this.toUnits(e);
       if (this.tool === "eraser" && e.buttons) { this.eraseAt(p); return; }
       if (!this.liveStroke) return;
+
+      if (this.tool === "line") {
+        this.liveStroke.points = [this._shapeStart, p];
+        this.render();
+        return;
+      }
+      if (this.tool === "circle") {
+        this.liveStroke.points = this.circlePoints(this._shapeStart, p);
+        this.render();
+        return;
+      }
 
       // use coalesced events for high-frequency stylus input
       var events = (e.getCoalescedEvents && e.getCoalescedEvents().length)
@@ -355,6 +385,41 @@
       if (!this.glyph) return;
       this._preSnapshot = this.snapshot();
       window.Store.getGlyph(this.glyph.name).strokes = [];
+      this.pushUndo();
+      window.Store.emit();
+      if (this.onInkChange) this.onInkChange(this.glyph.name);
+      this.render();
+    },
+
+    /* Shift all ink so it sits horizontally centered in the advance width. */
+    centerInk: function () {
+      if (!this.glyph) return;
+      var data = window.Store.getGlyph(this.glyph.name);
+      if (!data.strokes.length) return;
+      var polys = window.Outline.glyphPolygons(data);
+      var b = window.Outline.bounds(polys);
+      if (!b) return;
+      var advance = data.advance || this.measureGuideAdvance();
+      var dx = Math.round((advance - (b.xMax - b.xMin)) / 2 - b.xMin);
+      if (!dx) return;
+      this._preSnapshot = this.snapshot();
+      data.strokes.forEach(function (s) {
+        s.points.forEach(function (p) { p[0] += dx; });
+      });
+      this.pushUndo();
+      window.Store.emit();
+      if (this.onInkChange) this.onInkChange(this.glyph.name);
+      this.render();
+    },
+
+    /* Copy all strokes from another glyph onto this one (deep copy). */
+    copyFrom: function (srcName) {
+      if (!this.glyph || srcName === this.glyph.name) return;
+      var src = window.Store.getGlyph(srcName);
+      if (!src.strokes.length) return;
+      this._preSnapshot = this.snapshot();
+      var dst = window.Store.getGlyph(this.glyph.name);
+      dst.strokes = dst.strokes.concat(JSON.parse(JSON.stringify(src.strokes)));
       this.pushUndo();
       window.Store.emit();
       if (this.onInkChange) this.onInkChange(this.glyph.name);
@@ -457,6 +522,30 @@
       ctx.textBaseline = "alphabetic";
       ctx.fillText(this.glyph.guide, this.ux(0), this.uy(0));
       ctx.restore();
+
+      // ghost: another drawn glyph as a translucent style reference
+      if (this.ghostName && this.ghostName !== this.glyph.name &&
+          window.Store.hasInk(this.ghostName)) {
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        ctx.strokeStyle = colAccent;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        window.Store.getGlyph(this.ghostName).strokes.forEach(function (st) {
+          if (!st.points.length) return;
+          ctx.lineWidth = Math.max(1, st.width * s);
+          ctx.beginPath();
+          st.points.forEach(function (p, i) {
+            var x = self.ux(p[0]), y = self.uy(p[1]);
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          });
+          if (st.points.length === 1) {
+            ctx.lineTo(self.ux(st.points[0][0]) + 0.1, self.uy(st.points[0][1]));
+          }
+          ctx.stroke();
+        });
+        ctx.restore();
+      }
 
       // committed strokes + live stroke
       var strokes = window.Store.getGlyph(this.glyph.name).strokes.slice();

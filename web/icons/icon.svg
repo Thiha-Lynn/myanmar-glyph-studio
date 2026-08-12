@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#1d1713"/>
+  <rect x="24" y="24" width="464" height="464" rx="80" fill="none" stroke="#d2a544" stroke-width="10"/>
+  <line x1="72" y1="356" x2="440" y2="356" stroke="#e0705c" stroke-width="8"/>
+  <text x="256" y="356" font-family="Padauk, 'Myanmar MN', 'Noto Sans Myanmar', sans-serif"
+        font-size="300" fill="#ede3d2" text-anchor="middle">က</text>
+</svg>

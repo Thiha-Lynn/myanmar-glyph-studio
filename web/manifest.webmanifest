@@ -1,0 +1,15 @@
+{
+  "name": "Myanmar Glyph Studio",
+  "short_name": "Glyph Studio",
+  "description": "Sketch your own Myanmar font over dimmed guide characters and export a real TTF.",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1d1713",
+  "theme_color": "#a8352f",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -2,14 +2,15 @@
  * Glyph inventory for the Myanmar Glyph Studio.
  *
  * Each entry:
- *   name  – production glyph name (used in the UFO pipeline)
- *   cp    – Unicode codepoint, or null for unencoded variant glyphs
- *   label – short text shown on the glyph chip in the sidebar
- *   guide – string rendered dimmed underneath the drawing canvas
- *   hint  – one-line instruction for the contributor
- *   mark  – true when the glyph is a combining mark (guide shows a dotted
- *           circle; draw only the mark itself, never the circle)
- *   group – section key, see GLYPH_GROUPS below
+ *   name   – production glyph name (used in the UFO pipeline)
+ *   cp     – Unicode codepoint, or null for unencoded variant glyphs
+ *   label  – short text shown on the glyph chip in the sidebar
+ *   guide  – string rendered dimmed underneath the drawing canvas
+ *   hint   – one-line instruction (English)
+ *   hintMy – the same instruction in Burmese
+ *   mark   – true when the glyph is a combining mark (guide shows a dotted
+ *            circle; draw only the mark itself, never the circle)
+ *   group  – section key, see GLYPH_GROUPS below
  *
  * The base set covers the full Burmese portion of the Myanmar Unicode block
  * (U+1000–104F). The "variants" group holds the unencoded forms a real
@@ -39,27 +40,28 @@
     [0x102a, "au.indep"]
   ];
 
-  // [cp, name, isMark, hint]
+  // [cp, name, isMark, hint EN, hint MY]
   var DEPENDENT_SIGNS = [
-    [0x102b, "tallAa", false, "Tall AA vowel sign (spacing, sits to the right)"],
-    [0x102c, "aa", false, "AA vowel sign (spacing, sits to the right)"],
-    [0x102d, "i", true, "I vowel — draw above the dotted circle only"],
-    [0x102e, "ii", true, "II vowel — draw above the dotted circle only"],
-    [0x102f, "u", true, "U vowel — draw below the dotted circle only"],
-    [0x1030, "uu", true, "UU vowel — draw below the dotted circle only"],
-    [0x1031, "e", false, "E vowel — rendered before the consonant"],
-    [0x1032, "ai", true, "AI vowel — draw above the dotted circle only"],
-    [0x1036, "anusvara", true, "Anusvara — small circle above"],
-    [0x1037, "dotBelow", true, "Dot below (creaky tone)"],
-    [0x1038, "visarga", false, "Visarga း (two dots, spacing)"],
-    [0x103a, "asat", true, "Asat killer stroke — draw above only"]
+    [0x102b, "tallAa", false, "Tall AA vowel sign (spacing, sits to the right)", "ရေးချ (ညာဘက်တွင် နေရာယူသည်)"],
+    [0x102c, "aa", false, "AA vowel sign (spacing, sits to the right)", "မောက်ချ (ညာဘက်တွင် နေရာယူသည်)"],
+    [0x102d, "i", true, "I vowel — draw above the dotted circle only", "လုံးကြီးတင် — အပေါ်ပိုင်းကိုသာ ဆွဲပါ"],
+    [0x102e, "ii", true, "II vowel — draw above the dotted circle only", "လုံးကြီးတင်ဆံခတ် — အပေါ်ပိုင်းကိုသာ ဆွဲပါ"],
+    [0x102f, "u", true, "U vowel — draw below the dotted circle only", "တစ်ချောင်းငင် — အောက်ပိုင်းကိုသာ ဆွဲပါ"],
+    [0x1030, "uu", true, "UU vowel — draw below the dotted circle only", "နှစ်ချောင်းငင် — အောက်ပိုင်းကိုသာ ဆွဲပါ"],
+    [0x1031, "e", false, "E vowel — rendered before the consonant", "သဝေထိုး — ဗျည်းရှေ့တွင် ပြသည်"],
+    [0x1032, "ai", true, "AI vowel — draw above the dotted circle only", "နောက်ပစ် — အပေါ်ပိုင်းကိုသာ ဆွဲပါ"],
+    [0x1036, "anusvara", true, "Anusvara — small circle above", "သေးသေးတင် — အပေါ်စက်ဝိုင်းငယ်"],
+    [0x1037, "dotBelow", true, "Dot below (creaky tone)", "အောက်မြစ်"],
+    [0x1038, "visarga", false, "Visarga း (two dots, spacing)", "ဝစ္စပေါက် (အစက်နှစ်လုံး)"],
+    [0x103a, "asat", true, "Asat killer stroke — draw above only", "အသတ် — အပေါ်ပိုင်းကိုသာ ဆွဲပါ"]
   ];
 
+  // [cp, name, hint EN, hint MY]
   var MEDIALS = [
-    [0x103b, "medialYa", "Medial YA ျ — hooks to the right of the base"],
-    [0x103c, "medialRa", "Medial RA ြ — wraps around the base (narrow form)"],
-    [0x103d, "medialWa", "Medial WA ွ — small loop below the base"],
-    [0x103e, "medialHa", "Medial HA ှ — hook below the base"]
+    [0x103b, "medialYa", "Medial YA ျ — hooks to the right of the base", "ယပင့် — ဗျည်း၏ညာဘက်တွင် ချိတ်သည်"],
+    [0x103c, "medialRa", "Medial RA ြ — wraps around the base (narrow form)", "ရရစ် — ဗျည်းကို ဝိုင်းရံသည် (ကျဉ်းပုံစံ)"],
+    [0x103d, "medialWa", "Medial WA ွ — small loop below the base", "ဝဆွဲ — ဗျည်းအောက်ရှိ ကွင်းငယ်"],
+    [0x103e, "medialHa", "Medial HA ှ — hook below the base", "ဟထိုး — ဗျည်းအောက်ရှိ ချိတ်"]
   ];
 
   var DIGITS = [
@@ -68,14 +70,15 @@
     [0x1048, "eight"], [0x1049, "nine"]
   ];
 
+  // [cp, name, hint EN, hint MY]
   var PUNCTUATION = [
-    [0x104a, "sectionMark", "Little section mark ၊ (comma-like pause)"],
-    [0x104b, "section", "Section mark ။ (full stop)"],
-    [0x104c, "locative", "Symbol ၌ (locative)"],
-    [0x104d, "completed", "Symbol ၍ (completed)"],
-    [0x104e, "aforementioned", "Symbol ၎ (aforementioned)"],
-    [0x104f, "genitive", "Symbol ၏ (genitive)"],
-    [0x103f, "greatSa", "Great SA ဿ"]
+    [0x104a, "sectionMark", "Little section mark ၊ (comma-like pause)", "ပုဒ်ထီး"],
+    [0x104b, "section", "Section mark ။ (full stop)", "ပုဒ်မ"],
+    [0x104c, "locative", "Symbol ၌ (locative)", "၌ သင်္ကေတ"],
+    [0x104d, "completed", "Symbol ၍ (completed)", "၍ သင်္ကေတ"],
+    [0x104e, "aforementioned", "Symbol ၎ (aforementioned)", "၎ သင်္ကေတ"],
+    [0x104f, "genitive", "Symbol ၏ (genitive)", "၏ သင်္ကေတ"],
+    [0x103f, "greatSa", "Great SA ဿ", "သကြီး ဿ"]
   ];
 
   function ch(cp) { return String.fromCodePoint(cp); }
@@ -85,7 +88,9 @@
   CONSONANTS.forEach(function (row) {
     glyphs.push({
       name: row[1] + "-myanmar", cp: row[0], label: ch(row[0]),
-      guide: ch(row[0]), hint: "Base consonant " + ch(row[0]),
+      guide: ch(row[0]),
+      hint: "Base consonant " + ch(row[0]),
+      hintMy: "အခြေခံဗျည်း " + ch(row[0]),
       mark: false, group: "consonants"
     });
   });
@@ -93,7 +98,9 @@
   INDEPENDENT_VOWELS.forEach(function (row) {
     glyphs.push({
       name: row[1] + "-myanmar", cp: row[0], label: ch(row[0]),
-      guide: ch(row[0]), hint: "Independent vowel " + ch(row[0]),
+      guide: ch(row[0]),
+      hint: "Independent vowel " + ch(row[0]),
+      hintMy: "သရလွတ် " + ch(row[0]),
       mark: false, group: "vowels"
     });
   });
@@ -101,7 +108,8 @@
   DEPENDENT_SIGNS.forEach(function (row) {
     glyphs.push({
       name: row[1] + "-myanmar", cp: row[0], label: DOTTED + ch(row[0]),
-      guide: DOTTED + ch(row[0]), hint: row[3],
+      guide: DOTTED + ch(row[0]),
+      hint: row[3], hintMy: row[4],
       mark: row[2], group: "signs"
     });
   });
@@ -109,15 +117,18 @@
   MEDIALS.forEach(function (row) {
     glyphs.push({
       name: row[1] + "-myanmar", cp: row[0], label: DOTTED + ch(row[0]),
-      guide: DOTTED + ch(row[0]), hint: row[2],
+      guide: DOTTED + ch(row[0]),
+      hint: row[2], hintMy: row[3],
       mark: true, group: "medials"
     });
   });
 
-  DIGITS.forEach(function (row) {
+  DIGITS.forEach(function (row, i) {
     glyphs.push({
       name: row[1] + "-myanmar", cp: row[0], label: ch(row[0]),
-      guide: ch(row[0]), hint: "Digit " + ch(row[0]),
+      guide: ch(row[0]),
+      hint: "Digit " + ch(row[0]),
+      hintMy: "ဂဏန်း " + ch(row[0]),
       mark: false, group: "digits"
     });
   });
@@ -125,7 +136,8 @@
   PUNCTUATION.forEach(function (row) {
     glyphs.push({
       name: row[1] + "-myanmar", cp: row[0], label: ch(row[0]),
-      guide: ch(row[0]), hint: row[2],
+      guide: ch(row[0]),
+      hint: row[2], hintMy: row[3],
       mark: false, group: "punctuation"
     });
   });
@@ -135,13 +147,12 @@
   // the contributor draws ONLY the lower, subjoined letter.
   var VIRAMA = ch(0x1039);
   CONSONANTS.forEach(function (row) {
-    // ka..bha + ma + la are the forms that actually occur in stacks; we offer
-    // all of them and mark rare ones in the hint.
     glyphs.push({
       name: row[1] + "-myanmar.sub", cp: null,
       label: ch(row[0]) + "̲", // letter + combining low line, chip only
       guide: ch(row[0]) + VIRAMA + ch(row[0]),
       hint: "Subjoined form — draw ONLY the small lower " + ch(row[0]) + " of the stack",
+      hintMy: "အောက်ဆင့်ပုံစံ — အောက်ရှိ " + ch(row[0]) + " ငယ်ကိုသာ ဆွဲပါ",
       mark: true, group: "variants"
     });
   });
@@ -150,6 +161,7 @@
     name: "kinzi-myanmar", cp: null, label: ch(0x1004) + ch(0x103a) + ch(0x1039),
     guide: ch(0x1004) + ch(0x103a) + ch(0x1039) + ch(0x1000),
     hint: "Kinzi — draw ONLY the small mark above the base (from င်္က)",
+    hintMy: "ကင်းစီး — အပေါ်ရှိ အမှတ်အသားငယ်ကိုသာ ဆွဲပါ",
     mark: true, group: "variants"
   });
 
@@ -157,6 +169,7 @@
     name: "medialRa-myanmar.wide", cp: null, label: DOTTED + ch(0x103c) + "+",
     guide: ch(0x1019) + ch(0x103c),
     hint: "Wide medial RA — wraps a wide base like မ; draw only the RA wrap",
+    hintMy: "ရရစ်အကျယ် — မ ကဲ့သို့ ဗျည်းကျယ်အတွက်; ရရစ်ကိုသာ ဆွဲပါ",
     mark: true, group: "variants"
   });
 
@@ -164,6 +177,7 @@
     name: "u-myanmar.alt", cp: null, label: DOTTED + ch(0x102f) + "*",
     guide: ch(0x1014) + ch(0x102f),
     hint: "Short U variant — used when the base has a descender; draw only the vowel",
+    hintMy: "တစ်ချောင်းငင်တို — အောက်ဆင်းဗျည်းများအတွက်; သရကိုသာ ဆွဲပါ",
     mark: true, group: "variants"
   });
 
@@ -171,6 +185,7 @@
     name: "uu-myanmar.alt", cp: null, label: DOTTED + ch(0x1030) + "*",
     guide: ch(0x1014) + ch(0x1030),
     hint: "Short UU variant — used when the base has a descender; draw only the vowel",
+    hintMy: "နှစ်ချောင်းငင်တို — အောက်ဆင်းဗျည်းများအတွက်; သရကိုသာ ဆွဲပါ",
     mark: true, group: "variants"
   });
 

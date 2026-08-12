@@ -12,7 +12,7 @@
   --good: #3e7048;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #1d1713;
     --surface: #27201a;
     --surface-2: #302821;
@@ -24,6 +24,18 @@
     --canvas-bg: #241d17;
     --good: #7fb389;
   }
+}
+:root[data-theme="dark"] {
+  --bg: #1d1713;
+  --surface: #27201a;
+  --surface-2: #302821;
+  --ink: #ede3d2;
+  --muted: #a79885;
+  --accent: #e0705c;
+  --gold: #d2a544;
+  --line: #3c332a;
+  --canvas-bg: #241d17;
+  --good: #7fb389;
 }
 
 * { box-sizing: border-box; }
@@ -157,6 +169,15 @@ button { touch-action: manipulation; }
 }
 .check input { accent-color: var(--accent); width: 16px; height: 16px; }
 #zoomLabel { font-variant-numeric: tabular-nums; font-size: 0.8rem; }
+.extras label { display: flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; color: var(--muted); }
+.extras .advance {
+  width: 5rem; background: var(--bg); border: 1px solid var(--line);
+  border-radius: 6px; padding: 0.25rem 0.4rem;
+}
+.sel {
+  background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
+  padding: 0.25rem 0.35rem; max-width: 7.5rem;
+}
 
 .canvas-wrap {
   flex: 1; min-height: 200px; position: relative;
@@ -174,6 +195,9 @@ button { touch-action: manipulation; }
   flex-wrap: wrap; flex-shrink: 0;
 }
 .testdrive label { font-size: 0.72rem; font-weight: 600; color: var(--gold); text-transform: uppercase; letter-spacing: 0.08em; }
+.preset-label { font-size: 0.72rem; color: var(--muted); }
+.preset-row { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+.preset { padding: 0.2rem 0.5rem; min-height: 28px; font-size: 0.85rem; }
 .testdrive input {
   flex: 0 1 18rem; background: var(--surface); border: 1px solid var(--line);
   border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 1rem; min-width: 8rem;
@@ -254,8 +278,8 @@ body.focus .glyph-head { margin: 0 0 0.3rem; }
   /* collapse fine-tuning controls behind the ⚙ button to save canvas space */
   .more-tools { display: inline-block; }
   .more-tools.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .toolbar .sliders, .toolbar .checks { display: none; width: 100%; }
-  .toolbar.expanded .sliders, .toolbar.expanded .checks { display: flex; }
+  .toolbar .sliders, .toolbar .checks, .toolbar .extras { display: none; width: 100%; }
+  .toolbar.expanded .sliders, .toolbar.expanded .checks, .toolbar.expanded .extras { display: flex; }
 
   .topbar { gap: 0.5rem; padding: 0.4rem 0.5rem; }
   .brand-mark { font-size: 1.3rem; }

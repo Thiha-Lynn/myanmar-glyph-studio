@@ -100,6 +100,34 @@
     },
 
     /*
+     * Export the current glyph as a standalone SVG (for design tools,
+     * stickers, logos — creative reuse beyond the font itself).
+     */
+    downloadSVG: function (glyphMeta) {
+      var data = window.Store.getGlyph(glyphMeta.name);
+      var polys = window.Outline.glyphPolygons(data);
+      if (!polys.length) throw new Error("Nothing drawn on this glyph yet.");
+      var d = polys.map(function (poly) {
+        return "M" + poly.map(function (p) {
+          return Math.round(p[0]) + " " + Math.round(-p[1]);
+        }).join("L") + "Z";
+      }).join("");
+      var b = window.Outline.bounds(polys);
+      var pad = 40;
+      var vb = [Math.floor(b.xMin - pad), Math.floor(-b.yMax - pad),
+                Math.ceil(b.xMax - b.xMin + pad * 2),
+                Math.ceil(b.yMax - b.yMin + pad * 2)].join(" ");
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vb +
+        '"><path d="' + d + '" fill="currentColor" fill-rule="nonzero"/></svg>\n';
+      var blob = new Blob([svg], { type: "image/svg+xml" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = glyphMeta.name + ".svg";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    },
+
+    /*
      * Load the draft font into the page under the family "GlyphStudioPreview"
      * so the test-drive box shows your actual drawn letterforms.
      */
