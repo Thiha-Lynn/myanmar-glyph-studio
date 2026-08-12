@@ -4,6 +4,8 @@ pipeline/build/
 *.ttf
 *.otf
 !docs/**/*.ttf
+# committed sample font (built by CI from projects/sample/)
+!projects/**/*.ttf
 
 # python
 __pycache__/
