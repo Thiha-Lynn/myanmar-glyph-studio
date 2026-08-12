@@ -113,14 +113,27 @@ def _dedupe(points, min_dist):
     return out
 
 
+def _pt_width(p, fallback):
+    return p[2] if len(p) > 2 and p[2] > 0 else fallback
+
+
+def _lerp(p, q, t):
+    out = [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]
+    if len(p) > 2 or len(q) > 2:
+        pw = p[2] if len(p) > 2 else q[2]
+        qw = q[2] if len(q) > 2 else p[2]
+        out.append(pw + (qw - pw) * t)
+    return out
+
+
 def _smooth(points, iterations=2):
     for _ in range(iterations):
         if len(points) < 3:
             return points
         out = [points[0]]
         for p, q in zip(points, points[1:]):
-            out.append([0.75 * p[0] + 0.25 * q[0], 0.75 * p[1] + 0.25 * q[1]])
-            out.append([0.25 * p[0] + 0.75 * q[0], 0.25 * p[1] + 0.75 * q[1]])
+            out.append(_lerp(p, q, 0.25))
+            out.append(_lerp(p, q, 0.75))
         out.append(points[-1])
         points = out
     return points
@@ -139,33 +152,38 @@ def _circle(cx, cy, r):
 
 
 def stroke_to_polygon(stroke):
-    r = max(1.0, stroke["width"] / 2.0)
-    pts = _dedupe(stroke["points"], r * 0.35)
+    """Points are [x, y] or [x, y, w] (per-point pressure width)."""
+    base_r = max(1.0, stroke["width"] / 2.0)
+    pts = _dedupe(stroke["points"], base_r * 0.35)
     if not pts:
         return None
     if len(pts) == 1:
-        return _circle(pts[0][0], pts[0][1], r)
+        return _circle(pts[0][0], pts[0][1],
+                       _pt_width(pts[0], stroke["width"]) / 2.0)
     pts = _smooth(pts, 2)
 
-    normals = []
+    radii, normals = [], []
     for i in range(len(pts)):
+        radii.append(max(1.0, _pt_width(pts[i], stroke["width"]) / 2.0))
         a = pts[max(0, i - 1)]
         b = pts[min(len(pts) - 1, i + 1)]
         dx, dy = b[0] - a[0], b[1] - a[1]
         length = math.hypot(dx, dy) or 1.0
         normals.append([-dy / length, dx / length])
 
-    left = [[p[0] + n[0] * r, p[1] + n[1] * r] for p, n in zip(pts, normals)]
-    right = [[p[0] - n[0] * r, p[1] - n[1] * r] for p, n in zip(pts, normals)]
+    left = [[p[0] + n[0] * r, p[1] + n[1] * r]
+            for p, n, r in zip(pts, normals, radii)]
+    right = [[p[0] - n[0] * r, p[1] - n[1] * r]
+             for p, n, r in zip(pts, normals, radii)]
 
     poly = list(left)
     pe, ne = pts[-1], normals[-1]
     ae = math.atan2(ne[1], ne[0])
-    _arc(pe[0], pe[1], r, ae, ae - math.pi, poly)
+    _arc(pe[0], pe[1], radii[-1], ae, ae - math.pi, poly)
     poly.extend(reversed(right))
     ps, ns = pts[0], normals[0]
     a_s = math.atan2(-ns[1], -ns[0])
-    _arc(ps[0], ps[1], r, a_s, a_s - math.pi, poly)
+    _arc(ps[0], ps[1], radii[0], a_s, a_s - math.pi, poly)
     return poly
 
 

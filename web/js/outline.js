@@ -1,8 +1,9 @@
 /*
  * Stroke → outline expansion.
  *
- * Sketches are stored as center-line polylines with a stroke width. Font
- * outlines must be filled contours, so each stroke is expanded into a closed
+ * Sketches are stored as center-line polylines with a stroke width. Points
+ * are [x, y] or [x, y, w] where w is a per-point width in font units
+ * (recorded from stylus pressure). Each stroke expands into a closed
  * polygon: offset the polyline to both sides and close it with round caps.
  * Overlapping strokes fill correctly because TrueType uses the nonzero
  * winding rule and every polygon we emit winds the same way.
@@ -13,6 +14,10 @@
   "use strict";
 
   var CAP_SEGMENTS = 8; // half-circle cap resolution
+
+  function ptWidth(p, fallback) {
+    return (p.length > 2 && p[2] > 0) ? p[2] : fallback;
+  }
 
   function dedupe(points, minDist) {
     var out = [];
@@ -33,14 +38,23 @@
   }
 
   // Chaikin corner-cutting: cheap, stable smoothing for hand input.
+  // Interpolates the optional per-point width as well.
   function smooth(points, iterations) {
+    function lerp(p, q, t) {
+      var out = [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
+      if (p.length > 2 || q.length > 2) {
+        var pw = p.length > 2 ? p[2] : q[2];
+        var qw = q.length > 2 ? q[2] : p[2];
+        out.push(pw + (qw - pw) * t);
+      }
+      return out;
+    }
     for (var it = 0; it < iterations; it++) {
       if (points.length < 3) return points;
       var out = [points[0]];
       for (var i = 0; i < points.length - 1; i++) {
-        var p = points[i], q = points[i + 1];
-        out.push([0.75 * p[0] + 0.25 * q[0], 0.75 * p[1] + 0.25 * q[1]]);
-        out.push([0.25 * p[0] + 0.75 * q[0], 0.25 * p[1] + 0.75 * q[1]]);
+        out.push(lerp(points[i], points[i + 1], 0.25));
+        out.push(lerp(points[i], points[i + 1], 0.75));
       }
       out.push(points[points.length - 1]);
       points = out;
@@ -70,17 +84,20 @@
    * (array of [x, y]). Returns null for empty strokes.
    */
   function strokeToPolygon(stroke) {
-    var r = Math.max(1, stroke.width / 2);
-    var pts = dedupe(stroke.points, r * 0.35);
+    var baseR = Math.max(1, stroke.width / 2);
+    var pts = dedupe(stroke.points, baseR * 0.35);
     if (!pts.length) return null;
-    if (pts.length === 1) return circle(pts[0][0], pts[0][1], r);
+    if (pts.length === 1) {
+      return circle(pts[0][0], pts[0][1], ptWidth(pts[0], stroke.width) / 2);
+    }
 
     pts = smooth(pts, 2);
 
-    // per-point normals, averaged at joints, miter-clamped
-    var normals = [];
+    // per-point radii (pressure) and normals, averaged at joints
+    var radii = [], normals = [];
     var i, dx, dy, len;
     for (i = 0; i < pts.length; i++) {
+      radii.push(Math.max(1, ptWidth(pts[i], stroke.width) / 2));
       var a = pts[Math.max(0, i - 1)];
       var b = pts[Math.min(pts.length - 1, i + 1)];
       dx = b[0] - a[0]; dy = b[1] - a[1];
@@ -90,7 +107,7 @@
 
     var left = [], right = [];
     for (i = 0; i < pts.length; i++) {
-      var n = normals[i];
+      var n = normals[i], r = radii[i];
       left.push([pts[i][0] + n[0] * r, pts[i][1] + n[1] * r]);
       right.push([pts[i][0] - n[0] * r, pts[i][1] - n[1] * r]);
     }
@@ -100,14 +117,14 @@
     // end cap: half-circle from left offset around to right offset
     var pe = pts[pts.length - 1], ne = normals[pts.length - 1];
     var ae = Math.atan2(ne[1], ne[0]);
-    arc(pe[0], pe[1], r, ae, ae - Math.PI, poly);
+    arc(pe[0], pe[1], radii[radii.length - 1], ae, ae - Math.PI, poly);
 
     for (i = right.length - 1; i >= 0; i--) poly.push(right[i]);
 
     // start cap
     var ps = pts[0], ns = normals[0];
     var as = Math.atan2(-ns[1], -ns[0]);
-    arc(ps[0], ps[1], r, as, as - Math.PI, poly);
+    arc(ps[0], ps[1], radii[0], as, as - Math.PI, poly);
 
     return poly;
   }

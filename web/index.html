@@ -2,18 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Myanmar Glyph Studio — sketch your own Myanmar font</title>
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
 
 <header class="topbar">
+  <button id="btnDrawer" class="btn icon-btn drawer-toggle" title="Glyph list" aria-label="Open glyph list">☰</button>
   <div class="brand">
     <span class="brand-mark mm">က</span>
-    <div>
+    <div class="brand-text">
       <h1>Myanmar Glyph Studio</h1>
-      <p class="tagline">Sketch over dimmed guides · export a real font · <span class="mm">မိမိစိတ်ကြိုက် ဖောင့်ရေးဆွဲပါ</span></p>
+      <p class="tagline">Sketch over dimmed guides · <span class="mm">မိမိစိတ်ကြိုက် ဖောင့်ရေးဆွဲပါ</span></p>
     </div>
   </div>
   <div class="meta-fields">
@@ -21,21 +24,24 @@
     <label>Your name <input id="authorName" type="text" spellcheck="false" placeholder="for the OFL credit"></label>
   </div>
   <div class="project-actions">
-    <button id="btnSave" class="btn" title="Download the project file (JSON) — this is your source of truth">Save project</button>
+    <button id="btnHelp" class="btn" title="How to use your exported font">Help</button>
+    <button id="btnSave" class="btn" title="Download the project file (JSON) — this is your source of truth">Save</button>
     <button id="btnLoad" class="btn" title="Load a saved .glyphstudio.json project">Load</button>
-    <button id="btnExportTTF" class="btn primary" title="Export an installable draft TTF for testing">Export draft TTF</button>
+    <button id="btnExportTTF" class="btn primary" title="Export an installable font file (TTF)">Export font</button>
     <input id="fileInput" type="file" accept=".json,application/json" hidden>
   </div>
 </header>
 
 <div class="layout">
-  <aside class="sidebar">
+  <div id="drawerOverlay" class="drawer-overlay" hidden></div>
+  <aside class="sidebar" id="sidebar">
     <div class="progress-line" id="totalProgress"></div>
     <div id="glyphBrowser"></div>
     <div class="sidebar-note">
-      <strong>Draft TTF</strong> is for quick testing only. To build a fully
-      shaping font (stacks, kinzi, mark positioning), save the project and run
-      the <code>pipeline/</code> build — see the README.
+      <strong>Export font</strong> gives a draft TTF for quick testing. For a
+      fully shaping font (stacks, kinzi, mark positioning), save the project
+      and run the <code>pipeline/</code> build — press <em>Help</em> for how
+      to install and use your font anywhere.
     </div>
   </aside>
 
@@ -47,39 +53,96 @@
         <div id="glyphHint" class="hint"></div>
       </div>
       <div class="stepper">
-        <button id="btnPrev" class="btn" title="Previous glyph  [">←</button>
-        <button id="btnNext" class="btn" title="Next glyph  ]">→</button>
+        <button id="btnPrev" class="btn icon-btn" title="Previous glyph  [">←</button>
+        <button id="btnNext" class="btn icon-btn" title="Next glyph  ]">→</button>
+        <button id="btnFocus" class="btn icon-btn" title="Focus mode — hide panels, just draw">⛶</button>
       </div>
     </div>
 
-    <div class="toolbar">
+    <div class="toolbar" id="toolbar">
       <div class="tool-group">
         <button id="toolPen" class="btn tool" title="Pen (P)">✏️ Pen</button>
-        <button id="toolEraser" class="btn tool" title="Eraser (E) — click a stroke to remove it">🧽 Erase</button>
-        <button id="btnUndo" class="btn" title="Undo (Ctrl/Cmd+Z)">↩</button>
-        <button id="btnRedo" class="btn" title="Redo (Ctrl/Cmd+Shift+Z)">↪</button>
+        <button id="toolEraser" class="btn tool" title="Eraser (E) — tap a stroke to remove it">🧽 Erase</button>
+        <button id="btnUndo" class="btn icon-btn" title="Undo (Ctrl/Cmd+Z)">↩</button>
+        <button id="btnRedo" class="btn icon-btn" title="Redo (Ctrl/Cmd+Shift+Z)">↪</button>
         <button id="btnClear" class="btn danger" title="Clear this glyph">Clear</button>
+        <span class="tool-sep"></span>
+        <button id="btnZoomOut" class="btn icon-btn" title="Zoom out">−</button>
+        <button id="btnZoomIn" class="btn icon-btn" title="Zoom in">+</button>
+        <button id="btnZoomReset" class="btn" title="Fit the whole drawing area"><span id="zoomLabel">100%</span></button>
+        <button id="btnMoreTools" class="btn icon-btn more-tools" title="Pen &amp; guide settings">⚙</button>
       </div>
       <div class="tool-group sliders">
-        <label>Pen <input id="penWidth" type="range" min="20" max="140" value="60"> <span id="penWidthVal">60</span></label>
-        <label>Guide <input id="guideOpacity" type="range" min="0" max="60" value="22"></label>
-        <label>Guide size <input id="guideSize" type="range" min="800" max="1200" value="1000"></label>
+        <label title="Stroke thickness in font units">Pen <input id="penWidth" type="range" min="20" max="140" value="60"> <span id="penWidthVal">60</span></label>
+        <label title="How strongly shaky input is steadied">Steady <input id="stabilizer" type="range" min="0" max="10" value="3"></label>
+        <label title="Guide visibility">Guide <input id="guideOpacity" type="range" min="0" max="60" value="22"></label>
+        <label title="Guide character size (font units)">Size <input id="guideSize" type="range" min="800" max="1200" value="1000"></label>
+      </div>
+      <div class="tool-group checks">
+        <label class="check" title="Vary stroke width with stylus pressure"><input id="pressureToggle" type="checkbox" checked> Pen pressure</label>
+        <label class="check" title="Let fingers draw (off = fingers pan, stylus draws)"><input id="touchDraws" type="checkbox" checked> Finger draws</label>
         <label class="check"><input id="fillPreview" type="checkbox"> Fill preview</label>
-        <label>Advance <input id="advanceInput" type="number" min="0" max="2000" step="10" class="advance"></label>
+        <label title="Horizontal space this glyph occupies (font units)">Advance <input id="advanceInput" type="number" min="0" max="2000" step="10" class="advance"></label>
       </div>
     </div>
 
     <div class="canvas-wrap">
       <canvas id="glyphCanvas"></canvas>
+      <div class="canvas-tip" id="canvasTip">Two fingers: pan &amp; zoom · wheel: zoom</div>
     </div>
 
-    <div class="testdrive">
+    <div class="testdrive" id="testdrive">
       <label for="previewInput">Test drive</label>
       <input id="previewInput" type="text" class="mm"
         value="ကချင် မြန်မာစာ ၁၂၃" spellcheck="false">
       <div id="previewText" class="mm preview"></div>
     </div>
   </main>
+</div>
+
+<div id="helpModal" class="modal" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2>Use your font anywhere</h2>
+      <button id="btnHelpClose" class="btn icon-btn" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p><strong>Export font</strong> downloads a standard <code>.ttf</code> file —
+      the same format every system uses. It is yours, under the
+      <a href="https://openfontlicense.org" target="_blank" rel="noopener">SIL Open Font License</a>:
+      free to use, ship, and sell with your apps and games.</p>
+      <h3>Install on your computer</h3>
+      <ul>
+        <li><strong>Windows:</strong> right-click the TTF → <em>Install</em> (or Install for all users).</li>
+        <li><strong>macOS:</strong> double-click the TTF → <em>Install Font</em>.</li>
+        <li><strong>Linux:</strong> copy it to <code>~/.local/share/fonts</code> and run <code>fc-cache</code>.</li>
+      </ul>
+      <h3>Use in a game</h3>
+      <ul>
+        <li><strong>Unity:</strong> drop the TTF into <code>Assets/Fonts</code>; for TextMeshPro create a Font Asset from it (Window → TextMeshPro → Font Asset Creator).</li>
+        <li><strong>Godot:</strong> copy the TTF into the project and set it as a FontFile on your theme or Label.</li>
+        <li><strong>Unreal:</strong> import the TTF as a Font asset (runtime-cached).</li>
+      </ul>
+      <h3>Use in a mobile app</h3>
+      <ul>
+        <li><strong>Android:</strong> put it in <code>res/font/</code> and reference with <code>@font/yourfont</code> (or Compose <code>FontFamily</code>).</li>
+        <li><strong>iOS:</strong> add the TTF to the app bundle and list it under <code>UIAppFonts</code> in Info.plist.</li>
+        <li><strong>Flutter:</strong> declare it under <code>fonts:</code> in <code>pubspec.yaml</code>.</li>
+        <li><strong>React Native / Expo:</strong> load with <code>expo-font</code> or link the asset.</li>
+      </ul>
+      <h3>Use on the web</h3>
+      <pre>@font-face {
+  font-family: "MyFont";
+  src: url("MyFont.ttf") format("truetype");
+}</pre>
+      <h3>Draft vs. full build</h3>
+      <p>The in-browser export is a <em>draft</em>: perfect for testing your
+      letterforms, but complex syllables (stacks like က္က, kinzi, vowel-mark
+      positioning) need the full build. Save your project file and run
+      <code>pipeline/build.sh</code> from the repository — it produces a
+      shaping-correct font from the exact same drawings. See the README.</p>
+    </div>
+  </div>
 </div>
 
 <div id="toast"></div>

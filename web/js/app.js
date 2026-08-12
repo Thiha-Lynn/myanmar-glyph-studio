@@ -1,5 +1,6 @@
 /*
- * UI wiring: glyph browser, toolbar, project actions, test-drive preview.
+ * UI wiring: glyph browser (with mobile drawer), toolbar, zoom controls,
+ * focus mode, project actions, help modal, test-drive preview.
  */
 (function () {
   "use strict";
@@ -13,6 +14,8 @@
     if (text != null) e.textContent = text;
     return e;
   }
+
+  var isMobile = function () { return window.matchMedia("(max-width: 1000px)").matches; };
 
   // ---- glyph browser -----------------------------------------------------
   function buildBrowser() {
@@ -34,7 +37,10 @@
         var chip = el("button", "chip mm", g.label);
         chip.title = g.name + " — " + g.hint;
         chip.dataset.glyph = g.name;
-        chip.addEventListener("click", function () { selectGlyph(g); });
+        chip.addEventListener("click", function () {
+          selectGlyph(g);
+          if (isMobile()) closeDrawer();
+        });
         grid.appendChild(chip);
       });
       det.appendChild(grid);
@@ -67,7 +73,7 @@
     $("#glyphHint").textContent = g.hint + (g.mark ? "  (do not draw the dotted circle)" : "");
     var adv = window.Store.getGlyph(g.name).advance;
     $("#advanceInput").value = adv || "";
-    $("#advanceInput").placeholder = "auto (" + window.Editor.measureGuideAdvance() + ")";
+    $("#advanceInput").placeholder = "auto " + window.Editor.measureGuideAdvance();
     refreshBrowser();
   }
 
@@ -78,11 +84,30 @@
     if (next) selectGlyph(next);
   }
 
+  // ---- drawer (mobile) ---------------------------------------------------
+  function openDrawer() {
+    $("#sidebar").classList.add("open");
+    $("#drawerOverlay").hidden = false;
+  }
+  function closeDrawer() {
+    $("#sidebar").classList.remove("open");
+    $("#drawerOverlay").hidden = true;
+  }
+  function wireDrawer() {
+    $("#btnDrawer").addEventListener("click", function () {
+      if ($("#sidebar").classList.contains("open")) closeDrawer(); else openDrawer();
+    });
+    $("#drawerOverlay").addEventListener("click", closeDrawer);
+  }
+
   // ---- toolbar -----------------------------------------------------------
   function wireToolbar() {
     $("#penWidth").addEventListener("input", function () {
       window.Editor.penWidth = +this.value;
       $("#penWidthVal").textContent = this.value;
+    });
+    $("#stabilizer").addEventListener("input", function () {
+      window.Editor.stabilizer = +this.value;
     });
     $("#guideOpacity").addEventListener("input", function () {
       window.Editor.guideOpacity = +this.value / 100;
@@ -91,6 +116,12 @@
     $("#guideSize").addEventListener("input", function () {
       window.Editor.guideSize = +this.value;
       window.Editor.render();
+    });
+    $("#pressureToggle").addEventListener("change", function () {
+      window.Editor.pressureEnabled = this.checked;
+    });
+    $("#touchDraws").addEventListener("change", function () {
+      window.Editor.touchDraws = this.checked;
     });
     $("#toolPen").addEventListener("click", function () { setTool("pen"); });
     $("#toolEraser").addEventListener("click", function () { setTool("eraser"); });
@@ -113,6 +144,33 @@
     $("#btnPrev").addEventListener("click", function () { step(-1); });
     $("#btnNext").addEventListener("click", function () { step(1); });
 
+    // zoom
+    $("#btnZoomIn").addEventListener("click", function () { window.Editor.zoomStep(1.25); });
+    $("#btnZoomOut").addEventListener("click", function () { window.Editor.zoomStep(0.8); });
+    $("#btnZoomReset").addEventListener("click", function () { window.Editor.resetView(); });
+    window.Editor.onViewChange = function () {
+      $("#zoomLabel").textContent = Math.round(window.Editor.zoom * 100) + "%";
+    };
+
+    // compact toolbar toggle (small screens)
+    $("#btnMoreTools").addEventListener("click", function () {
+      $("#toolbar").classList.toggle("expanded");
+      this.classList.toggle("active");
+      window.Editor.resize();
+    });
+
+    // focus mode
+    $("#btnFocus").addEventListener("click", function () {
+      document.body.classList.toggle("focus");
+      this.textContent = document.body.classList.contains("focus") ? "🗗" : "⛶";
+      window.Editor.resize();
+    });
+
+    window.Editor.onPenDetected = function () {
+      $("#touchDraws").checked = false;
+      toast("Stylus detected — fingers now pan & zoom, the pen draws. Re-enable “Finger draws” to change.");
+    };
+
     document.addEventListener("keydown", function (e) {
       if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
       var mod = e.metaKey || e.ctrlKey;
@@ -122,6 +180,11 @@
       else if (e.key === "]") step(1);
       else if (e.key === "e") setTool("eraser");
       else if (e.key === "p" || e.key === "b") setTool("pen");
+      else if (e.key === "+" || e.key === "=") window.Editor.zoomStep(1.25);
+      else if (e.key === "-") window.Editor.zoomStep(0.8);
+      else if (e.key === "0") window.Editor.resetView();
+      else if (e.key === "f") $("#btnFocus").click();
+      else if (e.key === "Escape" && document.body.classList.contains("focus")) $("#btnFocus").click();
     });
   }
 
@@ -151,14 +214,20 @@
         $("#authorName").value = window.Store.meta.author;
         refreshBrowser();
         if (current) selectGlyph(current);
+        schedulePreview();
       });
       this.value = "";
     });
     $("#btnExportTTF").addEventListener("click", function () {
       try {
         var n = window.FontExport.downloadTTF();
-        toast("Draft TTF exported (" + n + " glyphs). For a fully shaping font, run the pipeline build.");
+        toast("Font exported (" + n + " glyphs). Press Help to see how to install and use it anywhere.");
       } catch (e) { alert(e.message); }
+    });
+    $("#btnHelp").addEventListener("click", function () { $("#helpModal").hidden = false; });
+    $("#btnHelpClose").addEventListener("click", function () { $("#helpModal").hidden = true; });
+    $("#helpModal").addEventListener("click", function (e) {
+      if (e.target === this) this.hidden = true;
     });
   }
 
@@ -196,6 +265,7 @@
     window.Store.loadLocal();
     window.Editor.init($("#glyphCanvas"));
     buildBrowser();
+    wireDrawer();
     wireToolbar();
     wireProject();
     wirePreview();
@@ -204,6 +274,7 @@
     $("#previewText").textContent = $("#previewInput").value;
     selectGlyph(window.GLYPHS[0]);
     setTool("pen");
+    window.Editor.resetView();
     // wait for system Myanmar fonts, then re-render the guide crisply
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(function () { window.Editor.render(); });

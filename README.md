@@ -28,8 +28,18 @@ over it, and the toolchain turns your sketches into a working font.
    dimmed guide. Combined forms are guided too: for the stack က္က you draw
    only the small lower letter; for vowel signs you draw only the mark next
    to the dotted circle ◌.
+
+   Built for real drawing hands: works on phone, tablet, and desktop;
+   **Apple Pencil / stylus pressure** varies your stroke width; once a pen
+   is detected, fingers pan and zoom while the pen draws (palm rejection);
+   pinch or scroll to **zoom** into details (a precision grid appears);
+   a **stabilizer** steadies shaky lines; **focus mode** (⛶) hides
+   everything but the canvas.
 2. **Test** — the test-drive box previews your drawn letters live, and
-   **Export draft TTF** gives an installable font in one click.
+   **Export font** gives an installable TTF in one click. The in-app
+   **Help** explains how to use it everywhere: install on
+   Windows/macOS/Linux, ship it in Unity/Godot/Unreal games, bundle it in
+   Android/iOS/Flutter apps, or serve it on the web with `@font-face`.
 3. **Build** — save your project file and run the pipeline to get proper
    UFO sources and a shaping-capable font (stacked consonants, kinzi,
    mark positioning) via the industry-standard `fontmake` toolchain.

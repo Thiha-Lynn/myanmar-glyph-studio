@@ -14,8 +14,8 @@
  *     "<glyphName>": {
  *       "advance": <number|null>,          // null = auto from guide/bbox
  *       "strokes": [ { "width": <units>, "points": [[x,y], ...] }, ... ]
- *     }
- *   }
+ *     }                    // points may be [x,y,w] — w = per-point width
+ *   }                      // in font units, recorded from stylus pressure
  * }
  */
 (function () {
