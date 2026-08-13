@@ -136,3 +136,42 @@ print([(a.axisTag, a.minValue, a.maxValue) for a in f['fvar'].axes])"
 Then look at the extremes: `hb-view MyFont-VF.ttf --variations=wght=700`
 should be visibly heavier with the same letterforms, no collapsed counters
 and no crossed outlines.
+
+## Test on a real device (issue #14 — anyone can do this)
+
+Our CI verifies shaping with HarfBuzz — the engine Android, Chrome and
+Linux use. **Windows (DirectWrite) and Apple (CoreText) can disagree**,
+and only real devices reveal it. This is a five-minute contribution that
+needs no coding at all:
+
+1. Download a font zip from the
+   [latest release](https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/latest)
+   and install the TTF (Windows: right-click → Install · macOS:
+   double-click → Install Font · Android/iOS: a font-install app or a
+   word processor that accepts custom fonts).
+2. Set it as the font in the apps you actually use — Word, Google Docs,
+   a browser, a chat app, a design tool.
+3. Paste these lines (each one exercises a different shaping trap):
+
+   ```text
+   စက္ကူ ဗုဒ္ဓ မန္တလေး          ← stacked consonants
+   သင်္ဘော အင်္ဂါ               ← kinzi
+   ကျောင်း ကြီး ကျွန် မြွှေ      ← medials (ya, ra wrap, wa, ha)
+   ကုန် ပူ နူး ကူး              ← below-base vowels
+   ၀၁၂၃၄၅၆၇၈၉ ၊ ။           ← digits & punctuation
+   သီဟိုဠ်မှ ဉာဏ်ကြီးရှင်သည် အာယုဝဍ္ဎနဆေးညွှန်းစာကို ဇလွန်ဈေးဘေး
+   ဗာဒံပင်ထက် အဓိဋ္ဌာန်လျက် ဂဃနဏဖတ်ခဲ့သည်။   ← the pangram
+   လိက်ဂကူမန် ပၠန်              ← Mon
+   မႂ်ႇသုင်ၶႃႈ လိၵ်ႈတႆး          ← Shan
+   ပှၤကညီ                    ← S'gaw Karen
+   ```
+
+4. Anything look wrong — overlapping marks, a consonant outside its
+   ra-wrap, dotted circles that shouldn't be there? File a
+   [shaping report](https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues/new?template=shaping-report.md)
+   with a screenshot, the exact text, and your OS + app. A report that
+   says "correct everywhere" is valuable too — leave it on
+   [issue #14](https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues/14).
+
+The same lines are one tap away inside the studio's test-drive box
+(the preset chips), so you can also eyeball your own drawings with them.

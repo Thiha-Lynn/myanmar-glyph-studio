@@ -5,6 +5,23 @@ format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions are git tags with installable font zips on the
 [releases page](https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases).
 
+## [Unreleased]
+
+### Added
+- **Contribute without Git**: ⚙ → *Copy glyph* turns the current glyph
+  into a text snippet you can paste into an issue or chat; *Paste glyph*
+  imports one — so a drawing can travel from any contributor to any
+  project file with no repository knowledge.
+- **Shareable glyph links**: the URL always carries `#g=<glyph>`, so an
+  issue can send someone straight to the exact letter to draw.
+- **Community language framework**: `I18N.register()` lets a single file
+  under `web/js/lang/` add a full interface language (Mon, Shan, S'gaw
+  Karen, …) with English fallback for missing strings — see
+  `docs/TRANSLATING.md`. The language button now cycles through every
+  registered language.
+- Test-drive presets for Mon, Shan and S'gaw Karen sample text, and a
+  five-minute real-device testing guide in `docs/TESTING.md`.
+
 ## [0.3.0] — 2026-08-13
 
 ### Added

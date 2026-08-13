@@ -99,14 +99,39 @@
     canvasTip:      { en: "Two fingers: pan & zoom · wheel: zoom", my: "လက်နှစ်ချောင်း — ရွှေ့/ချဲ့ · wheel — ချဲ့" },
     presets:        { en: "Try:",           my: "စမ်းရန်—" },
     unencoded:      { en: "unencoded variant", my: "ကုဒ်မဲ့ ပုံစံကွဲ" },
-    noCircleNote:   { en: "(do not draw the dotted circle)", my: "(စက်ဝိုင်းအစက်ကို မဆွဲပါနှင့်)" }
+    noCircleNote:   { en: "(do not draw the dotted circle)", my: "(စက်ဝိုင်းအစက်ကို မဆွဲပါနှင့်)" },
+    // share a single glyph as a text snippet (contributions without Git)
+    glyphCopy:      { en: "Copy glyph",      my: "အက္ခရာကူး" },
+    glyphPaste:     { en: "Paste glyph",     my: "အက္ခရာကပ်" },
+    glyphCopied:    { en: "Glyph copied as text — paste it into an issue, a chat, or another studio.",
+                      my: "အက္ခရာကို စာသားအဖြစ် ကူးပြီး — issue/chat ထဲ သို့မဟုတ် studio ထဲ ပြန်ကပ်နိုင်ပါတယ်။" },
+    glyphEmpty:     { en: "Nothing drawn on this glyph yet.",
+                      my: "ဒီအက္ခရာမှာ ဘာမှ မရေးဆွဲရသေးပါ။" },
+    glyphCopyManual: { en: "Copy this text:", my: "ဒီစာသားကို ကူးယူပါ —" },
+    glyphPastePrompt: { en: "Paste the glyph snippet:", my: "အက္ခရာစာသားကို ကပ်ထည့်ပါ —" },
+    glyphPasteMismatch: { en: "This snippet is for a different glyph. Paste anyway?",
+                      my: "ဒီစာသားက အခြားအက္ခရာအတွက်ပါ။ ဆက်ကပ်မလား?" },
+    glyphPasted:    { en: "strokes pasted", my: "မျဉ်း ကပ်ပြီးပါပြီ" }
   };
 
   var lang = "en";
 
+  /*
+   * Community languages (Mon, Shan, S'gaw Karen, …) register themselves
+   * from web/js/lang/<code>.js — see docs/TRANSLATING.md. Missing keys
+   * fall back to English, so a partial translation is already useful.
+   */
+  var EXTRA = {};          // code -> {name, button, strings:{key:text}}
+  var ORDER = ["en", "my"];
+
   function t(key) {
+    if (EXTRA[lang] && EXTRA[lang].strings &&
+        EXTRA[lang].strings[key] != null) {
+      return EXTRA[lang].strings[key];
+    }
     var row = STRINGS[key];
-    return row ? (row[lang] || row.en) : key;
+    if (!row) return key;
+    return row[lang] != null ? row[lang] : row.en;
   }
 
   function apply() {
@@ -119,13 +144,38 @@
     document.querySelectorAll("[data-i18n-ph]").forEach(function (el) {
       el.placeholder = t(el.dataset.i18nPh);
     });
-    document.documentElement.lang = lang === "my" ? "my" : "en";
+    document.documentElement.lang = lang;
   }
 
   window.I18N = {
     t: t,
     apply: apply,
     get lang() { return lang; },
-    set: function (l) { lang = l === "my" ? "my" : "en"; apply(); }
+    set: function (l) {
+      lang = (l === "en" || l === "my" || EXTRA[l]) ? l : "en";
+      apply();
+    },
+
+    /* I18N.register("mnw", {name:"Mon", button:"မန်", strings:{…}}) */
+    register: function (code, meta) {
+      if (!code || !meta || !meta.strings) return;
+      EXTRA[code] = meta;
+      if (ORDER.indexOf(code) < 0) ORDER.push(code);
+    },
+
+    /* Every registered language, in cycle order, with its button label. */
+    available: function () {
+      return ORDER.map(function (code) {
+        return {
+          code: code,
+          button: code === "en" ? "En"
+                : code === "my" ? "မြ"
+                : (EXTRA[code].button || code),
+          name: code === "en" ? "English"
+              : code === "my" ? "မြန်မာ"
+              : (EXTRA[code].name || code)
+        };
+      });
+    }
   };
 })();

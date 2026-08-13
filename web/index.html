@@ -195,6 +195,8 @@
         <input id="svgFileInput" type="file" accept=".svg,image/svg+xml" hidden>
         <button id="btnGuideFont" class="btn" data-i18n="guideFont" title="Trace over a different font: load any TTF/OTF as the guide. Stays on your device.">Guide font</button>
         <input id="guideFontInput" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf" hidden>
+        <button id="btnGlyphCopy" class="btn" data-i18n="glyphCopy" title="Copy this glyph's drawing as a text snippet — share it in an issue or chat, no Git needed">Copy glyph</button>
+        <button id="btnGlyphPaste" class="btn" data-i18n="glyphPaste" title="Paste a glyph snippet someone shared">Paste glyph</button>
         <button id="btnClear" class="btn danger" data-i18n="clear" title="Clear this glyph">Clear</button>
       </div>
     </div>
@@ -304,6 +306,7 @@
         <li><strong>Ctrl/Cmd+Z</strong> undo · <strong>Ctrl/Cmd+Shift+Z</strong> redo · <strong>[ ]</strong> previous / next glyph · <strong>N</strong> next empty · <strong>+ − 0</strong> zoom · <strong>F</strong> focus mode · hold <strong>Space</strong> or drag the middle mouse button to pan.</li>
         <li><strong>Ghost</strong> overlays a glyph you already drew (e.g. your က) so every letter keeps the same style; <strong>Copy from</strong> duplicates strokes between similar letters (ခ→ဂ, ပ→ဖ…). Both live under <strong>⚙</strong>.</li>
         <li><strong>⚓ Anchors</strong> shows where vowel signs and marks will attach in the full build — drag a point to adjust it, double-click to reset. <strong>Import SVG</strong> brings a vectorized paper sketch (Inkscape/Illustrator trace) onto the current glyph.</li>
+        <li><strong>⚙ → Copy glyph / Paste glyph</strong> turns one drawing into a small text snippet — share it in a GitHub issue, a chat, or an e-mail, and anyone can paste it into their studio. It's how you contribute a glyph <em>without knowing Git</em>. The page address always points at the glyph you're on (<code>#g=…</code>), so you can link someone straight to a letter.</li>
         <li>On iPad: draw with the Apple Pencil (pressure varies the stroke), pan &amp; zoom with two fingers. Add the studio to your Home Screen — it works offline.</li>
       </ul>
       <h3>Touch gestures (phone &amp; tablet)</h3>
@@ -337,6 +340,13 @@
 <script src="data/glyphs-latin.js"></script>
 <script src="data/glyphs-latin-extra.js"></script>
 <script src="js/i18n.js"></script>
+<!-- Community translations (Mon, Shan, S'gaw Karen, …) register here.
+     Add your language in ONE file — see docs/TRANSLATING.md — then
+     uncomment its line:
+<script src="js/lang/mnw.js"></script>
+<script src="js/lang/shn.js"></script>
+<script src="js/lang/ksw.js"></script>
+-->
 <script src="js/guidefont.js"></script>
 <script src="js/store.js"></script>
 <script src="js/outline.js"></script>

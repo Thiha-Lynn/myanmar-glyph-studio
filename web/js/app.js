@@ -49,11 +49,28 @@
   }
 
   // ---- language --------------------------------------------------------
+  // The button cycles through every registered language (en, my, and any
+  // community language that called I18N.register) showing the NEXT one.
   function applyLang() {
     window.I18N.set(prefs.lang);
-    $("#btnLang").textContent = prefs.lang === "my" ? "En" : "မြ";
+    prefs.lang = window.I18N.lang; // normalized (unknown codes → en)
+    var langs = window.I18N.available();
+    var idx = 0;
+    langs.forEach(function (l, i) { if (l.code === prefs.lang) idx = i; });
+    var next = langs[(idx + 1) % langs.length];
+    $("#btnLang").textContent = next.button;
+    $("#btnLang").title = "Language / ဘာသာစကား → " + next.name;
     buildBrowser();
     if (current) selectGlyph(current);
+  }
+
+  function cycleLang() {
+    var langs = window.I18N.available();
+    var idx = 0;
+    langs.forEach(function (l, i) { if (l.code === prefs.lang) idx = i; });
+    prefs.lang = langs[(idx + 1) % langs.length].code;
+    savePrefs();
+    applyLang();
   }
 
   // ---- glyph browser -----------------------------------------------------
@@ -131,6 +148,8 @@
 
   function selectGlyph(g) {
     current = g;
+    // shareable deep link — issues can point at the exact glyph to draw
+    try { history.replaceState(null, "", "#g=" + g.name); } catch (e) {}
     window.Editor.setGlyph(g);
     $("#glyphTitle").textContent = g.label;
     $("#glyphName").textContent = g.name +
@@ -456,6 +475,63 @@
       this.value = "";
     });
 
+    // share one glyph as a text snippet — contributions without Git:
+    // draw, Copy glyph, paste the snippet into an issue or chat; a
+    // maintainer (or any user) pastes it back into their studio
+    $("#btnGlyphCopy").addEventListener("click", function () {
+      if (!current) return;
+      var data = window.Store.getGlyph(current.name);
+      if (!data.strokes.length) { toast(window.I18N.t("glyphEmpty")); return; }
+      var payload = JSON.stringify({
+        format: "mm-glyph-studio-glyph", version: 1,
+        name: current.name, glyph: data
+      });
+      var done = function () { toast(window.I18N.t("glyphCopied")); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(payload).then(done, function () {
+          window.prompt(window.I18N.t("glyphCopyManual"), payload);
+        });
+      } else {
+        window.prompt(window.I18N.t("glyphCopyManual"), payload);
+      }
+    });
+    $("#btnGlyphPaste").addEventListener("click", function () {
+      if (!current) return;
+      var handle = function (text) {
+        if (!text) return;
+        try {
+          var obj = JSON.parse(text);
+          if (obj.format !== "mm-glyph-studio-glyph" || !obj.glyph ||
+              !Array.isArray(obj.glyph.strokes) || !obj.glyph.strokes.length) {
+            throw new Error("no strokes found");
+          }
+          if (obj.name && obj.name !== current.name &&
+              !confirm(window.I18N.t("glyphPasteMismatch") +
+                       " (" + obj.name + " → " + current.name + ")")) return;
+          window.Editor.addStrokes(obj.glyph.strokes);
+          var cur = window.Store.getGlyph(current.name);
+          if (obj.glyph.advance != null && cur.advance == null) {
+            cur.advance = obj.glyph.advance;
+            $("#advanceInput").value = cur.advance;
+          }
+          if (obj.name === current.name && obj.glyph.anchors) {
+            cur.anchors = Object.assign({}, cur.anchors, obj.glyph.anchors);
+          }
+          window.Store.emit();
+          toast(obj.glyph.strokes.length + " " + window.I18N.t("glyphPasted"));
+        } catch (e) {
+          alert("Not a glyph snippet: " + e.message);
+        }
+      };
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        navigator.clipboard.readText().then(handle, function () {
+          handle(window.prompt(window.I18N.t("glyphPastePrompt"), ""));
+        });
+      } else {
+        handle(window.prompt(window.I18N.t("glyphPastePrompt"), ""));
+      }
+    });
+
     // guide font: trace over a different face (stays on this device)
     $("#btnGuideFont").addEventListener("click", function () {
       if (window.GuideFont && window.GuideFont.isCustom()) {
@@ -498,10 +574,7 @@
       prefs.theme = prefs.theme === "auto" ? "light" : prefs.theme === "light" ? "dark" : "auto";
       savePrefs(); applyTheme();
     });
-    $("#btnLang").addEventListener("click", function () {
-      prefs.lang = prefs.lang === "my" ? "en" : "my";
-      savePrefs(); applyLang();
-    });
+    $("#btnLang").addEventListener("click", cycleLang);
 
     // focus mode
     $("#btnFocus").addEventListener("click", function () {
@@ -643,6 +716,10 @@
     { label: "ျြွှ", text: "ကျောင်း ကြီး ကျွန် မြွှေ" },
     { label: "ုူ", text: "ကုန် ပူ နူး ကူး" },
     { label: "၀-၉", text: "၀၁၂၃၄၅၆၇၈၉ ၊ ။" },
+    // minority-language lines (Extended-A letters get exercised too)
+    { label: "မန်", text: "လိက်ဂကူမန် ပၠန်" },
+    { label: "တႆး", text: "မႂ်ႇသုင်ၶႃႈ လိၵ်ႈတႆး" },
+    { label: "ကညီ", text: "ပှၤကညီ" },
     { label: "ပန်ဂရမ်", text: "သီဟိုဠ်မှ ဉာဏ်ကြီးရှင်သည် အာယုဝဍ္ဎနဆေးညွှန်းစာကို ဇလွန်ဈေးဘေး ဗာဒံပင်ထက် အဓိဋ္ဌာန်လျက် ဂဃနဏဖတ်ခဲ့သည်။" }
   ];
 
@@ -725,7 +802,19 @@
     $("#fontName").value = window.Store.meta.fontName;
     $("#authorName").value = window.Store.meta.author;
     $("#previewText").textContent = $("#previewInput").value;
-    selectGlyph(window.GLYPHS[0]);
+    // deep link: #g=<glyphName> opens the studio at that glyph
+    var glyphFromHash = function () {
+      var m = location.hash.match(/^#g=([A-Za-z0-9._-]+)/);
+      if (!m) return null;
+      var hit = null;
+      window.GLYPHS.forEach(function (g) { if (g.name === m[1]) hit = g; });
+      return hit;
+    };
+    window.addEventListener("hashchange", function () {
+      var g = glyphFromHash();
+      if (g && (!current || current.name !== g.name)) selectGlyph(g);
+    });
+    selectGlyph(glyphFromHash() || window.GLYPHS[0]);
     var TOOLS = ["select", "direct", "brush", "pen", "line", "rect", "circle", "eraser"];
     window.Editor.tool = TOOLS.indexOf(prefs.tool) >= 0 ? prefs.tool : "brush";
     syncRail();

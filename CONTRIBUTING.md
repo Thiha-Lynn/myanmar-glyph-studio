@@ -8,7 +8,14 @@ a single well-drawn glyph, a bug report, a translated hint, a test sentence.
 ### 1. Draw glyphs for a community font
 Open the studio, draw, click **Save**, and open a pull request that
 adds or updates your `.glyphstudio.json` under `projects/<font-name>/`
-(create the folder on first contribution). One font family = one folder =
+(create the folder on first contribution).
+
+**No Git? No problem.** Draw a glyph, press **⚙ → Copy glyph**, and
+paste the text snippet into a GitHub issue or Discussion — a maintainer
+will land it in the family with your name in the credits. (Anyone can
+paste a snippet back into their own studio with **⚙ → Paste glyph**.)
+Every glyph also has a shareable address (the `#g=…` in the URL), so an
+issue can point you at exactly the letter it needs. One font family = one folder =
 one style owner (see below). You can also draw on paper: vectorize the
 scan (Inkscape/Illustrator trace) and use **Import SVG**. If a vowel sign
 sits wrong, fix it yourself with the **⚓ Anchors** mode — no font editor
