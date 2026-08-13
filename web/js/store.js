@@ -6,17 +6,22 @@
  *   font units, 1000 UPM, y grows UP, baseline at y = 0.
  *   Body height guide at y = 550, ascender +900, descender -600.
  *
- * Project JSON schema (version 1):
+ * Project JSON schema (version 1; every addition is optional/backward
+ * compatible):
  * {
  *   "format": "mm-glyph-studio", "version": 1,
  *   "meta": { "fontName", "styleName", "author", "license": "OFL-1.1" },
  *   "glyphs": {
  *     "<glyphName>": {
  *       "advance": <number|null>,          // null = auto from guide/bbox
- *       "strokes": [ { "width": <units>, "points": [[x,y], ...] }, ... ]
- *     }                    // points may be [x,y,w] — w = per-point width
- *   }                      // in font units, recorded from stylus pressure
+ *       "strokes": [ { "width": <units>, "points": [[x,y], ...] }, ... ],
+ *       "anchors": { "top": [x,y], ... }   // optional: mark anchors the
+ *     }                                    //   contributor dragged; auto
+ *   }                                      //   placed when absent
  * }
+ * Stroke points may be [x,y,w] — w = per-point width in font units,
+ * recorded from stylus pressure. A stroke may instead be a filled contour
+ * { "fill": true, "points": [...] } (closed outline, e.g. imported SVG).
  */
 (function () {
   "use strict";
@@ -76,11 +81,21 @@
     },
 
     toJSON: function () {
+      // omit untouched glyph records (browsing the sidebar creates empty
+      // ones via getGlyph) so project files and PR diffs stay clean
+      var glyphs = {};
+      Object.keys(this.glyphs).forEach(function (name) {
+        var g = Store.glyphs[name];
+        if (!g) return;
+        var hasInk = g.strokes && g.strokes.length;
+        var hasAnchors = g.anchors && Object.keys(g.anchors).length;
+        if (hasInk || hasAnchors || g.advance != null) glyphs[name] = g;
+      });
       return {
         format: "mm-glyph-studio",
         version: 1,
         meta: this.meta,
-        glyphs: this.glyphs
+        glyphs: glyphs
       };
     },
 

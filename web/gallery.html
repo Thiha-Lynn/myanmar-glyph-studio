@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#a8352f">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<title>Font Gallery — Myanmar Glyph Studio</title>
+<style>
+  :root {
+    --bg: #faf7f2; --card: #ffffff; --ink: #26211c; --muted: #7a7168;
+    --line: #e4ddd2; --accent: #a8352f; --accent-soft: #f6e8e7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171412; --card: #211d1a; --ink: #ece6dd; --muted: #a1988d;
+      --line: #37312b; --accent: #e06a63; --accent-soft: #3a2422;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .mm { font-family: Padauk, "Myanmar MN", "Noto Sans Myanmar", "Myanmar Text", sans-serif; }
+  header {
+    display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: baseline;
+    padding: 18px 22px 6px;
+  }
+  header h1 { font-size: 22px; margin: 0; }
+  header .sub { color: var(--muted); }
+  header a.back {
+    margin-left: auto; color: var(--accent); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
+    background: var(--card);
+  }
+  .tryrow {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    padding: 10px 22px 4px;
+  }
+  .tryrow input {
+    flex: 1 1 300px; font-size: 18px; padding: 8px 12px;
+    border: 1px solid var(--line); border-radius: 8px;
+    background: var(--card); color: var(--ink);
+  }
+  .tryrow button {
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 15px;
+  }
+  .tryrow button:hover { border-color: var(--accent); color: var(--accent); }
+  #grid {
+    display: grid; gap: 16px; padding: 16px 22px 40px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 12px; padding: 16px 18px; display: flex;
+    flex-direction: column; gap: 8px;
+  }
+  .card h2 { margin: 0; font-size: 17px; }
+  .card .meta { color: var(--muted); font-size: 13px; }
+  .card .preview {
+    font-size: 34px; line-height: 1.7; min-height: 74px;
+    overflow-wrap: anywhere; padding: 6px 2px;
+  }
+  .card .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+  .card .actions a {
+    color: var(--accent); text-decoration: none; font-size: 14px;
+    border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px;
+  }
+  .card .actions a:hover { background: var(--accent-soft); }
+  .badge {
+    display: inline-block; background: var(--accent-soft); color: var(--accent);
+    border-radius: 6px; padding: 1px 8px; font-size: 12px;
+  }
+  #empty {
+    margin: 30px 22px; padding: 22px; border: 1px dashed var(--line);
+    border-radius: 12px; color: var(--muted); max-width: 720px;
+  }
+  #empty code { background: var(--accent-soft); padding: 1px 6px; border-radius: 5px; }
+  footer { padding: 0 22px 30px; color: var(--muted); font-size: 13px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Font Gallery <span class="mm">· ဖောင့်ပြခန်း</span></h1>
+  <span class="sub">community fonts made with the Glyph Studio — live preview, free download (OFL)</span>
+  <a class="back" href="index.html">✏️ Open the studio</a>
+</header>
+
+<div class="tryrow">
+  <input id="tryText" class="mm" value="မင်္ဂလာပါ — ကျွန်ုပ်တို့ မြန်မာစာ ၁၂၃" spellcheck="false"
+         aria-label="Preview text for every font">
+  <button class="mm" data-t="စက္ကူ ဗုဒ္ဓ မန္တလေး">က္က</button>
+  <button class="mm" data-t="သင်္ဘော အင်္ဂါ">င်္</button>
+  <button class="mm" data-t="ကျောင်း ကြီး ကျွန် မြွှေ">ျြွှ</button>
+  <button class="mm" data-t="၀၁၂၃၄၅၆၇၈၉ ၊ ။">၀-၉</button>
+  <button class="mm" data-t="သီဟိုဠ်မှ ဉာဏ်ကြီးရှင်သည် အာယုဝဍ္ဎနဆေးညွှန်းစာကို ဇလွန်ဈေးဘေး ဗာဒံပင်ထက် အဓိဋ္ဌာန်လျက် ဂဃနဏဖတ်ခဲ့သည်။">ပန်ဂရမ်</button>
+</div>
+
+<div id="grid"></div>
+
+<div id="empty" hidden>
+  <strong>No fonts here yet.</strong> The gallery lists every family under
+  <code>projects/</code> that has a built TTF. Build one with
+  <code>pipeline/build.sh</code>, then run
+  <code>python3 pipeline/make_gallery.py</code> to refresh this page — or just
+  push: the deploy workflow regenerates it automatically.
+  <span class="mm">ဖောင့်များ မရှိသေးပါ — projects/ ထဲသို့ ပထမဆုံးဖောင့် ထည့်ပေးပါ။</span>
+</div>
+
+<footer>
+  Fonts are released under the
+  <a href="https://openfontlicense.org" target="_blank" rel="noopener">SIL Open Font License 1.1</a>
+  — free to use, bundle and sell with your apps, games and documents.
+  Want yours here? Draw it in the <a href="index.html">studio</a> and open a pull request.
+</footer>
+
+<script src="js/gallery.js"></script>
+</body>
+</html>

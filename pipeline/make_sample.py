@@ -50,10 +50,9 @@ the wide medial-ra guide "မြ" yields the narrow form), the script retries
 with equivalent alternate context characters (e.g. "ဃြ") until the shape
 differs from the plain sibling glyph.
 
-One glyph is added beyond the 112 inventory entries: "virama-myanmar"
-(U+1039).  The studio never shows it — text-wise it is consumed by stacking
-— but json_to_ufo.py's blwf/rphf substitutions reference it, so the demo
-font needs it drawn for subjoined forms and kinzi to shape.
+The virama (U+1039) is NOT generated: it is invisible in rendered Burmese,
+and json_to_ufo.py synthesizes the empty zero-width control glyph whenever
+subjoined forms or the kinzi are present.
 
 Only stdlib + fontTools + uharfbuzz are required; Pillow is needed only for
 the optional --debug PNG dumps.
@@ -219,10 +218,8 @@ def build_inventory():
                                      for b in DESCENDER_ALT_BASES],
                          differ_from=plain))
 
-    # Synthetic 113th glyph: visible virama (U+1039).  Required by the
-    # blwf/rphf feature rules json_to_ufo.py generates.
-    inv.append(entry("virama-myanmar", DOTTED + VIRAMA, "signs",
-                     exclude={0}))
+    # No virama entry: U+1039 is invisible in rendered Burmese, and
+    # json_to_ufo.py synthesizes the empty zero-width glyph it needs.
     return inv
 
 

@@ -34,6 +34,9 @@
     guideOpacity: 0.22,
     guideSize: 1000,   // font units
     tool: "pen",      // pen | line | circle | eraser
+    anchorMode: false, // drag mark-attachment anchors instead of drawing
+    _dragAnchor: null, // {name} while an anchor is being dragged
+    _lastAnchorTap: null, // {name, t} for double-tap-to-reset
     ghostName: null,   // another glyph's strokes shown as a style reference
     fillPreview: false,
     pressureEnabled: true,
@@ -91,8 +94,17 @@
     setGlyph: function (g) {
       this.glyph = g;
       this.liveStroke = null;
+      this._dragAnchor = null;
       this.undoStack = [];
       this.redoStack = [];
+      this.render();
+    },
+
+    setAnchorMode: function (on) {
+      this.anchorMode = !!on;
+      this.liveStroke = null;
+      this._dragAnchor = null;
+      this._stabPoint = null;
       this.render();
     },
 
@@ -194,6 +206,25 @@
         return;
       }
 
+      if (this.anchorMode) {
+        // drag an anchor; double-tap resets it to auto; empty press pans
+        var hit = this.anchorAt(scr[0], scr[1]);
+        if (hit) {
+          var lastTap = this._lastAnchorTap;
+          this._lastAnchorTap = { name: hit.name, t: e.timeStamp };
+          if (lastTap && lastTap.name === hit.name &&
+              e.timeStamp - lastTap.t < 400) {
+            this.resetAnchor(hit.name);
+            return;
+          }
+          this._preSnapshot = this.snapshot();
+          this._dragAnchor = { name: hit.name };
+        } else {
+          this.pointers[e.pointerId].panning = true;
+        }
+        return;
+      }
+
       var drawsInk = e.pointerType !== "touch" || this.touchDraws;
       if (!drawsInk) {
         // single-finger pan mode (stylus workflow)
@@ -287,6 +318,16 @@
 
       if (rec) { rec.x = scr[0]; rec.y = scr[1]; }
       var p = this.toUnits(e);
+
+      if (this._dragAnchor) {
+        var gd = window.Store.getGlyph(this.glyph.name);
+        if (!gd.anchors) gd.anchors = {};
+        gd.anchors[this._dragAnchor.name] = [p[0], p[1]];
+        this.render();
+        return;
+      }
+      if (this.anchorMode) return;
+
       if (this.tool === "eraser" && e.buttons) { this.eraseAt(p); return; }
       if (!this.liveStroke) return;
 
@@ -318,7 +359,15 @@
     up: function (e) {
       delete this.pointers[e.pointerId];
       if (this.activeTouches().length < 2) this.gesture = null;
-      if (!this.glyph || !this.liveStroke) return;
+      if (!this.glyph) return;
+      if (this._dragAnchor) {
+        this._dragAnchor = null;
+        this.pushUndo();          // uses the pre-drag snapshot
+        window.Store.emit();
+        this.render();
+        return;
+      }
+      if (!this.liveStroke) return;
       if (this.liveStroke.points.length >= 1) {
         this.pushUndo();
         window.Store.getGlyph(this.glyph.name).strokes.push(this.liveStroke);
@@ -352,9 +401,49 @@
       }
     },
 
+    // ---- anchors ---------------------------------------------------------
+    anchorList: function () {
+      if (!this.glyph) return [];
+      return window.Anchors.listFor(
+        this.glyph, window.Store.getGlyph(this.glyph.name));
+    },
+
+    anchorAt: function (px, py) {
+      var list = this.anchorList();
+      for (var i = 0; i < list.length; i++) {
+        var dx = px - this.ux(list[i].x);
+        var dy = py - this.uy(list[i].y);
+        if (dx * dx + dy * dy <= 18 * 18) return list[i];
+      }
+      return null;
+    },
+
+    resetAnchor: function (name) {
+      var g = window.Store.getGlyph(this.glyph.name);
+      if (!g.anchors || !(name in g.anchors)) return;
+      this._preSnapshot = this.snapshot();
+      delete g.anchors[name];
+      if (!Object.keys(g.anchors).length) delete g.anchors;
+      this._dragAnchor = null;
+      this.pushUndo();
+      window.Store.emit();
+      this.render();
+    },
+
     // ---- history -------------------------------------------------------
     snapshot: function () {
-      return JSON.stringify(window.Store.getGlyph(this.glyph.name).strokes);
+      var g = window.Store.getGlyph(this.glyph.name);
+      return JSON.stringify({ strokes: g.strokes, anchors: g.anchors || null });
+    },
+    restore: function (snap) {
+      var g = window.Store.getGlyph(this.glyph.name);
+      var s = JSON.parse(snap);
+      if (Object.prototype.toString.call(s) === "[object Array]") {
+        g.strokes = s; // legacy strokes-only snapshot
+        return;
+      }
+      g.strokes = s.strokes || [];
+      if (s.anchors) g.anchors = s.anchors; else delete g.anchors;
     },
     pushUndo: function () {
       // snapshot BEFORE the change being made: callers snapshot pre-mutation
@@ -366,8 +455,7 @@
     undo: function () {
       if (!this.undoStack.length || !this.glyph) return;
       this.redoStack.push(this.snapshot());
-      window.Store.getGlyph(this.glyph.name).strokes =
-        JSON.parse(this.undoStack.pop());
+      this.restore(this.undoStack.pop());
       window.Store.emit();
       if (this.onInkChange) this.onInkChange(this.glyph.name);
       this.render();
@@ -375,8 +463,7 @@
     redo: function () {
       if (!this.redoStack.length || !this.glyph) return;
       this.undoStack.push(this.snapshot());
-      window.Store.getGlyph(this.glyph.name).strokes =
-        JSON.parse(this.redoStack.pop());
+      this.restore(this.redoStack.pop());
       window.Store.emit();
       if (this.onInkChange) this.onInkChange(this.glyph.name);
       this.render();
@@ -406,6 +493,18 @@
       data.strokes.forEach(function (s) {
         s.points.forEach(function (p) { p[0] += dx; });
       });
+      this.pushUndo();
+      window.Store.emit();
+      if (this.onInkChange) this.onInkChange(this.glyph.name);
+      this.render();
+    },
+
+    /* Append ready-made strokes (e.g. from an SVG import) with undo. */
+    addStrokes: function (strokes) {
+      if (!this.glyph || !strokes || !strokes.length) return;
+      this._preSnapshot = this.snapshot();
+      var dst = window.Store.getGlyph(this.glyph.name);
+      dst.strokes = dst.strokes.concat(strokes);
       this.pushUndo();
       window.Store.emit();
       if (this.onInkChange) this.onInkChange(this.glyph.name);
@@ -533,7 +632,7 @@
         ctx.lineJoin = "round";
         window.Store.getGlyph(this.ghostName).strokes.forEach(function (st) {
           if (!st.points.length) return;
-          ctx.lineWidth = Math.max(1, st.width * s);
+          ctx.lineWidth = Math.max(1, (st.width || 2) * s);
           ctx.beginPath();
           st.points.forEach(function (p, i) {
             var x = self.ux(p[0]), y = self.uy(p[1]);
@@ -562,7 +661,7 @@
       ctx.lineJoin = "round";
       strokes.forEach(function (st) {
         if (!st.points.length) return;
-        if (self.fillPreview || hasPressure(st)) {
+        if (st.fill || self.fillPreview || hasPressure(st)) {
           // faithful filled rendering (also used for pressure strokes)
           var poly = window.Outline.strokeToPolygon(st);
           if (!poly) return;
@@ -596,6 +695,34 @@
         }
       });
       ctx.restore();
+
+      if (this.anchorMode) this.renderAnchors(ctx, colAccent, colBg);
+    },
+
+    /* Anchor handles: solid ring = dragged (stored), dashed ring = auto. */
+    renderAnchors: function (ctx, colAccent, colBg) {
+      var self = this;
+      this.anchorList().forEach(function (a) {
+        var x = self.ux(a.x), y = self.uy(a.y);
+        ctx.save();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = colAccent;
+        ctx.fillStyle = colBg;
+        if (!a.manual) ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.arc(x, y, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(x - 14, y); ctx.lineTo(x + 14, y);
+        ctx.moveTo(x, y - 14); ctx.lineTo(x, y + 14);
+        ctx.stroke();
+        ctx.fillStyle = colAccent;
+        ctx.font = "11px system-ui, sans-serif";
+        ctx.fillText(a.name, x + 13, y - 11);
+        ctx.restore();
+      });
     }
   };
 

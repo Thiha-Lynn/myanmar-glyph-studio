@@ -12,6 +12,7 @@ python3 "$(dirname "$0")/json_to_ufo.py" "$PROJECT" "$OUT"
 
 UFO=$(ls -d "$OUT"/*.ufo | head -1)
 fontmake -u "$UFO" -o ttf --output-dir "$OUT"
+python3 "$(dirname "$0")/postbuild.py" "$OUT"/*.ttf
 
 echo
 echo "Done. TTF written to $OUT/"

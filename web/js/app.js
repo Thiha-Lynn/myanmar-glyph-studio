@@ -249,10 +249,35 @@
       this.value = "";
     });
     $("#btnCenter").addEventListener("click", function () { window.Editor.centerInk(); });
+    $("#btnAnchors").addEventListener("click", function () {
+      var on = !window.Editor.anchorMode;
+      window.Editor.setAnchorMode(on);
+      this.classList.toggle("active", on);
+      if (on) toast(window.I18N.t("anchorTip"));
+    });
     $("#btnSVG").addEventListener("click", function () {
       if (!current) return;
       try { window.FontExport.downloadSVG(current); }
       catch (e) { alert(e.message); }
+    });
+    $("#btnSVGImport").addEventListener("click", function () {
+      if (current) $("#svgFileInput").click();
+    });
+    $("#svgFileInput").addEventListener("change", function () {
+      if (!this.files.length || !current) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        try {
+          var res = window.SVGImport.parse(reader.result);
+          if (!res.strokes.length) { alert(window.I18N.t("svgEmpty")); return; }
+          window.Editor.addStrokes(res.strokes);
+          toast(res.strokes.length + " " + window.I18N.t("svgImported"));
+        } catch (e) {
+          alert("SVG import failed: " + e.message);
+        }
+      };
+      reader.readAsText(this.files[0]);
+      this.value = "";
     });
 
     // zoom
@@ -302,6 +327,7 @@
       else if (e.key === "]") step(1);
       else if (e.key === "n") nextUndrawn();
       else if (e.key === "e") setTool("eraser");
+      else if (e.key === "a") $("#btnAnchors").click();
       else if (e.key === "p" || e.key === "b") setTool("pen");
       else if (e.key === "l") setTool("line");
       else if (e.key === "o") setTool("circle");

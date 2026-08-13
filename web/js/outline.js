@@ -82,8 +82,14 @@
   /*
    * Expand one stroke {width, points} into one closed polygon
    * (array of [x, y]). Returns null for empty strokes.
+   * A stroke marked fill:true is already a closed contour (e.g. an
+   * imported SVG outline): its points ARE the polygon, no expansion.
    */
   function strokeToPolygon(stroke) {
+    if (stroke.fill) {
+      return (stroke.points && stroke.points.length >= 3)
+        ? stroke.points : null;
+    }
     var baseR = Math.max(1, stroke.width / 2);
     var pts = dedupe(stroke.points, baseR * 0.35);
     if (!pts.length) return null;

@@ -44,6 +44,12 @@
       return Math.round(w) || 600;
     };
 
+    var shiftX = function (polys, dx) {
+      return polys.map(function (poly) {
+        return poly.map(function (p) { return [p[0] + dx, p[1]]; });
+      });
+    };
+
     var included = 0;
     window.GLYPHS.forEach(function (g) {
       if (!window.Store.hasInk(g.name)) return;
@@ -53,10 +59,24 @@
       var adv = data.advance;
       if (adv == null) {
         var b = window.Outline.bounds(polys);
-        adv = g.mark ? Math.max(0, Math.round(b.xMax)) : Math.round(b.xMax + 60);
-        var guideAdv = measure(g);
-        // prefer the guide's advance when the drawing roughly matches it
-        if (!g.mark && Math.abs(guideAdv - adv) < 250) adv = guideAdv;
+        var besideCarrier = g.guide && g.guide.charAt(0) === "◌";
+        if (g.mark) {
+          // marks take no advance; ink sketched beside the ◌ carrier is
+          // shifted back so it lands roughly over the preceding base
+          // (the full pipeline positions marks properly via GPOS anchors)
+          adv = 0;
+          if (besideCarrier) polys = shiftX(polys, -measure({ guide: "◌" }));
+        } else if (besideCarrier && b.xMin > 60) {
+          // spacing sign sketched beside the carrier: left-align the ink
+          var dx = 60 - b.xMin;
+          polys = shiftX(polys, dx);
+          adv = Math.round(b.xMax + dx + 60);
+        } else {
+          adv = Math.round(b.xMax + 60);
+          var guideAdv = measure(g);
+          // prefer the guide's advance when the drawing roughly matches it
+          if (Math.abs(guideAdv - adv) < 250) adv = guideAdv;
+        }
       }
       var spec = {
         name: g.name,
@@ -117,8 +137,11 @@
       var vb = [Math.floor(b.xMin - pad), Math.floor(-b.yMax - pad),
                 Math.ceil(b.xMax - b.xMin + pad * 2),
                 Math.ceil(b.yMax - b.yMin + pad * 2)].join(" ");
+      // data-glyphstudio-units marks the file as font-unit exact, so
+      // re-importing it (Import SVG) restores the identical coordinates
       var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vb +
-        '"><path d="' + d + '" fill="currentColor" fill-rule="nonzero"/></svg>\n';
+        '" data-glyphstudio-units="font"><path d="' + d +
+        '" fill="currentColor" fill-rule="nonzero"/></svg>\n';
       var blob = new Blob([svg], { type: "image/svg+xml" });
       var a = document.createElement("a");
       a.href = URL.createObjectURL(blob);

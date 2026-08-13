@@ -14,11 +14,13 @@ What this adds beyond the in-browser draft TTF:
       - blwf: subjoined (stacked) consonant substitutions  (က + ္ + က → stack)
       - rphf: kinzi
       - contextual variants (wide medial-ra, short u/uu) when drawn
-  * auto-placed mark anchors (top/bottom) so ufo2ft's MarkFeatureWriter
-    emits GPOS mark/mkmk positioning at build time.
+  * mark anchors (top/bottom on bases, _top/_bottom plus a stacking anchor
+    on marks) so ufo2ft's MarkFeatureWriter emits GPOS mark/mkmk positioning
+    at build time.
 
-The auto-anchors are a starting point, not a finish line: open the UFO in a
-font editor to refine anchor positions once the sketches are in.
+Anchors are auto-placed from the ink; positions dragged in the studio's
+anchor mode (stored per glyph as "anchors": {name: [x, y]}) override the
+auto placement. The UFO stays editable in any font editor for finer work.
 
 Stroke-to-outline expansion mirrors web/js/outline.js — keep them in sync.
 """
@@ -83,20 +85,32 @@ CODEPOINTS = {f"{n}-myanmar": cp for cp, n in CONSONANTS}
 CODEPOINTS.update(OTHER_CODEPOINTS)
 
 _UNI_NAME = re.compile(r"^uni([0-9A-Fa-f]{4})$")
+_U_NAME = re.compile(r"^u([0-9A-Fa-f]{5,6})$")  # supplementary plane (u116D0…)
 
 
 def name_to_codepoint(name):
-    """Friendly names via CODEPOINTS; uniXXXX production names directly.
+    """Friendly names via CODEPOINTS; uniXXXX/uXXXXX production names directly.
 
     The extended-coverage and optional-Latin inventories
-    (web/data/glyphs-extended.js, glyphs-latin.js) use uniXXXX names, so
+    (web/data/glyphs-extended.js, glyphs-extended-ab.js, glyphs-latin.js)
+    use uniXXXX names (uXXXXX beyond the BMP, e.g. Myanmar Extended-C), so
     the pipeline needs no per-character tables for them.
     """
     cp = CODEPOINTS.get(name)
     if cp:
         return cp
-    m = _UNI_NAME.match(name)
+    m = _UNI_NAME.match(name) or _U_NAME.match(name)
     return int(m.group(1), 16) if m else None
+
+
+# Blocks whose letters act as mark-carrying bases: core Myanmar, Extended-B
+# (Tai Laing, Shan Pali), Extended-A (Khamti Shan), Extended-C (Unicode 16).
+MYANMAR_BLOCKS = ((0x1000, 0x109F), (0xA9E0, 0xA9FF),
+                  (0xAA60, 0xAA7F), (0x116D0, 0x116FF))
+
+
+def in_myanmar_blocks(cp):
+    return any(lo <= cp <= hi for lo, hi in MYANMAR_BLOCKS)
 
 # marks that attach ABOVE a base
 TOP_MARKS = {
@@ -111,6 +125,16 @@ BOTTOM_MARKS = {
 } | {f"{n}-myanmar.sub" for _, n in CONSONANTS}
 
 BASE_NAMES = {f"{n}-myanmar" for _, n in CONSONANTS} | {"greatSa-myanmar"}
+
+# Signs that wrap around their base (medial ra): keep the sketched
+# coordinates (they are drawn around the guide base at the origin) and take
+# no advance — the engine draws the base into the wrap.
+WRAP_SIGNS = {"medialRa-myanmar", "medialRa-myanmar.wide"}
+
+# Anchor names the studio may store per glyph ("anchors": {name: [x, y]}).
+KNOWN_ANCHORS = {"top", "bottom", "_top", "_bottom"}
+
+SIGN_LSB = 60  # left sidebearing given to re-aligned spacing signs
 
 
 # ---------------------------------------------------------------------------
@@ -170,7 +194,14 @@ def _circle(cx, cy, r):
 
 
 def stroke_to_polygon(stroke):
-    """Points are [x, y] or [x, y, w] (per-point pressure width)."""
+    """Points are [x, y] or [x, y, w] (per-point pressure width).
+
+    A stroke marked "fill": true is already a closed contour (e.g. an
+    imported SVG outline): its points ARE the polygon, no expansion.
+    """
+    if stroke.get("fill"):
+        pts = stroke.get("points") or []
+        return pts if len(pts) >= 3 else None
     base_r = max(1.0, stroke["width"] / 2.0)
     pts = _dedupe(stroke["points"], base_r * 0.35)
     if not pts:
@@ -265,26 +296,39 @@ def build_ufo(project, out_dir):
     )
     if author:
         info.openTypeNameDesigner = author
+    # gasp: grid-fit + antialias at every size (fontbakery: gasp check)
+    info.openTypeGaspRangeRecords = [
+        {"rangeMaxPPEM": 0xFFFF, "rangeGaspBehavior": [0, 1, 2, 3]},
+    ]
 
-    # .notdef and space
+    # .notdef must be visible (a hollow box), per the OpenType spec
     notdef = font.newGlyph(".notdef")
     notdef.width = 600
+    pen = notdef.getPen()
+    pen.moveTo((80, 0)); pen.lineTo((520, 0))
+    pen.lineTo((520, 700)); pen.lineTo((80, 700)); pen.closePath()
+    pen.moveTo((140, 60)); pen.lineTo((140, 640))
+    pen.lineTo((460, 640)); pen.lineTo((460, 60)); pen.closePath()
+
+    # space and no-break space
     space = font.newGlyph("space")
     space.width = 500
     space.unicode = 0x20
+    nbspace = font.newGlyph("nbspace")
+    nbspace.width = 500
+    nbspace.unicode = 0xA0
 
     drawn = []
     for name, data in project.get("glyphs", {}).items():
+        if name == "virama-myanmar":
+            # U+1039 is invisible in rendered Burmese — ignore any sketched
+            # ink and let the synthesizer below emit the empty control glyph.
+            continue
         polys = polygons_for(data)
         if not polys:
             continue
-        g = font.newGlyph(name)
-        draw_glyph(g, polys)
-        x_min, y_min, x_max, y_max = poly_bounds(polys)
 
         cp = name_to_codepoint(name)
-        if cp:
-            g.unicode = cp
 
         # Mark classification: curated sets for the core Burmese inventory;
         # the Unicode category (Mn = non-spacing mark) for everything else,
@@ -293,45 +337,109 @@ def build_ufo(project, out_dir):
         if not is_mark and cp and name not in BASE_NAMES:
             is_mark = unicodedata.category(chr(cp)) == "Mn"
 
+        x_min, y_min, x_max, y_max = poly_bounds(polys)
         adv = data.get("advance")
+
+        # Spacing signs (Mc: aa, tall-aa, e-vowel, visarga, medial-ya and
+        # the extension equivalents) are sketched beside the ◌ carrier,
+        # which bakes the carrier's width into their coordinates. When the
+        # advance is automatic, left-align the ink so the sign gets a normal
+        # sidebearing instead of the carrier-sized gap.
+        is_spacing_sign = (not is_mark and cp is not None
+                           and unicodedata.category(chr(cp)) == "Mc"
+                           and name not in WRAP_SIGNS)
+        if adv is None and is_spacing_sign and x_min > SIGN_LSB:
+            dx = SIGN_LSB - x_min
+            polys = [[[p[0] + dx, p[1]] for p in poly] for poly in polys]
+            x_min += dx
+            x_max += dx
+
+        g = font.newGlyph(name)
+        draw_glyph(g, polys)
+        if cp:
+            g.unicode = cp
+
         if adv is None:
-            adv = 0 if is_mark else round(x_max + 60)
+            adv = 0 if (is_mark or name in WRAP_SIGNS) else round(x_max + 60)
         g.width = max(0, adv)
+
+        # ---- anchors: hand-placed positions from the studio win ----------
+        manual = data.get("anchors") or {}
+        placed = set()
+
+        def anchor(anchor_name, ax, ay, _g=g, _manual=manual, _placed=placed):
+            pos = _manual.get(anchor_name)
+            if (isinstance(pos, (list, tuple)) and len(pos) >= 2
+                    and all(isinstance(v, (int, float)) for v in pos[:2])):
+                ax, ay = pos[0], pos[1]
+            add_anchor(_g, anchor_name, ax, ay)
+            _placed.add(anchor_name)
 
         cx = (x_min + x_max) / 2
         cy = (y_min + y_max) / 2
-        is_myanmar_base = (cp and 0x1000 <= cp <= 0x109F and not is_mark
-                           and unicodedata.category(chr(cp)) == "Lo")
+        # U+25CC DOTTED CIRCLE also carries base anchors: shaping engines
+        # place it under isolated marks, and the mark must attach to it.
+        is_myanmar_base = bool(
+            cp and not is_mark
+            and ((in_myanmar_blocks(cp)
+                  and unicodedata.category(chr(cp)) == "Lo")
+                 or cp == 0x25CC))
+        # Marks carry the attaching _anchor plus a plain anchor on their
+        # outer side so further marks can stack on them (GPOS mkmk).
         if name in BASE_NAMES or (name not in TOP_MARKS
                                   and name not in BOTTOM_MARKS
                                   and is_myanmar_base):
-            add_anchor(g, "top", cx, max(y_max, BODY) + 40)
-            add_anchor(g, "bottom", cx, min(y_min, 0) - 40)
+            anchor("top", cx, max(y_max, BODY) + 40)
+            anchor("bottom", cx, min(y_min, 0) - 40)
         elif name in TOP_MARKS:
-            add_anchor(g, "_top", cx, y_min - 20)
+            anchor("_top", cx, y_min - 20)
+            anchor("top", cx, y_max + 20)
         elif name in BOTTOM_MARKS:
-            add_anchor(g, "_bottom", cx, y_max + 20)
+            anchor("_bottom", cx, y_max + 20)
+            anchor("bottom", cx, y_min - 20)
         elif is_mark:
             # extension-language mark: decide the attachment side from
             # where the ink was drawn relative to the letter body
             if cy >= BODY / 2:
-                add_anchor(g, "_top", cx, y_min - 20)
+                anchor("_top", cx, y_min - 20)
+                anchor("top", cx, y_max + 20)
             else:
-                add_anchor(g, "_bottom", cx, y_max + 20)
+                anchor("_bottom", cx, y_max + 20)
+                anchor("bottom", cx, y_min - 20)
+
+        # honor hand-placed anchors the heuristics would not have emitted
+        for anchor_name in sorted(set(manual) & (KNOWN_ANCHORS - placed)):
+            anchor(anchor_name, 0, 0)
 
         drawn.append(name)
 
     # The blwf/rphf rules consume U+1039 VIRAMA, but the studio never asks
     # contributors to draw it (it is invisible in rendered Burmese).  When
-    # any subjoined form exists, synthesize an empty zero-width virama so
-    # stacking works in every user-drawn font.
-    if "virama-myanmar" not in drawn and any(n.endswith(".sub") for n in drawn):
+    # any subjoined form or the kinzi exists, synthesize an empty zero-width
+    # virama so stacking and kinzi work in every user-drawn font.
+    if any(n.endswith(".sub") for n in drawn) or "kinzi-myanmar" in drawn:
         v = font.newGlyph("virama-myanmar")
         v.width = 0
         v.unicode = 0x1039
         drawn.append("virama-myanmar")
 
     font.features.text = generate_features(set(drawn))
+
+    # PostScript production names: the friendly source names carry hyphens,
+    # which are not valid in shipped glyph names. ufo2ft renames at compile
+    # time from this mapping (uniXXXX / uXXXXX, suffixes preserved).
+    ps_names = {}
+    for gname in drawn:
+        if gname == "kinzi-myanmar":
+            ps_names[gname] = "uni1004103A1039"  # AGL ligature form
+            continue
+        base, dot, suffix = gname.partition(".")
+        cp = name_to_codepoint(base if dot else gname)
+        if cp:
+            ps = f"uni{cp:04X}" if cp <= 0xFFFF else f"u{cp:04X}"
+            ps_names[gname] = ps + (dot + suffix if dot else "")
+    ps_names["nbspace"] = "uni00A0"
+    font.lib["public.postscriptNames"] = ps_names
 
     out_dir.mkdir(parents=True, exist_ok=True)
     ufo_path = out_dir / f"{family.replace(' ', '')}-{style}.ufo"
@@ -344,12 +452,18 @@ def build_ufo(project, out_dir):
 # ---------------------------------------------------------------------------
 
 def generate_features(drawn):
-    """Emit only rules whose glyphs were actually drawn."""
+    """Emit only rules whose glyphs were actually drawn.
+
+    Rules are written before any script statement so they register under
+    every declared languagesystem: DFLT (fallback shaping), mym2 (the
+    current Myanmar shaping model) and mymr (legacy engines).
+    """
     lines = [
         "# Auto-generated Myanmar shaping features (mym2 starter set).",
         "# Regenerated by json_to_ufo.py — refine by hand as the font matures.",
         "languagesystem DFLT dflt;",
         "languagesystem mym2 dflt;",
+        "languagesystem mymr dflt;",
         "",
     ]
 
@@ -361,7 +475,6 @@ def generate_features(drawn):
     ]
     if subs and "virama-myanmar" in drawn:
         lines.append("feature blwf {")
-        lines.append("  script mym2;")
         for base, sub in subs:
             lines.append(f"  sub virama-myanmar {base} by {sub};")
         lines.append("} blwf;")
@@ -370,7 +483,6 @@ def generate_features(drawn):
     # rphf: kinzi (nga + asat + virama, engine-reordered to follow the base)
     if {"kinzi-myanmar", "nga-myanmar", "asat-myanmar", "virama-myanmar"} <= drawn:
         lines.append("feature rphf {")
-        lines.append("  script mym2;")
         lines.append("  sub nga-myanmar asat-myanmar virama-myanmar by kinzi-myanmar;")
         lines.append("} rphf;")
         lines.append("")
@@ -385,7 +497,6 @@ def generate_features(drawn):
     if "medialRa-myanmar.wide" in drawn and "medialRa-myanmar" in drawn and wide_bases:
         lines.append(f"@WIDE_BASES = [{' '.join(wide_bases)}];")
         lines.append("feature pres {")
-        lines.append("  script mym2;")
         lines.append("  sub medialRa-myanmar' @WIDE_BASES by medialRa-myanmar.wide;")
         lines.append("} pres;")
         lines.append("")
@@ -393,17 +504,17 @@ def generate_features(drawn):
     # blws: short u/uu after bases with descenders or subjoined forms
     desc_ctx = [f"{n}-myanmar.sub" for _, n in CONSONANTS
                 if f"{n}-myanmar.sub" in drawn]
-    for base_v, alt_v in (("u-myanmar", "u-myanmar.alt"),
-                          ("uu-myanmar", "uu-myanmar.alt")):
-        if alt_v in drawn and base_v in drawn and desc_ctx:
-            lines.append(f"@DESC_{base_v.split('-')[0].upper()} = [{' '.join(desc_ctx)}];")
-    if any(f"{v}-myanmar.alt" in drawn for v in ("u", "uu")) and desc_ctx:
+    blws_rules = []
+    if desc_ctx:
+        for base_v, alt_v in (("u-myanmar", "u-myanmar.alt"),
+                              ("uu-myanmar", "uu-myanmar.alt")):
+            if alt_v in drawn and base_v in drawn:
+                cls = f"@DESC_{base_v.split('-')[0].upper()}"
+                lines.append(f"{cls} = [{' '.join(desc_ctx)}];")
+                blws_rules.append(f"  sub {cls} {base_v}' by {alt_v};")
+    if blws_rules:
         lines.append("feature blws {")
-        lines.append("  script mym2;")
-        if "u-myanmar.alt" in drawn and "u-myanmar" in drawn:
-            lines.append("  sub @DESC_U u-myanmar' by u-myanmar.alt;")
-        if "uu-myanmar.alt" in drawn and "uu-myanmar" in drawn:
-            lines.append("  sub @DESC_UU uu-myanmar' by uu-myanmar.alt;")
+        lines.extend(blws_rules)
         lines.append("} blws;")
         lines.append("")
 

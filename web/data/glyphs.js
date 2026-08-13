@@ -142,6 +142,18 @@
     });
   });
 
+  // U+25CC DOTTED CIRCLE: shaping engines insert it under isolated or
+  // orphaned marks, so a complete font wants its own (a ring of small dots).
+  // uniXXXX production name — the pipeline resolves the codepoint itself
+  // and gives it base anchors so marks can attach to it.
+  glyphs.push({
+    name: "uni25CC", cp: 0x25CC, label: DOTTED,
+    guide: DOTTED,
+    hint: "Dotted circle — shown under a lone vowel sign or mark; draw a ring of small dots",
+    hintMy: "စက်ဝိုင်းအစက် — သီးခြားသရသင်္ကေတအောက်တွင် ပြသည်; အစက်ကွင်းငယ်ကို ဆွဲပါ",
+    mark: false, group: "punctuation"
+  });
+
   // ---- Unencoded variant glyphs required for real shaping -----------------
   // Subjoined (stacked) consonant forms: the guide shows the stack (e.g. က္က);
   // the contributor draws ONLY the lower, subjoined letter.

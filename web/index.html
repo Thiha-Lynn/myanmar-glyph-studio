@@ -28,6 +28,7 @@
     <label><span data-i18n="yourName">Your name</span> <input id="authorName" type="text" spellcheck="false" data-i18n-ph="yourNamePh" placeholder="for the OFL credit"></label>
   </div>
   <div class="project-actions">
+    <a href="gallery.html" class="btn icon-btn" title="Community font gallery / ဖောင့်ပြခန်း" style="text-decoration:none">🖼</a>
     <button id="btnLang" class="btn icon-btn" title="Switch language / ဘာသာစကား">မြ</button>
     <button id="btnTheme" class="btn icon-btn" title="Theme: auto / light / dark">🌗</button>
     <button id="btnHelp" class="btn" data-i18n="help" title="How to use your exported font">Help</button>
@@ -100,7 +101,10 @@
           <select id="copySelect" class="sel mm"><option value="">—</option></select>
         </label>
         <button id="btnCenter" class="btn" data-i18n="center" title="Center the ink horizontally in the advance width">Center</button>
+        <button id="btnAnchors" class="btn tool" title="Anchor mode (A) — drag the points where marks attach; double-click an anchor to reset it">⚓ <span data-i18n="anchors">Anchors</span></button>
         <button id="btnSVG" class="btn" data-i18n="svg" title="Download this glyph as an SVG for design tools">SVG</button>
+        <button id="btnSVGImport" class="btn" data-i18n="importSvg" title="Import an SVG's outlines onto this glyph — the path for vectorized paper sketches (Inkscape/Illustrator trace)">Import SVG</button>
+        <input id="svgFileInput" type="file" accept=".svg,image/svg+xml" hidden>
         <label title="Horizontal space this glyph occupies (font units)"><span data-i18n="advance">Advance</span> <input id="advanceInput" type="number" min="0" max="2000" step="10" class="advance"></label>
       </div>
     </div>
@@ -158,11 +162,12 @@
 }</pre>
       <h3>Tools &amp; shortcuts</h3>
       <ul>
-        <li><strong>P</strong> pen · <strong>L</strong> line · <strong>O</strong> circle · <strong>E</strong> eraser</li>
+        <li><strong>P</strong> pen · <strong>L</strong> line · <strong>O</strong> circle · <strong>E</strong> eraser · <strong>A</strong> anchor mode</li>
         <li><strong>Ctrl/Cmd+Z</strong> undo · <strong>Ctrl/Cmd+Shift+Z</strong> redo</li>
         <li><strong>[ ]</strong> previous / next glyph · <strong>N</strong> next empty glyph</li>
         <li><strong>+ − 0</strong> zoom in / out / fit · <strong>F</strong> focus mode</li>
         <li><strong>Ghost</strong> overlays a glyph you already drew (e.g. your က) so every letter keeps the same style; <strong>Copy from</strong> duplicates strokes between similar letters (ခ→ဂ, ပ→ဖ…).</li>
+        <li><strong>⚓ Anchors</strong> shows where vowel signs and marks will attach in the full build — drag a point to adjust it, double-click to reset. <strong>Import SVG</strong> brings a vectorized paper sketch (Inkscape/Illustrator trace) onto the current glyph.</li>
         <li>On iPad: draw with the Apple Pencil (pressure varies the stroke), pan &amp; zoom with two fingers. Add the studio to your Home Screen — it works offline.</li>
       </ul>
       <h3>Draft vs. full build</h3>
@@ -180,10 +185,13 @@
 <script src="vendor/opentype.min.js"></script>
 <script src="data/glyphs.js"></script>
 <script src="data/glyphs-extended.js"></script>
+<script src="data/glyphs-extended-ab.js"></script>
 <script src="data/glyphs-latin.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/store.js"></script>
 <script src="js/outline.js"></script>
+<script src="js/anchors.js"></script>
+<script src="js/svgimport.js"></script>
 <script src="js/editor.js"></script>
 <script src="js/fontexport.js"></script>
 <script src="js/app.js"></script>
