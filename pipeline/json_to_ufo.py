@@ -126,10 +126,15 @@ BOTTOM_MARKS = {
 
 BASE_NAMES = {f"{n}-myanmar" for _, n in CONSONANTS} | {"greatSa-myanmar"}
 
-# Signs that wrap around their base (medial ra): keep the sketched
-# coordinates (they are drawn around the guide base at the origin) and take
-# no advance — the engine draws the base into the wrap.
+# Signs that wrap around their base (medial ra). Their sketched coordinates
+# are kept as drawn, and their advance is SMALL BUT POSITIVE: it is what
+# moves the pen past the wrap's left stem so the base lands inside the
+# wrap. Zero would stack the base on top of that stem (Padauk gives U+103C
+# an advance of 172/1024 for exactly this reason).
 WRAP_SIGNS = {"medialRa-myanmar", "medialRa-myanmar.wide"}
+# fraction of the wrap's ink width that sits left of the base — only used
+# when a project supplies no advance; reproduces Padauk's proportion
+WRAP_ADVANCE_RATIO = 0.30
 
 # Anchor names the studio may store per glyph ("anchors": {name: [x, y]}).
 KNOWN_ANCHORS = {"top", "bottom", "_top", "_bottom"}
@@ -499,6 +504,9 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
 
     drawn = []
     categories = {}   # glyph -> GDEF class, written as public.openTypeCategories
+    ink_right = {}    # glyph -> right edge of its ink, for the pres measurement
+    advances = {}     # glyph -> advance width
+    base_glyphs = []  # glyphs that carry top/bottom anchors
     for name, data in project.get("glyphs", {}).items():
         if name == "virama-myanmar":
             # U+1039 is invisible in rendered Burmese — ignore any sketched
@@ -550,11 +558,13 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         if cp:
             g.unicode = cp
 
-        # Non-spacing marks and the wrapping medial ra never advance the pen:
-        # the shaper positions them onto the base. A stored advance is
-        # ignored for them rather than double-spacing every syllable.
-        if is_mark or name in WRAP_SIGNS:
+        # Non-spacing marks never advance the pen: the shaper positions them
+        # onto the base, and a stored advance would double-space every
+        # syllable. Wrapping signs DO advance, just barely — see WRAP_SIGNS.
+        if is_mark:
             adv = 0
+        elif not adv and name in WRAP_SIGNS:
+            adv = max(1, round((x_max - x_min) * WRAP_ADVANCE_RATIO))
         elif not adv:
             # None, or a stored 0 on a spacing glyph that has ink: a glyph
             # with visible outlines must move the pen or it overprints its
@@ -590,6 +600,7 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
                                   and is_myanmar_base):
             anchor("top", cx, max(y_max, BODY) + 40)
             anchor("bottom", cx, min(y_min, 0) - 40)
+            base_glyphs.append(name)
         elif name in TOP_MARKS:
             anchor("_top", cx, y_min - 20)
             anchor("top", cx, y_max + 20)
@@ -611,11 +622,15 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             anchor(anchor_name, 0, 0)
 
         # GDEF class: non-spacing marks are "mark", everything else "base".
-        # Stated explicitly so spacing signs (Mc: aa, medial ya, …) are not
-        # mistaken for marks by the shaper. The wrapping medial ra joins the
-        # marks — it takes no advance and the base renders inside its wrap,
-        # which is how Padauk classifies it too.
-        categories[name] = "mark" if (is_mark or name in WRAP_SIGNS) else "base"
+        # Stated explicitly so spacing signs (Mc: aa, medial ya …) are not
+        # mistaken for marks by the shaper.
+        #
+        # The wrapping medial ra must NOT be a mark here: HarfBuzz zeroes the
+        # advance of GDEF marks, and its small advance is exactly what moves
+        # the base inside the wrap.
+        categories[name] = "mark" if is_mark else "base"
+        ink_right[name] = x_max
+        advances[name] = adv
         drawn.append(name)
 
     # The blwf/rphf rules consume U+1039 VIRAMA, but the studio never asks
@@ -646,7 +661,9 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
     if kerning:
         font.kerning = kerning
 
-    font.features.text = generate_features(set(drawn))
+    font.features.text = generate_features(
+        set(drawn), wide_bases=measure_wide_bases(base_glyphs, ink_right,
+                                                  advances))
 
     # PostScript production names: the friendly source names carry hyphens,
     # which are not valid in shipped glyph names. ufo2ft renames at compile
@@ -674,7 +691,28 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
 # OpenType feature generation (mym2 starter rules)
 # ---------------------------------------------------------------------------
 
-def generate_features(drawn):
+def measure_wide_bases(base_glyphs, ink_right, advances):
+    """Which base letters overflow the narrow medial-ra wrap?
+
+    Medial ra ြ wraps around the letter that follows it, and the letter
+    only fits if the wrap reaches past it. Rather than hard-code which
+    letters are "wide" — which is a property of the drawing, not of the
+    script — measure it: the base sits at the wrap's advance, so it fits
+    when its ink ends before the wrap's ink does.
+
+    Returns the base glyphs that need the wide variant, or None when the
+    font has no narrow ra to compare against.
+    """
+    narrow = "medialRa-myanmar"
+    if narrow not in ink_right:
+        return None
+    wrap_reach = ink_right[narrow]
+    base_start = advances.get(narrow, 0)
+    return sorted(name for name in base_glyphs
+                  if base_start + ink_right.get(name, 0) > wrap_reach - 20)
+
+
+def generate_features(drawn, wide_bases=None):
     """Emit only rules whose glyphs were actually drawn.
 
     Rules are written before any script statement so they register under
@@ -710,13 +748,17 @@ def generate_features(drawn):
         lines.append("} rphf;")
         lines.append("")
 
-    # pres: wide medial-ra in front of wide bases
-    wide_bases = [
-        f"{n}-myanmar" for n in
-        ("kha", "gha", "ca", "cha", "jha", "nnya", "ttha", "ddha", "nna",
-         "ta", "tha", "dha", "na", "bha", "ma", "ya", "la", "sa", "ha", "a")
-        if f"{n}-myanmar" in drawn
-    ]
+    # pres: wide medial-ra in front of the bases that overflow the narrow one
+    if wide_bases is None:
+        # no measurement available — fall back to the letters that are wide
+        # in most Burmese designs
+        wide_bases = [
+            f"{n}-myanmar" for n in
+            ("ka", "kha", "gha", "ca", "cha", "jha", "nnya", "ttha", "ddha",
+             "nna", "ta", "tha", "dha", "na", "bha", "ma", "ya", "la", "sa",
+             "ha", "a")
+        ]
+    wide_bases = [n for n in wide_bases if n in drawn]
     if "medialRa-myanmar.wide" in drawn and "medialRa-myanmar" in drawn and wide_bases:
         lines.append(f"@WIDE_BASES = [{' '.join(wide_bases)}];")
         lines.append("feature pres {")

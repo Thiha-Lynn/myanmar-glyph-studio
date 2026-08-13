@@ -78,12 +78,9 @@ def test_marks_are_zero_width_even_if_the_project_says_otherwise(tmp_path):
         "u-myanmar": {"advance": 420,
                       "strokes": [stroke([[250, -150], [350, -150]], 40)]},
         "ka-myanmar.sub": {"advance": 500, "strokes": [BOX]},
-        "medialRa-myanmar": {"advance": 300,
-                             "strokes": [stroke([[0, 600], [700, 600]], 50)]},
     })
     assert font["u-myanmar"].width == 0
     assert font["ka-myanmar.sub"].width == 0
-    assert font["medialRa-myanmar"].width == 0
 
 
 def test_spacing_sign_ink_left_aligned_when_auto(tmp_path):
@@ -106,14 +103,27 @@ def test_spacing_sign_untouched_when_advance_explicit(tmp_path):
     assert ink_x_min(font, "aa-myanmar") > 500  # ink kept where drawn
 
 
-def test_wrap_sign_keeps_coordinates_and_zero_advance(tmp_path):
+def test_wrap_sign_keeps_coordinates_and_a_small_advance(tmp_path):
+    """Medial ra wraps around its base: the advance must clear the wrap's
+    left stem so the base lands INSIDE the wrap — zero would stack the base
+    on top of the stem, and a full-width advance would push it outside."""
     font, _ = build(tmp_path, {
         "medialRa-myanmar": {"advance": None,
                              "strokes": [stroke([[0, 600], [700, 600],
                                                  [700, -100]], 50)]},
     })
-    assert font["medialRa-myanmar"].width == 0
+    width = font["medialRa-myanmar"].width
+    assert 0 < width < 400          # small, but not zero
     assert ink_x_min(font, "medialRa-myanmar") < 0  # not re-aligned
+
+
+def test_wrap_sign_honours_a_stored_advance(tmp_path):
+    font, _ = build(tmp_path, {
+        "medialRa-myanmar": {"advance": 168,
+                             "strokes": [stroke([[94, 600], [654, 600],
+                                                 [654, -100]], 50)]},
+    })
+    assert font["medialRa-myanmar"].width == 168
 
 
 def test_virama_ink_ignored_and_synthesized_empty(tmp_path):
