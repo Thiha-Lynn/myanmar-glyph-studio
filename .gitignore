@@ -24,5 +24,4 @@ venv/
 .idea/
 
 # scratch build dirs
-pipeline/build-var/
-pipeline/build-sample/
+pipeline/build-*/
