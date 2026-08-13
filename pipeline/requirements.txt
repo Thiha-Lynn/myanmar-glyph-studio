@@ -5,7 +5,7 @@ fontmake>=3.8
 skia-pathops>=0.8
 # testing / proofing / sample generation (proof.py, make_sample.py)
 uharfbuzz>=0.39
-pillow>=10.0
+pillow>=12.3.0
 # font QA (CI and local checks)
 fontbakery>=0.12
 pytest>=8
