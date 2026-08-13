@@ -74,12 +74,18 @@ jobs:
         if: hashFiles('dist/**/*.ttf') != ''
         run: |
           shopt -s nullglob
-          # statics and the variable build are separate families to check:
-          # mixing them makes the family-wide checks compare a font that
-          # has an fvar table against ones that never will
-          fontbakery check-universal --succinct -l WARN dist/*/*.ttf
-          for vf in dist/*/variable/*-VF.ttf; do
-            fontbakery check-universal --succinct -l WARN "$vf"
+          # One invocation per family. fontbakery's family-wide checks
+          # compare every file it is handed, so two projects at once read
+          # as one family with two names — and the statics must not be
+          # mixed with the variable build either, which has an fvar table
+          # the others will never have.
+          for dir in dist/*/; do
+            echo "::group::fontbakery $(basename "$dir")"
+            fontbakery check-universal --succinct -l WARN "$dir"*.ttf
+            for vf in "$dir"variable/*-VF.ttf; do
+              fontbakery check-universal --succinct -l WARN "$vf"
+            done
+            echo "::endgroup::"
           done
 
       - name: Web fonts (WOFF2)

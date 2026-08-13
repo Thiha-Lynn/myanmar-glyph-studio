@@ -48,8 +48,15 @@ jobs:
             echo "::endgroup::"
           done
 
-      - name: fontbakery QA
-        run: fontbakery check-universal --succinct -l WARN dist/*/*.ttf
+      - name: fontbakery QA (one invocation per family)
+        run: |
+          shopt -s nullglob
+          for dir in dist/*/; do
+            fontbakery check-universal --succinct -l WARN "$dir"*.ttf
+            for vf in "$dir"variable/*-VF.ttf; do
+              fontbakery check-universal --succinct -l WARN "$vf"
+            done
+          done
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
