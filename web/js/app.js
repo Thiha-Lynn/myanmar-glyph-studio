@@ -13,7 +13,8 @@
   var prefs = {
     theme: "auto", lang: "en", penWidth: 60, stabilizer: 3,
     guideOpacity: 22, guideSize: 1000, pressure: true, touchDraws: true,
-    ghost: ""
+    ghost: "", tool: "brush", snap: false, eraserMode: "partial",
+    eraserSize: 60, fillShape: false
   };
 
   function savePrefs() {
@@ -199,9 +200,7 @@
       redo: function () { window.Editor.redo(); },
       nextEmpty: nextUndrawn,
       tool: function () {
-        var next = window.Editor.tool === "eraser" ? "pen" : "eraser";
-        setTool(next);
-        $("#mbTool").textContent = next === "eraser" ? "🧽" : "✏️";
+        setTool(window.Editor.tool === "eraser" ? "brush" : "eraser");
       }
     };
     $("#mobileBar").addEventListener("click", function (e) {
@@ -237,32 +236,142 @@
   }
 
   // ---- toolbar -----------------------------------------------------------
-  var TOOL_BUTTONS = { pen: "#toolPen", line: "#toolLine", circle: "#toolCircle", eraser: "#toolEraser" };
+  var CURSORS = {
+    select: "default", direct: "default", pen: "crosshair", brush: "crosshair",
+    line: "crosshair", rect: "crosshair", circle: "crosshair", eraser: "none"
+  };
 
-  function setTool(t) {
-    window.Editor.tool = t;
-    Object.keys(TOOL_BUTTONS).forEach(function (k) {
-      $(TOOL_BUTTONS[k]).classList.toggle("active", t === k);
+  /* Show only the option groups whose data-for lists the active tool
+   * (anchor mode acts as a pseudo-tool for the options bar). */
+  function syncOptionsBar() {
+    var t = window.Editor.anchorMode ? "anchors" : window.Editor.tool;
+    document.querySelectorAll("#toolOptions .opt-group[data-for]").forEach(function (g) {
+      g.classList.toggle("show", g.dataset.for.split(" ").indexOf(t) >= 0);
     });
+  }
+
+  function syncRail() {
+    var anchor = window.Editor.anchorMode;
+    document.querySelectorAll("#toolRail [data-tool]").forEach(function (b) {
+      b.classList.toggle("active", !anchor && b.dataset.tool === window.Editor.tool);
+    });
+    $("#btnAnchors").classList.toggle("active", anchor);
+    $("#glyphCanvas").style.cursor =
+      anchor ? "default" : (CURSORS[window.Editor.tool] || "crosshair");
     var mb = $("#mbTool");
-    if (mb) mb.textContent = t === "eraser" ? "🧽" : "✏️";
-    // drawing tools and anchor dragging are mutually exclusive
-    if (window.Editor.anchorMode) {
-      window.Editor.setAnchorMode(false);
-      $("#btnAnchors").classList.remove("active");
+    if (mb) mb.textContent = window.Editor.tool === "eraser" ? "🧽" : "✏️";
+  }
+
+  /* Enable/disable the contextual buttons from the vector-tool state. */
+  function syncVecUI() {
+    var st = window.VecTools.status();
+    var chip = $("#selCount");
+    chip.hidden = !st.sel;
+    if (st.sel) chip.textContent = st.sel + " " + window.I18N.t("selected");
+    ["#btnDup", "#btnFlipH", "#btnFlipV", "#btnSmoothSel", "#btnSimplify",
+     "#btnCopySel", "#btnDelSel"].forEach(function (sel) {
+      $(sel).disabled = !st.sel;
+    });
+    $("#btnPasteSel").disabled = !window.Editor.clipboard.length;
+    $("#btnNodeType").disabled = !st.nodeIsBez;
+    $("#btnNodeDel").disabled = !st.node;
+    $("#btnReverse").disabled = !st.target;
+    ["#btnPenDone", "#btnPenBack", "#btnPenCancel"].forEach(function (sel) {
+      $(sel).disabled = !st.penNodes;
+    });
+    $("#btnPenClose").disabled = st.penNodes < 2;
+    // the width slider mirrors the selection's stroke width in select mode
+    if (window.Editor.tool === "select" && st.sel) {
+      var w = window.VecTools.selWidth(window.Editor);
+      if (w) { $("#penWidth").value = w; $("#penWidthVal").textContent = w; }
     }
   }
 
+  function setTool(t) {
+    window.Editor.setTool(t);   // also exits anchor mode + resets vec state
+    if (t !== "select") {
+      // restore the drawing width after select mode borrowed the slider
+      $("#penWidth").value = prefs.penWidth;
+      $("#penWidthVal").textContent = prefs.penWidth;
+    }
+    prefs.tool = t; savePrefs();
+    syncRail();
+    syncOptionsBar();
+    syncVecUI();
+  }
+
   function wireToolbar() {
+    window.Editor.onToolChange = function () {
+      prefs.tool = window.Editor.tool; savePrefs();
+      syncRail(); syncOptionsBar(); syncVecUI();
+    };
+    window.VecTools.onSelectionChange = function () { syncVecUI(); };
+
     $("#penWidth").addEventListener("input", function () {
-      window.Editor.penWidth = +this.value;
       $("#penWidthVal").textContent = this.value;
+      if (window.Editor.tool === "select") return; // applied on release below
+      window.Editor.penWidth = +this.value;
       prefs.penWidth = +this.value; savePrefs();
+    });
+    // in select mode the slider RE-WIDTHS the selected strokes (one undo step)
+    $("#penWidth").addEventListener("change", function () {
+      if (window.Editor.tool === "select" && window.VecTools.hasSelection()) {
+        window.VecTools.applyWidth(window.Editor, +this.value);
+      }
     });
     $("#stabilizer").addEventListener("input", function () {
       window.Editor.stabilizer = +this.value;
       prefs.stabilizer = +this.value; savePrefs();
     });
+    $("#fillShape").addEventListener("change", function () {
+      window.Editor.fillShape = this.checked;
+      prefs.fillShape = this.checked; savePrefs();
+    });
+    $("#snapToggle").addEventListener("change", function () {
+      window.Editor.snapEnabled = this.checked;
+      prefs.snap = this.checked; savePrefs();
+    });
+
+    // eraser options
+    function setEraserMode(m) {
+      window.Editor.eraserMode = m;
+      prefs.eraserMode = m; savePrefs();
+      $("#eraserPartial").classList.toggle("active", m === "partial");
+      $("#eraserStroke").classList.toggle("active", m === "stroke");
+    }
+    $("#eraserPartial").addEventListener("click", function () { setEraserMode("partial"); });
+    $("#eraserStroke").addEventListener("click", function () { setEraserMode("stroke"); });
+    setEraserMode(prefs.eraserMode === "stroke" ? "stroke" : "partial");
+    $("#eraserSize").addEventListener("input", function () {
+      window.Editor.eraserSize = +this.value;
+      $("#eraserSizeVal").textContent = this.value;
+      prefs.eraserSize = +this.value; savePrefs();
+      window.Editor.render();
+    });
+
+    // pen-tool actions (touch users have no Enter/Esc)
+    $("#btnPenDone").addEventListener("click", function () { window.VecTools.penFinish(window.Editor, false); });
+    $("#btnPenClose").addEventListener("click", function () { window.VecTools.penFinish(window.Editor, true); });
+    $("#btnPenBack").addEventListener("click", function () { window.VecTools.penBack(window.Editor); });
+    $("#btnPenCancel").addEventListener("click", function () { window.VecTools.penCancel(window.Editor); });
+
+    // selection actions
+    $("#btnDup").addEventListener("click", function () { window.VecTools.duplicate(window.Editor); });
+    $("#btnFlipH").addEventListener("click", function () { window.VecTools.flip(window.Editor, "h"); });
+    $("#btnFlipV").addEventListener("click", function () { window.VecTools.flip(window.Editor, "v"); });
+    $("#btnSmoothSel").addEventListener("click", function () { window.VecTools.smoothSel(window.Editor); });
+    $("#btnSimplify").addEventListener("click", function () { window.VecTools.simplifySel(window.Editor); });
+    $("#btnCopySel").addEventListener("click", function () {
+      var n = window.VecTools.copy(window.Editor);
+      if (n) { toast(n + " " + window.I18N.t("copied")); syncVecUI(); }
+    });
+    $("#btnPasteSel").addEventListener("click", function () { window.VecTools.paste(window.Editor); });
+    $("#btnDelSel").addEventListener("click", function () { window.VecTools.deleteSel(window.Editor); });
+
+    // node-editing actions
+    $("#btnNodeType").addEventListener("click", function () { window.VecTools.toggleNodeType(window.Editor); });
+    $("#btnNodeDel").addEventListener("click", function () { window.VecTools.deleteNode(window.Editor); });
+    $("#btnReverse").addEventListener("click", function () { window.VecTools.reversePath(window.Editor); });
     $("#guideOpacity").addEventListener("input", function () {
       window.Editor.guideOpacity = +this.value / 100;
       prefs.guideOpacity = +this.value; savePrefs();
@@ -281,8 +390,8 @@
       window.Editor.touchDraws = this.checked;
       prefs.touchDraws = this.checked; savePrefs();
     });
-    Object.keys(TOOL_BUTTONS).forEach(function (k) {
-      $(TOOL_BUTTONS[k]).addEventListener("click", function () { setTool(k); });
+    document.querySelectorAll("#toolRail [data-tool]").forEach(function (b) {
+      b.addEventListener("click", function () { setTool(b.dataset.tool); });
     });
     $("#btnUndo").addEventListener("click", function () { window.Editor.undo(); });
     $("#btnRedo").addEventListener("click", function () { window.Editor.redo(); });
@@ -318,7 +427,8 @@
     $("#btnAnchors").addEventListener("click", function () {
       var on = !window.Editor.anchorMode;
       window.Editor.setAnchorMode(on);
-      this.classList.toggle("active", on);
+      syncRail();
+      syncOptionsBar();
       if (on) toast(window.I18N.t("anchorTip"));
     });
     $("#btnSVG").addEventListener("click", function () {
@@ -375,10 +485,11 @@
       $("#zoomLabel").textContent = Math.round(window.Editor.zoom * 100) + "%";
     };
 
-    // compact toolbar toggle (small screens)
+    // settings panel toggle (guides, ghost, SVG, project tools)
     $("#btnMoreTools").addEventListener("click", function () {
-      $("#toolbar").classList.toggle("expanded");
-      this.classList.toggle("active");
+      var panel = $("#settingsPanel");
+      panel.hidden = !panel.hidden;
+      this.classList.toggle("active", !panel.hidden);
       window.Editor.resize();
     });
 
@@ -407,22 +518,84 @@
     document.addEventListener("keydown", function (e) {
       if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" ||
           e.target.tagName === "SELECT") return;
+      var ed = window.Editor, vt = window.VecTools;
       var mod = e.metaKey || e.ctrlKey;
-      if (mod && e.key === "z" && !e.shiftKey) { e.preventDefault(); window.Editor.undo(); }
-      else if (mod && (e.key === "y" || (e.key === "z" && e.shiftKey))) { e.preventDefault(); window.Editor.redo(); }
-      else if (e.key === "[") step(-1);
-      else if (e.key === "]") step(1);
-      else if (e.key === "n") nextUndrawn();
-      else if (e.key === "e") setTool("eraser");
-      else if (e.key === "a") $("#btnAnchors").click();
-      else if (e.key === "p" || e.key === "b") setTool("pen");
-      else if (e.key === "l") setTool("line");
-      else if (e.key === "o") setTool("circle");
-      else if (e.key === "+" || e.key === "=") window.Editor.zoomStep(1.25);
-      else if (e.key === "-") window.Editor.zoomStep(0.8);
-      else if (e.key === "0") window.Editor.resetView();
-      else if (e.key === "f") $("#btnFocus").click();
+      var k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+
+      // hold Space (or drag the middle mouse button) to pan
+      if (e.key === " ") {
+        if (!e.repeat) {
+          ed.spacePan = true;
+          $("#glyphCanvas").style.cursor = "grab";
+        }
+        e.preventDefault();
+        return;
+      }
+
+      if (mod && k === "z" && !e.shiftKey) {
+        e.preventDefault();
+        // while a pen path is in progress, undo removes its last point
+        if (ed.tool === "pen" && vt.penActive()) vt.penBack(ed);
+        else ed.undo();
+        return;
+      }
+      if (mod && (k === "y" || (k === "z" && e.shiftKey))) { e.preventDefault(); ed.redo(); return; }
+      if (mod && k === "a") {
+        if (ed.tool === "select") { e.preventDefault(); vt.selectAll(ed); }
+        return;
+      }
+      if (mod && k === "c") {
+        if (ed.tool === "select" && vt.hasSelection()) {
+          e.preventDefault();
+          var n = vt.copy(ed);
+          if (n) { toast(n + " " + window.I18N.t("copied")); syncVecUI(); }
+        }
+        return;
+      }
+      if (mod && k === "x") {
+        if (ed.tool === "select" && vt.hasSelection()) { e.preventDefault(); vt.cut(ed); }
+        return;
+      }
+      if (mod && k === "v") {
+        if (ed.clipboard.length) {
+          e.preventDefault();
+          if (ed.tool !== "select") setTool("select");
+          vt.paste(ed);
+        }
+        return;
+      }
+      if (mod && k === "d") {
+        if (ed.tool === "select" && vt.hasSelection()) { e.preventDefault(); vt.duplicate(ed); }
+        return;
+      }
+      if (mod) return; // leave other browser shortcuts alone
+
+      // Enter/Esc/Del/arrows go to the active vector tool first
+      if (ed.isVecTool() && vt.key(e, ed)) { e.preventDefault(); syncVecUI(); return; }
+
+      if (k === "[") step(-1);
+      else if (k === "]") step(1);
+      else if (k === "n") nextUndrawn();
+      else if (k === "v") setTool("select");
+      else if (k === "d") setTool("direct");
+      else if (k === "b") setTool("brush");
+      else if (k === "p") setTool("pen");
+      else if (k === "l") setTool("line");
+      else if (k === "m") setTool("rect");
+      else if (k === "o") setTool("circle");
+      else if (k === "e") setTool("eraser");
+      else if (k === "a") $("#btnAnchors").click();
+      else if (k === "+" || k === "=") ed.zoomStep(1.25);
+      else if (k === "-") ed.zoomStep(0.8);
+      else if (k === "0") ed.resetView();
+      else if (k === "f") $("#btnFocus").click();
       else if (e.key === "Escape" && document.body.classList.contains("focus")) $("#btnFocus").click();
+    });
+    document.addEventListener("keyup", function (e) {
+      if (e.key === " ") {
+        window.Editor.spacePan = false;
+        syncRail(); // restores the tool cursor
+      }
     });
   }
 
@@ -525,6 +698,10 @@
     window.Editor.pressureEnabled = prefs.pressure;
     window.Editor.touchDraws = prefs.touchDraws;
     window.Editor.ghostName = prefs.ghost || null;
+    window.Editor.snapEnabled = !!prefs.snap;
+    window.Editor.fillShape = !!prefs.fillShape;
+    window.Editor.eraserMode = prefs.eraserMode === "stroke" ? "stroke" : "partial";
+    window.Editor.eraserSize = prefs.eraserSize || 60;
     $("#penWidth").value = prefs.penWidth;
     $("#penWidthVal").textContent = prefs.penWidth;
     $("#stabilizer").value = prefs.stabilizer;
@@ -532,6 +709,10 @@
     $("#guideSize").value = prefs.guideSize;
     $("#pressureToggle").checked = prefs.pressure;
     $("#touchDraws").checked = prefs.touchDraws;
+    $("#snapToggle").checked = !!prefs.snap;
+    $("#fillShape").checked = !!prefs.fillShape;
+    $("#eraserSize").value = window.Editor.eraserSize;
+    $("#eraserSizeVal").textContent = window.Editor.eraserSize;
 
     buildBrowser();
     wireDrawer();
@@ -545,7 +726,11 @@
     $("#authorName").value = window.Store.meta.author;
     $("#previewText").textContent = $("#previewInput").value;
     selectGlyph(window.GLYPHS[0]);
-    setTool("pen");
+    var TOOLS = ["select", "direct", "brush", "pen", "line", "rect", "circle", "eraser"];
+    window.Editor.tool = TOOLS.indexOf(prefs.tool) >= 0 ? prefs.tool : "brush";
+    syncRail();
+    syncOptionsBar();
+    syncVecUI();
     window.Editor.resetView();
     schedulePreview();
 

@@ -10,6 +10,7 @@
   --line: #dfd4bf;
   --canvas-bg: #fffdf8;
   --good: #3e7048;
+  --select: #2f6fb8;   /* selection boxes, handles, pen path preview */
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -23,6 +24,7 @@
     --line: #3c332a;
     --canvas-bg: #241d17;
     --good: #7fb389;
+    --select: #6ea8e0;
   }
 }
 :root[data-theme="dark"] {
@@ -36,6 +38,7 @@
   --line: #3c332a;
   --canvas-bg: #241d17;
   --good: #7fb389;
+  --select: #6ea8e0;
 }
 
 /* Bundled guide face: unmodified SIL Padauk 6.000 (OFL) — see fonts/README.md.
@@ -204,27 +207,67 @@ button { touch-action: manipulation; }
 .hint { font-size: 0.8rem; color: var(--muted); }
 .stepper { margin-left: auto; display: flex; gap: 0.3rem; }
 
-.toolbar {
-  display: flex; gap: 0.6rem 1.2rem; flex-wrap: wrap; align-items: center;
+/* ---- contextual tool-options bar (Photoshop-style) ---- */
+.tool-options {
+  display: flex; gap: 0.4rem 0.8rem; flex-wrap: wrap; align-items: center;
   background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
-  padding: 0.4rem 0.7rem; margin-bottom: 0.5rem; flex-shrink: 0;
+  padding: 0.3rem 0.55rem; margin-bottom: 0.45rem; flex-shrink: 0;
+  min-height: 46px;
 }
+.opt-group { display: none; gap: 0.35rem; align-items: center; flex-wrap: wrap; }
+.opt-group.show, .opt-group.opt-global { display: flex; }
+.opt-group label { display: flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+.opt-group input[type="range"] { width: 84px; accent-color: var(--accent); }
+.opt-val { font-variant-numeric: tabular-nums; min-width: 1.9em; }
+.opt-hint { font-size: 0.7rem; color: var(--muted); font-style: italic; }
+.opt-spacer { flex: 1 1 auto; }
+.btn.small { min-height: 30px; padding: 0.25rem 0.55rem; font-size: 0.8rem; }
+.icon-btn.small { min-width: 30px; }
+.sel-count {
+  background: var(--select); color: #fff; border-radius: 999px;
+  padding: 0.15rem 0.55rem; font-size: 0.72rem; font-weight: 600;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg .seg-btn { border: 0; border-radius: 0; }
+.seg .seg-btn.active { background: var(--accent); color: #fff; }
+
+/* ---- collapsible settings panel (⚙): guides, ghost, SVG, project tools ---- */
+.settings-panel {
+  display: flex; gap: 0.6rem 1.4rem; flex-wrap: wrap; align-items: center;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 0.45rem 0.7rem; margin-bottom: 0.45rem; flex-shrink: 0;
+}
+.settings-panel[hidden] { display: none; }
+
+/* ---- vertical tool rail (Illustrator-style) ---- */
+.editor-shell { flex: 1; display: flex; gap: 0.45rem; min-height: 0; }
+.tool-rail {
+  display: flex; flex-direction: column; gap: 0.3rem; align-items: center;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 0.35rem 0.3rem; flex-shrink: 0; overflow-y: auto;
+  scrollbar-width: none;
+}
+.tool-rail::-webkit-scrollbar { display: none; }
+.rail-btn {
+  width: 40px; height: 40px; min-height: 40px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.rail-btn svg { display: block; }
+.rail-sep { width: 22px; height: 1px; background: var(--line); margin: 0.15rem 0; flex-shrink: 0; }
+
 .tool-group { display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap; }
-.more-tools { display: none; }
+.more-tools.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 .tool-sep { width: 1px; height: 22px; background: var(--line); margin: 0 0.3rem; }
 .sliders label, .checks label { display: flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; color: var(--muted); }
 .sliders input[type="range"] { width: 84px; accent-color: var(--accent); }
-.checks .advance {
+.settings-panel .advance {
   width: 5rem; background: var(--bg); border: 1px solid var(--line);
   border-radius: 6px; padding: 0.25rem 0.4rem;
 }
 .check input { accent-color: var(--accent); width: 16px; height: 16px; }
 #zoomLabel { font-variant-numeric: tabular-nums; font-size: 0.8rem; }
 .extras label { display: flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; color: var(--muted); }
-.extras .advance {
-  width: 5rem; background: var(--bg); border: 1px solid var(--line);
-  border-radius: 6px; padding: 0.25rem 0.4rem;
-}
 .sel {
   background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
   padding: 0.25rem 0.35rem; max-width: 7.5rem;
@@ -261,10 +304,10 @@ button { touch-action: manipulation; }
 }
 .preview.empty { color: var(--muted); }
 
-/* ---- focus mode: nothing but the canvas ---- */
+/* ---- focus mode: just the canvas and the tools ---- */
 body.focus .topbar,
 body.focus .sidebar,
-body.focus .toolbar,
+body.focus .settings-panel,
 body.focus .testdrive { display: none; }
 body.focus .workspace { padding: 0.4rem; }
 body.focus .glyph-head { margin: 0 0 0.3rem; }
@@ -338,19 +381,11 @@ body.focus .glyph-head { margin: 0 0 0.3rem; }
 }
 
 @media (max-width: 640px) {
-  /* collapse fine-tuning controls behind the ⚙ button to save canvas space */
-  .more-tools { display: inline-block; }
-  .more-tools.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .toolbar .sliders, .toolbar .checks, .toolbar .extras { display: none; width: 100%; }
-  .toolbar.expanded .sliders, .toolbar.expanded .checks, .toolbar.expanded .extras { display: flex; }
-
   /* one compact header row: menu · brand · ⋯ · Export */
   .topbar { gap: 0.4rem; padding: 0.3rem 0.5rem; flex-wrap: nowrap; }
   .brand-mark { font-size: 1.25rem; padding: 0.15rem 0.4rem; }
   .brand-text { min-width: 0; overflow: hidden; }
   .brand-text h1 { font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; }
-  /* ⚙ stays put while the tools scroll past it */
-  .toolbar > .more-tools { flex: 0 0 auto; }
   .secondary-actions { display: none; }
   .menu-toggle { display: inline-block; }
   .project-actions { gap: 0.3rem; flex-wrap: nowrap; }
@@ -363,19 +398,37 @@ body.focus .glyph-head { margin: 0 0 0.3rem; }
   /* prev/next/focus live in the bottom bar on phones */
   .stepper #btnPrev, .stepper #btnNext, .stepper #btnNextUndrawn { display: none; }
 
-  /* tools stay on ONE row that scrolls sideways — the canvas keeps the space */
-  .toolbar { padding: 0.3rem 0.4rem; gap: 0.4rem; }
-  .toolbar .tool-group:first-child {
+  /* options bar: one row that scrolls sideways; ⚙/undo/zoom stay pinned */
+  .tool-options {
     flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
-    flex: 1 1 0; min-width: 0;   /* shares the row with ⚙, scrolls inside */
+    padding: 0.25rem 0.4rem; gap: 0.5rem; min-height: 40px;
   }
-  .toolbar .tool-group:first-child::-webkit-scrollbar { display: none; }
-  .toolbar .tool-group:first-child .btn { flex: 0 0 auto; }
-  .tool span { display: none; }            /* icon-only tool buttons */
-  .sliders input[type="range"] { width: 100%; min-width: 120px; }
-  .toolbar.expanded .sliders label,
-  .toolbar.expanded .extras label { flex: 1 1 46%; }
+  .tool-options::-webkit-scrollbar { display: none; }
+  .opt-group { flex-wrap: nowrap; flex: 0 0 auto; }
+  .opt-hint { display: none; }
+  .opt-spacer { flex: 1 0 0.2rem; }
+  .opt-group.opt-global {
+    position: sticky; right: -0.4rem; background: var(--surface);
+    padding-left: 0.35rem; box-shadow: -8px 0 8px -6px rgba(0, 0, 0, 0.3);
+  }
+  .opt-group.opt-global .tool-sep:first-of-type,
+  .opt-group.opt-global #btnUndo,
+  .opt-group.opt-global #btnRedo { display: none; } /* thumb bar has undo/redo */
+
+  /* tool rail flips horizontal above the canvas */
+  .editor-shell { flex-direction: column; gap: 0.3rem; }
+  .tool-rail {
+    flex-direction: row; overflow-x: auto; overflow-y: hidden;
+    padding: 0.25rem 0.35rem; -webkit-overflow-scrolling: touch;
+  }
+  .rail-btn { width: 40px; height: 38px; min-height: 38px; flex: 0 0 auto; }
+  .rail-sep { width: 1px; height: 24px; margin: 0 0.15rem; }
+
+  .settings-panel { gap: 0.5rem 0.9rem; }
+  .settings-panel .sliders label,
+  .settings-panel .extras label { flex: 1 1 46%; }
+  .sliders input[type="range"] { width: 100%; min-width: 110px; }
 
   .canvas-wrap { min-height: 42dvh; }
   .preview { font-size: 1.5rem; }
@@ -413,7 +466,8 @@ body.focus .glyph-head { margin: 0 0 0.3rem; }
   .canvas-wrap { min-height: 30dvh; }
 }
 
-/* a device with a stylus gets the precise controls back */
-@media (max-width: 640px) and (pointer: fine) {
-  .tool span { display: inline; }
+/* bigger rail targets under a finger */
+@media (pointer: coarse) {
+  .rail-btn { width: 44px; height: 44px; min-height: 44px; }
+  .btn.small { min-height: 38px; }
 }

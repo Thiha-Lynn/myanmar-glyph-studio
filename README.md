@@ -43,6 +43,15 @@ over it, and the toolchain turns your sketches into a working font.
    pinch or scroll to **zoom** into details (a precision grid appears);
    a **stabilizer** steadies shaky lines; **focus mode** (⛶) hides
    everything but the canvas.
+
+   And built for design hands too — an Illustrator-style toolset lives in
+   the tool rail: a **Bézier pen** (click corners, drag curves, close for
+   filled shapes — paths stay editable point by point), a **selection
+   tool** with move/scale/rotate handles, copy-paste **across glyphs**,
+   flip, smooth and simplify, a **node editor** for reshaping any stroke
+   after the fact, line/rectangle/circle shapes with **grid & guide
+   snapping**, and a two-mode **eraser** that can rub away just part of a
+   stroke. Everything stays in the same portable project format.
 2. **Test** — the test-drive box previews your drawn letters live, and
    **Export font** gives an installable TTF in one click. The in-app
    **Help** explains how to use it everywhere: install on

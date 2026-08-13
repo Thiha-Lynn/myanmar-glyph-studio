@@ -1,6 +1,6 @@
 /* Offline cache for the Glyph Studio (PWA).
  * Bump VERSION whenever any cached file changes. */
-var VERSION = "v9";
+var VERSION = "v10";
 var CACHE = "glyph-studio-" + VERSION;
 var ASSETS = [
   ".",
@@ -19,6 +19,7 @@ var ASSETS = [
   "js/outline.js",
   "js/anchors.js",
   "js/svgimport.js",
+  "js/vectools.js",
   "js/editor.js",
   "js/fontexport.js",
   "js/app.js",

@@ -8,12 +8,18 @@
  * own letterforms over a correct skeleton.
  *
  * Input:
- *   - mouse / trackpad: draw with click-drag, wheel or pinch-gesture to zoom
+ *   - mouse / trackpad: draw with click-drag, wheel or pinch-gesture to zoom,
+ *     middle-drag or hold Space to pan
  *   - touch: one finger draws (until a stylus is detected), two fingers
  *     always pan/zoom
  *   - stylus (Apple Pencil etc.): draws with optional pressure-variable
  *     width; once a pen is seen, bare fingers pan instead of drawing
  *     (palm rejection) unless "Finger draws" is re-enabled
+ *
+ * Tools: brush (freehand), line, rect, circle, eraser (whole-stroke or
+ * partial) live here; the vector tools (select/transform, direct node
+ * editing, Bézier pen) live in vectools.js and get the pointer events
+ * routed to them.
  */
 (function () {
   "use strict";
@@ -40,7 +46,16 @@
     penWidth: 60,      // font units
     guideOpacity: 0.22,
     guideSize: 1000,   // font units
-    tool: "pen",      // pen | line | circle | eraser
+    tool: "brush",    // brush | pen | select | direct | line | rect | circle | eraser
+    snapEnabled: false,
+    fillShape: false,  // pen/rect/circle commit as filled contours
+    eraserMode: "partial", // "partial" splits strokes; "stroke" removes whole
+    eraserSize: 60,    // font units (diameter)
+    clipboard: [],     // copied strokes, shared across glyphs
+    spacePan: false,   // Space held: any pointer pans
+    hoverScr: null,    // last hover position (eraser ring)
+    _eraseGesture: null,
+    onToolChange: null,
     anchorMode: false, // drag mark-attachment anchors instead of drawing
     _dragAnchor: null, // {name} while an anchor is being dragged
     _lastAnchorTap: null, // {name, t} for double-tap-to-reset
@@ -71,8 +86,60 @@
       canvas.addEventListener("pointermove", function (e) { self.move(e); });
       window.addEventListener("pointerup", function (e) { self.up(e); });
       window.addEventListener("pointercancel", function (e) { self.up(e); });
+      canvas.addEventListener("pointerleave", function () {
+        if (self.hoverScr) { self.hoverScr = null; self.render(); }
+      });
       canvas.addEventListener("wheel", function (e) { self.wheel(e); }, { passive: false });
       canvas.style.touchAction = "none";
+    },
+
+    isVecTool: function () {
+      return this.tool === "select" || this.tool === "direct" || this.tool === "pen";
+    },
+
+    /* Central tool switch: leaves any in-progress vector state cleanly. */
+    setTool: function (t) {
+      if (t === this.tool) return;
+      if (window.VecTools) {
+        if (this.tool === "pen" && window.VecTools.penActive()) {
+          window.VecTools.penCancel(this);
+        }
+        window.VecTools.softReset();
+      }
+      this.liveStroke = null;
+      this._stabPoint = null;
+      this._eraseGesture = null;
+      this.hoverScr = null;
+      this.tool = t;
+      if (this.anchorMode) this.setAnchorMode(false);
+      if (this.onToolChange) this.onToolChange(t);
+      this.render();
+    },
+
+    /* Vector tools may ask for a different tool (double-click → node editor). */
+    requestTool: function (t) {
+      this.tool = t;
+      if (this.onToolChange) this.onToolChange(t);
+      this.render();
+    },
+
+    /* Optional-grid + guide-line snapping for precise tools. */
+    snapPoint: function (p) {
+      if (!this.snapEnabled) return p;
+      var g = 10;
+      var x = Math.round(p[0] / g) * g;
+      var y = Math.round(p[1] / g) * g;
+      var t = Math.max(8 / this.s(), 6);
+      [0, 550, 900, -600].forEach(function (gy) {
+        if (Math.abs(p[1] - gy) < t) y = gy;
+      });
+      var adv = this.glyph
+        ? (window.Store.getGlyph(this.glyph.name).advance || this.measureGuideAdvance())
+        : 0;
+      [0, adv].forEach(function (gx) {
+        if (Math.abs(p[0] - gx) < t) x = gx;
+      });
+      return [x, y];
     },
 
     resize: function () {
@@ -103,8 +170,10 @@
       this.glyph = g;
       this.liveStroke = null;
       this._dragAnchor = null;
+      this._eraseGesture = null;
       this.undoStack = [];
       this.redoStack = [];
+      if (window.VecTools) window.VecTools.reset();
       this.render();
     },
 
@@ -113,6 +182,12 @@
       this.liveStroke = null;
       this._dragAnchor = null;
       this._stabPoint = null;
+      if (on && window.VecTools) {
+        if (this.tool === "pen" && window.VecTools.penActive()) {
+          window.VecTools.penCancel(this);
+        }
+        window.VecTools.softReset();
+      }
       this.render();
     },
 
@@ -205,6 +280,12 @@
         if (this.onPenDetected) this.onPenDetected();
       }
 
+      // middle mouse button or held Space: temporary hand tool
+      if (e.button === 1 || this.spacePan) {
+        this.pointers[e.pointerId].panning = true;
+        return;
+      }
+
       var touches = this.activeTouches();
       if (e.pointerType === "touch") {
         // track the gesture so a quick multi-finger tap can mean undo/redo
@@ -212,9 +293,12 @@
         this._multi.max = Math.max(this._multi.max, touches.length);
       }
       if (e.pointerType === "touch" && touches.length >= 2) {
-        // more than one finger: abandon any live stroke, pinch/pan instead
+        // more than one finger: abandon any live stroke or vector drag,
+        // pinch/pan instead
         this.liveStroke = null;
         this._stabPoint = null;
+        this._eraseGesture = null;
+        if (window.VecTools) window.VecTools.cancelDrag(this);
         var a = touches[0], b = touches[1];
         this.gesture = {
           dist: Math.hypot(a.x - b.x, a.y - b.y),
@@ -250,17 +334,33 @@
         return;
       }
 
+      if (this.isVecTool()) {
+        window.VecTools.down(e, this);
+        return;
+      }
+
       var p = this.toUnits(e);
-      if (this.tool === "eraser") { this.eraseAt(p); return; }
-      if (this.tool === "line" || this.tool === "circle") {
-        this._shapeStart = p;
-        this.liveStroke = { width: this.penWidth, points: [p] };
+      if (this.tool === "eraser") {
+        this._eraseGesture = { changed: false, snap: this.snapshot() };
+        this.eraseAt(p);
+        return;
+      }
+      if (this.tool === "line" || this.tool === "circle" || this.tool === "rect") {
+        this._shapeStart = this.snapPoint(p);
+        this.liveStroke = { width: this.penWidth, points: [this._shapeStart] };
         this.render();
         return;
       }
       this._stabPoint = p.slice(0, 2);
       this.liveStroke = { width: this.penWidth, points: [this.inputPoint(e, p)] };
       this.render();
+    },
+
+    rectPoints: function (a, b) {
+      // closed loop: back to the start so the caps seal the corner
+      return [
+        [a[0], a[1]], [b[0], a[1]], [b[0], b[1]], [a[0], b[1]], [a[0], a[1]]
+      ];
     },
 
     circlePoints: function (c, edge) {
@@ -352,16 +452,49 @@
       }
       if (this.anchorMode) return;
 
-      if (this.tool === "eraser" && e.buttons) { this.eraseAt(p); return; }
+      if (this.isVecTool()) {
+        window.VecTools.move(e, this);
+        return;
+      }
+
+      if (this.tool === "eraser") {
+        // ring cursor follows the pointer even when hovering
+        this.hoverScr = scr;
+        if (e.buttons && this._eraseGesture) this.eraseAt(p);
+        else this.render();
+        return;
+      }
       if (!this.liveStroke) return;
 
       if (this.tool === "line") {
-        this.liveStroke.points = [this._shapeStart, p];
+        var lp = this.snapPoint(p);
+        if (e.shiftKey) {
+          // constrain to 45° steps
+          var dx = p[0] - this._shapeStart[0], dy = p[1] - this._shapeStart[1];
+          var ang = Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) * (Math.PI / 4);
+          var len = Math.hypot(dx, dy);
+          lp = [Math.round(this._shapeStart[0] + len * Math.cos(ang)),
+                Math.round(this._shapeStart[1] + len * Math.sin(ang))];
+        }
+        this.liveStroke.points = [this._shapeStart, lp];
+        this.render();
+        return;
+      }
+      if (this.tool === "rect") {
+        var rp = this.snapPoint(p);
+        if (e.shiftKey) {
+          // square
+          var w = rp[0] - this._shapeStart[0], h = rp[1] - this._shapeStart[1];
+          var side = Math.max(Math.abs(w), Math.abs(h));
+          rp = [this._shapeStart[0] + (w < 0 ? -side : side),
+                this._shapeStart[1] + (h < 0 ? -side : side)];
+        }
+        this.liveStroke.points = this.rectPoints(this._shapeStart, rp);
         this.render();
         return;
       }
       if (this.tool === "circle") {
-        this.liveStroke.points = this.circlePoints(this._shapeStart, p);
+        this.liveStroke.points = this.circlePoints(this._shapeStart, this.snapPoint(p));
         this.render();
         return;
       }
@@ -407,8 +540,30 @@
         this.render();
         return;
       }
+      if (this.isVecTool()) {
+        window.VecTools.up(e, this);
+        return;
+      }
+      if (this._eraseGesture) {
+        var eg = this._eraseGesture;
+        this._eraseGesture = null;
+        if (eg.changed) {
+          this._preSnapshot = eg.snap;   // one undo step per erase drag
+          this.pushUndo();
+          window.Store.emit();
+          if (this.onInkChange) this.onInkChange(this.glyph.name);
+        }
+        this.render();
+        return;
+      }
       if (!this.liveStroke) return;
       if (this.liveStroke.points.length >= 1) {
+        // shapes drawn with Fill on become closed filled contours
+        if (this.fillShape && (this.tool === "rect" || this.tool === "circle") &&
+            this.liveStroke.points.length >= 4) {
+          var pts = this.liveStroke.points.slice(0, -1); // drop closing dup
+          this.liveStroke = { fill: true, points: pts };
+        }
         this.pushUndo();
         window.Store.getGlyph(this.glyph.name).strokes.push(this.liveStroke);
         window.Store.emit();
@@ -420,26 +575,110 @@
       this.render();
     },
 
+    eraserRadius: function () {
+      // never smaller than ~14 screen px so it stays tappable when zoomed out
+      return Math.max(this.eraserSize / 2, 14 / this.s());
+    },
+
+    /* Erase under p. "stroke" mode removes whole strokes (the classic
+     * behaviour); "partial" rubs points out and splits strokes in two like a
+     * raster eraser. Undo is one step per drag gesture (see down/up). */
     eraseAt: function (p) {
       var data = window.Store.getGlyph(this.glyph.name);
-      // screen-consistent hit radius: ~18 px regardless of zoom
-      var hitR = Math.max(this.penWidth * 0.6, 18 / this.s());
-      var before = data.strokes.length;
-      this._preSnapshot = this.snapshot();
-      data.strokes = data.strokes.filter(function (s) {
-        return !s.points.some(function (q) {
-          var dx = p[0] - q[0], dy = p[1] - q[1];
-          return dx * dx + dy * dy < hitR * hitR;
-        });
-      });
-      if (data.strokes.length !== before) {
-        this.pushUndo();
-        window.Store.emit();
-        if (this.onInkChange) this.onInkChange(this.glyph.name);
-        this.render();
-      } else {
-        this._preSnapshot = null;
+      var hitR = this.eraserRadius();
+      var hitR2 = hitR * hitR;
+      var changed = false;
+
+      function inPoly(pts, x, y) {
+        var inside = false;
+        for (var i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+          var xi = pts[i][0], yi = pts[i][1], xj = pts[j][0], yj = pts[j][1];
+          if ((yi > y) !== (yj > y) &&
+              x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
+        }
+        return inside;
       }
+      var near = function (q, r2) {
+        var dx = p[0] - q[0], dy = p[1] - q[1];
+        return dx * dx + dy * dy < r2;
+      };
+      var fillHit = function (st) {
+        return inPoly(st.points, p[0], p[1]) ||
+               st.points.some(function (q) { return near(q, hitR2); });
+      };
+
+      if (this.eraserMode === "stroke") {
+        var before = data.strokes.length;
+        data.strokes = data.strokes.filter(function (s) {
+          if (s.fill) return !fillHit(s);
+          // fat strokes stay tappable anywhere on their body
+          var r2 = Math.max(hitR2, Math.pow((s.width || 0) * 0.6, 2));
+          return !s.points.some(function (q) { return near(q, r2); });
+        });
+        changed = data.strokes.length !== before;
+      } else {
+        // sparse polylines (line tool, pen flattening at low zoom) must be
+        // densified first, or the rub only hits the stored points instead of
+        // the drawn segments between them
+        var densify = function (pts, maxGap) {
+          var out2 = [pts[0]];
+          for (var i = 1; i < pts.length; i++) {
+            var a = pts[i - 1], b = pts[i];
+            var d = Math.hypot(b[0] - a[0], b[1] - a[1]);
+            var n = Math.ceil(d / maxGap);
+            for (var k = 1; k < n; k++) {
+              var t = k / n;
+              var q = [Math.round(a[0] + (b[0] - a[0]) * t),
+                       Math.round(a[1] + (b[1] - a[1]) * t)];
+              if (a.length > 2 && b.length > 2) {
+                q.push(Math.round(a[2] + (b[2] - a[2]) * t));
+              }
+              out2.push(q);
+            }
+            out2.push(b);
+          }
+          return out2;
+        };
+        var segNear = function (pts) {
+          for (var i = 1; i < pts.length; i++) {
+            var a = pts[i - 1], b = pts[i];
+            var vx = b[0] - a[0], vy = b[1] - a[1];
+            var l2 = vx * vx + vy * vy;
+            var t = l2 ? ((p[0] - a[0]) * vx + (p[1] - a[1]) * vy) / l2 : 0;
+            t = Math.max(0, Math.min(1, t));
+            var dx = p[0] - (a[0] + vx * t), dy = p[1] - (a[1] + vy * t);
+            if (dx * dx + dy * dy < hitR2) return true;
+          }
+          return pts.length === 1 && near(pts[0], hitR2);
+        };
+        var out = [];
+        data.strokes.forEach(function (st) {
+          if (st.fill) {
+            // filled contours cannot be split — rub deletes them whole
+            if (fillHit(st)) changed = true; else out.push(st);
+            return;
+          }
+          if (!segNear(st.points)) { out.push(st); return; }
+          var runs = [], cur = [];
+          densify(st.points, Math.max(8, hitR * 0.5)).forEach(function (q) {
+            if (near(q, hitR2)) {
+              if (cur.length) { runs.push(cur); cur = []; }
+            } else {
+              cur.push(q);
+            }
+          });
+          if (cur.length) runs.push(cur);
+          changed = true;
+          runs.forEach(function (r) {
+            // the split parts are plain polylines again (bez no longer applies)
+            if (r.length >= 2) out.push({ width: st.width, points: r });
+          });
+        });
+        data.strokes = out;
+      }
+
+      if (changed && this._eraseGesture) this._eraseGesture.changed = true;
+      this.render();
     },
 
     // ---- anchors ---------------------------------------------------------
@@ -497,6 +736,8 @@
       if (!this.undoStack.length || !this.glyph) return;
       this.redoStack.push(this.snapshot());
       this.restore(this.undoStack.pop());
+      // selection/node indices may now point at different strokes
+      if (window.VecTools) window.VecTools.softReset();
       window.Store.emit();
       if (this.onInkChange) this.onInkChange(this.glyph.name);
       this.render();
@@ -505,6 +746,7 @@
       if (!this.redoStack.length || !this.glyph) return;
       this.undoStack.push(this.snapshot());
       this.restore(this.redoStack.pop());
+      if (window.VecTools) window.VecTools.softReset();
       window.Store.emit();
       if (this.onInkChange) this.onInkChange(this.glyph.name);
       this.render();
@@ -741,6 +983,22 @@
         }
       });
       ctx.restore();
+
+      // eraser: dashed ring showing the rub radius
+      if (this.tool === "eraser" && this.hoverScr) {
+        ctx.save();
+        ctx.strokeStyle = colAccent;
+        ctx.setLineDash([4, 3]);
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(this.hoverScr[0], this.hoverScr[1],
+                this.eraserRadius() * s, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // selection boxes, node handles, pen path preview
+      if (this.isVecTool() && window.VecTools) window.VecTools.render(this, ctx);
 
       if (this.anchorMode) this.renderAnchors(ctx, colAccent, colBg);
     },

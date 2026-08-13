@@ -105,26 +105,77 @@
       </div>
     </div>
 
-    <div class="toolbar" id="toolbar">
-      <div class="tool-group">
-        <button id="toolPen" class="btn tool" title="Pen (P)">✏️ <span data-i18n="pen">Pen</span></button>
-        <button id="toolLine" class="btn tool" title="Straight line (L)">📏 <span data-i18n="line">Line</span></button>
-        <button id="toolCircle" class="btn tool" title="Circle — drag from center (O). Myanmar letters are built on circles!">⭕ <span data-i18n="circle">Circle</span></button>
-        <button id="toolEraser" class="btn tool" title="Eraser (E) — tap a stroke to remove it">🧽 <span data-i18n="erase">Erase</span></button>
+    <div class="tool-options" id="toolOptions">
+      <div class="opt-group" data-for="brush pen line rect circle select">
+        <label title="Stroke thickness in font units"><span data-i18n="penW">Width</span>
+          <input id="penWidth" type="range" min="20" max="140" value="60">
+          <span id="penWidthVal" class="opt-val">60</span></label>
+      </div>
+      <div class="opt-group" data-for="brush">
+        <label title="How strongly shaky input is steadied"><span data-i18n="steady">Steady</span>
+          <input id="stabilizer" type="range" min="0" max="10" value="3"></label>
+      </div>
+      <div class="opt-group" data-for="pen rect circle">
+        <label class="check" title="Commit the closed shape as a solid filled contour"><input id="fillShape" type="checkbox"> <span data-i18n="fillShape">Fill</span></label>
+      </div>
+      <div class="opt-group" data-for="pen line rect circle direct">
+        <label class="check" title="Snap to a 10-unit grid and the metric guide lines"><input id="snapToggle" type="checkbox"> <span data-i18n="snap">Snap</span></label>
+      </div>
+      <div class="opt-group" data-for="pen">
+        <button id="btnPenDone" class="btn small" data-i18n="done" title="Finish the path (Enter or double-click)">Done</button>
+        <button id="btnPenClose" class="btn small" data-i18n="closePath" title="Close the path back to its first point">Close</button>
+        <button id="btnPenBack" class="btn icon-btn small" title="Remove the last point (Backspace)">⌫</button>
+        <button id="btnPenCancel" class="btn icon-btn small" title="Cancel the path (Esc)">✕</button>
+        <span class="opt-hint" data-i18n="penHint">click: corner · drag: curve · click the first point to close</span>
+      </div>
+      <div class="opt-group" data-for="select">
+        <span id="selCount" class="sel-count" hidden></span>
+        <button id="btnDup" class="btn small" data-i18n="duplicate" title="Duplicate the selection (Ctrl/Cmd+D · Alt-drag)">Duplicate</button>
+        <button id="btnFlipH" class="btn icon-btn small" title="Flip horizontally">⇋</button>
+        <button id="btnFlipV" class="btn icon-btn small" title="Flip vertically">⇵</button>
+        <button id="btnSmoothSel" class="btn small" data-i18n="smoothSel" title="Smooth the selected strokes">Smooth</button>
+        <button id="btnSimplify" class="btn small" data-i18n="simplify" title="Remove excess points from the selected strokes">Simplify</button>
+        <button id="btnCopySel" class="btn small" data-i18n="copy" title="Copy the selection (Ctrl/Cmd+C) — switch glyph and paste to reuse shapes">Copy</button>
+        <button id="btnPasteSel" class="btn small" data-i18n="paste" title="Paste copied strokes (Ctrl/Cmd+V)">Paste</button>
+        <button id="btnDelSel" class="btn icon-btn small danger" title="Delete the selection (Del)">🗑</button>
+        <span class="opt-hint" data-i18n="selectHint">drag a box to select · drag handles to scale, knob to rotate</span>
+      </div>
+      <div class="opt-group" data-for="direct">
+        <button id="btnNodeType" class="btn small" data-i18n="cornerSmooth" title="Toggle the selected point between corner and smooth curve">Corner/Smooth</button>
+        <button id="btnNodeDel" class="btn small" data-i18n="deleteNode" title="Delete the selected point (Del)">Delete point</button>
+        <button id="btnReverse" class="btn small" data-i18n="reverse" title="Reverse the path direction — flips how filled shapes cut holes">Reverse</button>
+        <span class="opt-hint" data-i18n="directHint">click a path, drag its points · double-click the path to add a point</span>
+      </div>
+      <div class="opt-group" data-for="eraser">
+        <div class="seg" role="group" aria-label="Eraser mode">
+          <button id="eraserPartial" class="btn small seg-btn" data-i18n="eraserPartial" title="Rub away parts of strokes (splits them)">Partial</button>
+          <button id="eraserStroke" class="btn small seg-btn" data-i18n="eraserStroke" title="Tap a stroke to remove it whole">Whole</button>
+        </div>
+        <label title="Eraser size in font units"><span data-i18n="eraserSize">Size</span>
+          <input id="eraserSize" type="range" min="20" max="200" value="60">
+          <span id="eraserSizeVal" class="opt-val">60</span></label>
+      </div>
+      <div class="opt-group" data-for="anchors">
+        <span class="opt-hint" data-i18n="anchorTipShort">drag the anchor points · double-click one to reset it</span>
+      </div>
+      <span class="opt-spacer"></span>
+      <div class="opt-group opt-global">
         <button id="btnUndo" class="btn icon-btn" title="Undo (Ctrl/Cmd+Z)">↩</button>
         <button id="btnRedo" class="btn icon-btn" title="Redo (Ctrl/Cmd+Shift+Z)">↪</button>
-        <button id="btnClear" class="btn danger" data-i18n="clear" title="Clear this glyph">Clear</button>
         <span class="tool-sep"></span>
         <button id="btnZoomOut" class="btn icon-btn" title="Zoom out">−</button>
-        <button id="btnZoomIn" class="btn icon-btn" title="Zoom in">+</button>
         <button id="btnZoomReset" class="btn" title="Fit the whole drawing area"><span id="zoomLabel">100%</span></button>
+        <button id="btnZoomIn" class="btn icon-btn" title="Zoom in">+</button>
+        <span class="tool-sep"></span>
+        <button id="btnMoreTools" class="btn icon-btn more-tools" title="Guides, ghost, SVG &amp; project tools">⚙</button>
       </div>
-      <button id="btnMoreTools" class="btn icon-btn more-tools" title="Pen &amp; guide settings">⚙</button>
+    </div>
+
+    <div class="settings-panel" id="settingsPanel" hidden>
       <div class="tool-group sliders">
-        <label title="Stroke thickness in font units"><span data-i18n="penW">Pen</span> <input id="penWidth" type="range" min="20" max="140" value="60"> <span id="penWidthVal">60</span></label>
-        <label title="How strongly shaky input is steadied"><span data-i18n="steady">Steady</span> <input id="stabilizer" type="range" min="0" max="10" value="3"></label>
         <label title="Guide visibility"><span data-i18n="guide">Guide</span> <input id="guideOpacity" type="range" min="0" max="60" value="22"></label>
         <label title="Guide character size (font units)"><span data-i18n="size">Size</span> <input id="guideSize" type="range" min="800" max="1200" value="1000"></label>
+        <label title="Horizontal space this glyph occupies (font units)"><span data-i18n="advance">Advance</span> <input id="advanceInput" type="number" min="0" max="2000" step="10" class="advance"></label>
       </div>
       <div class="tool-group checks">
         <label class="check" title="Vary stroke width with stylus pressure"><input id="pressureToggle" type="checkbox" checked> <span data-i18n="penPressure">Pen pressure</span></label>
@@ -139,19 +190,51 @@
           <select id="copySelect" class="sel mm"><option value="">—</option></select>
         </label>
         <button id="btnCenter" class="btn" data-i18n="center" title="Center the ink horizontally in the advance width">Center</button>
-        <button id="btnAnchors" class="btn tool" title="Anchor mode (A) — drag the points where marks attach; double-click an anchor to reset it">⚓ <span data-i18n="anchors">Anchors</span></button>
         <button id="btnSVG" class="btn" data-i18n="svg" title="Download this glyph as an SVG for design tools">SVG</button>
         <button id="btnSVGImport" class="btn" data-i18n="importSvg" title="Import an SVG's outlines onto this glyph — the path for vectorized paper sketches (Inkscape/Illustrator trace)">Import SVG</button>
         <input id="svgFileInput" type="file" accept=".svg,image/svg+xml" hidden>
         <button id="btnGuideFont" class="btn" data-i18n="guideFont" title="Trace over a different font: load any TTF/OTF as the guide. Stays on your device.">Guide font</button>
         <input id="guideFontInput" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf" hidden>
-        <label title="Horizontal space this glyph occupies (font units)"><span data-i18n="advance">Advance</span> <input id="advanceInput" type="number" min="0" max="2000" step="10" class="advance"></label>
+        <button id="btnClear" class="btn danger" data-i18n="clear" title="Clear this glyph">Clear</button>
       </div>
     </div>
 
-    <div class="canvas-wrap">
-      <canvas id="glyphCanvas"></canvas>
-      <div class="canvas-tip" id="canvasTip" data-i18n="canvasTip">Two fingers: pan &amp; zoom · wheel: zoom</div>
+    <div class="editor-shell">
+      <div class="tool-rail" id="toolRail" role="toolbar" aria-label="Drawing tools">
+        <button class="btn tool rail-btn" data-tool="select" data-i18n-title="toolSelect" title="Select &amp; transform (V)" aria-label="Select">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6.5 3.2 L18 12 L11.7 12.9 L14.8 19 L12.4 20.2 L9.4 14.1 L6.5 17.2 Z" fill="currentColor"/></svg>
+        </button>
+        <button class="btn tool rail-btn" data-tool="direct" data-i18n-title="toolDirect" title="Edit points (D)" aria-label="Edit points">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6.5 3.2 L18 12 L11.7 12.9 L14.8 19 L12.4 20.2 L9.4 14.1 L6.5 17.2 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </button>
+        <span class="rail-sep"></span>
+        <button class="btn tool rail-btn" data-tool="brush" data-i18n-title="toolBrush" title="Brush — freehand (B)" aria-label="Brush">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M15 4.5l4.5 4.5L9 19.5 3.8 20.9l1.3-5.2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M13 6.7l4.3 4.3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+        </button>
+        <button class="btn tool rail-btn" data-tool="pen" data-i18n-title="toolPen" title="Pen — click points, drag curves (P)" aria-label="Pen">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3.5l5 5-6.3 8.2-6.9 2.5 2.5-6.9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="10.2" cy="13.8" r="1.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M4.4 19.6l4.3-4.3" stroke="currentColor" stroke-width="1.4"/></svg>
+        </button>
+        <button class="btn tool rail-btn" data-tool="line" data-i18n-title="toolLine" title="Line (L)" aria-label="Line">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5.5 18.5L18.5 5.5" stroke="currentColor" stroke-width="1.6"/><circle cx="5.5" cy="18.5" r="1.9" fill="currentColor"/><circle cx="18.5" cy="5.5" r="1.9" fill="currentColor"/></svg>
+        </button>
+        <button class="btn tool rail-btn" data-tool="rect" data-i18n-title="toolRect" title="Rectangle (M) — hold Shift for a square" aria-label="Rectangle">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="4.5" y="6.5" width="15" height="11" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+        </button>
+        <button class="btn tool rail-btn" data-tool="circle" data-i18n-title="toolCircle" title="Circle — drag from center (O). Myanmar letters are built on circles!" aria-label="Circle">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+        </button>
+        <button class="btn tool rail-btn" data-tool="eraser" data-i18n-title="toolEraser" title="Eraser (E)" aria-label="Eraser">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4.8 15.2 L13 7a2 2 0 0 1 2.8 0l3.9 3.9a2 2 0 0 1 0 2.8L14 19.4 H9.4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 11l4.7 4.7M8 19.4h12" stroke="currentColor" stroke-width="1.6"/></svg>
+        </button>
+        <span class="rail-sep"></span>
+        <button id="btnAnchors" class="btn tool rail-btn" data-i18n-title="toolAnchors" title="Anchor mode (A) — drag the points where marks attach" aria-label="Anchors">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="3.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.5v6M12 15.5v6M2.5 12h6M15.5 12h6" stroke="currentColor" stroke-width="1.6"/></svg>
+        </button>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="glyphCanvas"></canvas>
+        <div class="canvas-tip" id="canvasTip" data-i18n="canvasTip">Two fingers: pan &amp; zoom · wheel: zoom</div>
+      </div>
     </div>
 
     <div class="testdrive" id="testdrive">
@@ -212,11 +295,14 @@
 }</pre>
       <h3>Tools &amp; shortcuts</h3>
       <ul>
-        <li><strong>P</strong> pen · <strong>L</strong> line · <strong>O</strong> circle · <strong>E</strong> eraser · <strong>A</strong> anchor mode</li>
-        <li><strong>Ctrl/Cmd+Z</strong> undo · <strong>Ctrl/Cmd+Shift+Z</strong> redo</li>
-        <li><strong>[ ]</strong> previous / next glyph · <strong>N</strong> next empty glyph</li>
-        <li><strong>+ − 0</strong> zoom in / out / fit · <strong>F</strong> focus mode</li>
-        <li><strong>Ghost</strong> overlays a glyph you already drew (e.g. your က) so every letter keeps the same style; <strong>Copy from</strong> duplicates strokes between similar letters (ခ→ဂ, ပ→ဖ…).</li>
+        <li><strong>V</strong> select · <strong>D</strong> edit points · <strong>B</strong> brush · <strong>P</strong> pen · <strong>L</strong> line · <strong>M</strong> rectangle · <strong>O</strong> circle · <strong>E</strong> eraser · <strong>A</strong> anchor mode</li>
+        <li><strong>Select (V)</strong>: click or drag a box around strokes, then move them, scale with the corner handles, rotate with the knob above (Shift snaps to 15°), nudge with the arrow keys (Shift = ×10), <strong>Alt-drag</strong> to duplicate. <strong>Ctrl/Cmd+A</strong> select all · <strong>Ctrl/Cmd+C/X/V</strong> copy/cut/paste — paste works across glyphs, so you can reuse a bowl or stem you already drew · <strong>Ctrl/Cmd+D</strong> duplicate · <strong>Del</strong> delete. Double-click a stroke to edit its points.</li>
+        <li><strong>Pen (P)</strong> draws Bézier paths like Illustrator: click for corners, drag for smooth curves, click the first point (or press <strong>Close</strong>) to close the shape, <strong>Enter</strong>/double-click to finish, <strong>Backspace</strong> removes the last point. With <strong>Fill</strong> on, closed paths become solid shapes.</li>
+        <li><strong>Edit points (D)</strong>: drag points and their curve handles (hand-drawn strokes bend with a soft falloff), double-click the path to add a point, double-click a point to toggle corner/smooth, <strong>Del</strong> removes it.</li>
+        <li><strong>Eraser (E)</strong> has two modes: <em>Partial</em> rubs away just where you touch (splitting the stroke), <em>Whole</em> removes an entire stroke per tap.</li>
+        <li><strong>Snap</strong> pulls the pen, shapes and point edits onto a 10-unit grid and the baseline/body/ascender guides.</li>
+        <li><strong>Ctrl/Cmd+Z</strong> undo · <strong>Ctrl/Cmd+Shift+Z</strong> redo · <strong>[ ]</strong> previous / next glyph · <strong>N</strong> next empty · <strong>+ − 0</strong> zoom · <strong>F</strong> focus mode · hold <strong>Space</strong> or drag the middle mouse button to pan.</li>
+        <li><strong>Ghost</strong> overlays a glyph you already drew (e.g. your က) so every letter keeps the same style; <strong>Copy from</strong> duplicates strokes between similar letters (ခ→ဂ, ပ→ဖ…). Both live under <strong>⚙</strong>.</li>
         <li><strong>⚓ Anchors</strong> shows where vowel signs and marks will attach in the full build — drag a point to adjust it, double-click to reset. <strong>Import SVG</strong> brings a vectorized paper sketch (Inkscape/Illustrator trace) onto the current glyph.</li>
         <li>On iPad: draw with the Apple Pencil (pressure varies the stroke), pan &amp; zoom with two fingers. Add the studio to your Home Screen — it works offline.</li>
       </ul>
@@ -224,8 +310,8 @@
       <ul>
         <li><strong>Two-finger tap</strong> undo · <strong>three-finger tap</strong> redo — the same shortcuts drawing apps use.</li>
         <li><strong>Pinch</strong> to zoom, <strong>two fingers</strong> to pan. Once a stylus is detected, fingers only pan and the pen draws (palm rejection).</li>
-        <li>The bar along the bottom is built for your thumb: previous/next glyph, undo, redo, pen↔eraser, and jump to the next empty glyph.</li>
-        <li><strong>⋯</strong> opens the project menu (name, save, load, help, theme, language, gallery); <strong>⚙</strong> reveals pen, guide and anchor settings.</li>
+        <li>The bar along the bottom is built for your thumb: previous/next glyph, undo, redo, brush↔eraser, and jump to the next empty glyph.</li>
+        <li><strong>⋯</strong> opens the project menu (name, save, load, help, theme, language, gallery); <strong>⚙</strong> reveals guide, ghost and SVG tools. The pen tool's <strong>Done/Close/Cancel</strong> buttons sit in the options row above the canvas.</li>
       </ul>
       <h3>Guides</h3>
       <ul>
@@ -256,6 +342,7 @@
 <script src="js/outline.js"></script>
 <script src="js/anchors.js"></script>
 <script src="js/svgimport.js"></script>
+<script src="js/vectools.js"></script>
 <script src="js/editor.js"></script>
 <script src="js/fontexport.js"></script>
 <script src="js/app.js"></script>

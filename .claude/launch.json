@@ -12,6 +12,12 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "8322", "--directory", "web"],
       "port": 8322
+    },
+    {
+      "name": "glyph-studio-3",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8323", "--directory", "web"],
+      "port": 8323
     }
   ]
 }
