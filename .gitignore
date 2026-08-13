@@ -9,6 +9,8 @@ web/gallery-data/
 !docs/**/*.ttf
 # committed sample font (built by CI from projects/sample/)
 !projects/**/*.ttf
+# bundled guide font shipped with the studio (unmodified SIL Padauk, OFL)
+!web/fonts/*.ttf
 
 # python
 __pycache__/
