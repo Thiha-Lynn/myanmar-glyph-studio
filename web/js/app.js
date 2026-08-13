@@ -77,6 +77,7 @@
         var chip = el("button", "chip mm", g.label);
         chip.title = g.name + " — " + (prefs.lang === "my" && g.hintMy ? g.hintMy : g.hint);
         chip.dataset.glyph = g.name;
+        if (g.variant) chip.dataset.variant = g.variant;
         chip.addEventListener("click", function () {
           selectGlyph(g);
           if (isMobile()) closeDrawer();
@@ -161,6 +162,64 @@
     toast("All " + list.length + " glyphs have ink — congratulations! 🎉");
   }
 
+  // ---- mobile: project menu sheet, thumb bar, folding test drive ---------
+  function wireMobile() {
+    var sheet = $("#menuSheet"), body = $("#sheetBody");
+    var homes = [
+      { node: $("#metaFields"), parent: $("#metaFields").parentNode, next: $("#metaFields").nextSibling },
+      { node: $("#secondaryActions"), parent: $("#secondaryActions").parentNode, next: $("#secondaryActions").nextSibling }
+    ];
+
+    function openMenu() {
+      homes.forEach(function (h) { body.appendChild(h.node); });
+      sheet.hidden = false;
+    }
+    function closeMenu() {
+      sheet.hidden = true;
+      homes.forEach(function (h) { h.parent.insertBefore(h.node, h.next); });
+    }
+    $("#btnMenu").addEventListener("click", openMenu);
+    $("#btnMenuClose").addEventListener("click", closeMenu);
+    sheet.addEventListener("click", function (e) { if (e.target === this) closeMenu(); });
+    // any action inside the sheet closes it, so the canvas comes straight back
+    body.addEventListener("click", function (e) {
+      if (e.target.closest(".btn") && !e.target.closest("#metaFields")) {
+        setTimeout(closeMenu, 60);
+      }
+    });
+    window.matchMedia("(max-width: 640px)").addEventListener("change", function (e) {
+      if (!e.matches && !sheet.hidden) closeMenu();
+    });
+
+    // thumb bar
+    var acts = {
+      prev: function () { step(-1); },
+      next: function () { step(1); },
+      undo: function () { window.Editor.undo(); },
+      redo: function () { window.Editor.redo(); },
+      nextEmpty: nextUndrawn,
+      tool: function () {
+        var next = window.Editor.tool === "eraser" ? "pen" : "eraser";
+        setTool(next);
+        $("#mbTool").textContent = next === "eraser" ? "🧽" : "✏️";
+      }
+    };
+    $("#mobileBar").addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-act]");
+      if (!btn) return;
+      var fn = acts[btn.dataset.act];
+      if (fn) { fn(); if (navigator.vibrate) { try { navigator.vibrate(8); } catch (err) {} } }
+    });
+
+    // folding test drive — the canvas gets the room by default on phones
+    var td = $("#testdrive");
+    if (window.matchMedia("(max-width: 640px)").matches) td.classList.add("collapsed");
+    $("#btnTestToggle").addEventListener("click", function () {
+      td.classList.toggle("collapsed");
+      window.Editor.resize();
+    });
+  }
+
   // ---- drawer (mobile) ---------------------------------------------------
   function openDrawer() {
     $("#sidebar").classList.add("open");
@@ -185,6 +244,13 @@
     Object.keys(TOOL_BUTTONS).forEach(function (k) {
       $(TOOL_BUTTONS[k]).classList.toggle("active", t === k);
     });
+    var mb = $("#mbTool");
+    if (mb) mb.textContent = t === "eraser" ? "🧽" : "✏️";
+    // drawing tools and anchor dragging are mutually exclusive
+    if (window.Editor.anchorMode) {
+      window.Editor.setAnchorMode(false);
+      $("#btnAnchors").classList.remove("active");
+    }
   }
 
   function wireToolbar() {
@@ -277,6 +343,27 @@
         }
       };
       reader.readAsText(this.files[0]);
+      this.value = "";
+    });
+
+    // guide font: trace over a different face (stays on this device)
+    $("#btnGuideFont").addEventListener("click", function () {
+      if (window.GuideFont && window.GuideFont.isCustom()) {
+        window.GuideFont.reset();
+        this.classList.remove("active");
+        toast(window.I18N.t("guideFontReset"));
+      } else {
+        $("#guideFontInput").click();
+      }
+    });
+    $("#guideFontInput").addEventListener("change", function () {
+      if (!this.files.length) return;
+      window.GuideFont.use(this.files[0]).then(function (name) {
+        $("#btnGuideFont").classList.add("active");
+        toast(window.I18N.t("guideFontSet") + " " + name);
+      }).catch(function (e) {
+        alert("Could not load that font: " + (e.message || e));
+      });
       this.value = "";
     });
 
@@ -448,6 +535,7 @@
 
     buildBrowser();
     wireDrawer();
+    wireMobile();
     wireToolbar();
     wireProject();
     wirePreview();
@@ -459,10 +547,26 @@
     selectGlyph(window.GLYPHS[0]);
     setTool("pen");
     window.Editor.resetView();
+    schedulePreview();
+
+    // The guide face must be fetched before the canvas paints — a canvas
+    // font string alone does not trigger a webfont download.
+    if (window.GuideFont) {
+      window.GuideFont.restore()
+        .then(function (name) {
+          if (name) $("#btnGuideFont").classList.add("active");
+          return window.GuideFont.warmUp();
+        })
+        .then(function () {
+          window.Editor.render();
+          if (!window.Editor.guideShapesStacks()) {
+            toast(window.I18N.t("guideNoShape"));
+          }
+        });
+    }
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(function () { window.Editor.render(); });
     }
-    schedulePreview();
 
     // PWA: offline support + add-to-home-screen on tablets
     if ("serviceWorker" in navigator) {

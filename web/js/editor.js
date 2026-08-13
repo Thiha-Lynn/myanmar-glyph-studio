@@ -19,8 +19,15 @@
   "use strict";
 
   var VIEW = { x0: -250, x1: 1350, yTop: 950, yBottom: -650 };
-  var GUIDE_FONTS = 'Padauk, "Myanmar MN", "Noto Sans Myanmar", "Myanmar Text", sans-serif';
+  // GlyphStudioGuide = a face the contributor loaded; Padauk = the bundled
+  // guide font (web/fonts/), which shapes stacks the system fonts often can't
+  var GUIDE_FONTS = '"GlyphStudioGuide", Padauk, "Myanmar MN", "Noto Sans Myanmar", "Myanmar Text", sans-serif';
   var ZOOM_MIN = 0.4, ZOOM_MAX = 6;
+  var TAP_MS = 350, TAP_SLOP = 14;  // multi-finger tap tolerances
+
+  function buzz(ms) {
+    try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {}
+  }
 
   var Editor = {
     canvas: null,
@@ -47,6 +54,7 @@
     _stabPoint: null,
     pointers: {},      // pointerId -> {type, x, y} (screen px)
     gesture: null,     // {dist, mid:[px,py], startZoom, startOx, startOy}
+    _multi: null,      // multi-finger tap tracking: {max, t0, moved}
     undoStack: [],
     redoStack: [],
     onInkChange: null, // callback(glyphName)
@@ -182,9 +190,14 @@
     down: function (e) {
       if (!this.glyph) return;
       e.preventDefault();
-      this.canvas.setPointerCapture && this.canvas.setPointerCapture(e.pointerId);
       var scr = this.toScreen(e);
+      // Register the pointer BEFORE capturing: setPointerCapture throws if the
+      // browser no longer considers the pointer active, and losing the record
+      // would strand a finger and break pinch/tap tracking.
       this.pointers[e.pointerId] = { type: e.pointerType, x: scr[0], y: scr[1] };
+      try {
+        if (this.canvas.setPointerCapture) this.canvas.setPointerCapture(e.pointerId);
+      } catch (err) { /* pointer already gone — bookkeeping above still holds */ }
 
       if (e.pointerType === "pen" && !this.penSeen) {
         this.penSeen = true;
@@ -193,8 +206,13 @@
       }
 
       var touches = this.activeTouches();
-      if (e.pointerType === "touch" && touches.length === 2) {
-        // second finger: abandon any live stroke, start pinch/pan gesture
+      if (e.pointerType === "touch") {
+        // track the gesture so a quick multi-finger tap can mean undo/redo
+        if (!this._multi) this._multi = { max: 0, t0: e.timeStamp, moved: false };
+        this._multi.max = Math.max(this._multi.max, touches.length);
+      }
+      if (e.pointerType === "touch" && touches.length >= 2) {
+        // more than one finger: abandon any live stroke, pinch/pan instead
         this.liveStroke = null;
         this._stabPoint = null;
         var a = touches[0], b = touches[1];
@@ -292,6 +310,12 @@
           var dist = Math.hypot(a.x - b.x, a.y - b.y);
           var mid = [(a.x + b.x) / 2, (a.y + b.y) / 2];
           var factor = this.gesture.dist ? dist / this.gesture.dist : 1;
+          if (this._multi &&
+              (Math.abs(dist - this.gesture.dist) > TAP_SLOP ||
+               Math.hypot(mid[0] - this.gesture.mid[0],
+                          mid[1] - this.gesture.mid[1]) > TAP_SLOP)) {
+            this._multi.moved = true;   // a real pinch/pan, not a tap
+          }
           this.zoomAt(mid[0], mid[1], factor);
           // pan by midpoint drift
           var s = this.s();
@@ -359,6 +383,22 @@
     up: function (e) {
       delete this.pointers[e.pointerId];
       if (this.activeTouches().length < 2) this.gesture = null;
+
+      // multi-finger tap shortcuts, resolved once every finger is up:
+      // two fingers = undo, three = redo (the Procreate/Notes convention)
+      if (e.pointerType === "touch" && this._multi &&
+          !Object.keys(this.pointers).length) {
+        var m = this._multi;
+        this._multi = null;
+        if (!m.moved && m.max >= 2 && e.timeStamp - m.t0 < TAP_MS) {
+          if (m.max === 2) { this.undo(); buzz(12); }
+          else if (m.max >= 3) { this.redo(); buzz([12, 40, 12]); }
+          this.liveStroke = null;
+          this.render();
+          return;
+        }
+      }
+
       if (!this.glyph) return;
       if (this._dragAnchor) {
         this._dragAnchor = null;
@@ -372,6 +412,7 @@
         this.pushUndo();
         window.Store.getGlyph(this.glyph.name).strokes.push(this.liveStroke);
         window.Store.emit();
+        if (e.pointerType === "touch") buzz(8);  // "stroke landed" feedback
         if (this.onInkChange) this.onInkChange(this.glyph.name);
       }
       this.liveStroke = null;
@@ -523,6 +564,11 @@
       window.Store.emit();
       if (this.onInkChange) this.onInkChange(this.glyph.name);
       this.render();
+    },
+
+    /* Does the guide face shape Myanmar (form stacks)? See GuideFont. */
+    guideShapesStacks: function () {
+      return !window.GuideFont || window.GuideFont.shapesStacks(this.ctx);
     },
 
     // ---- guide metrics -------------------------------------------------

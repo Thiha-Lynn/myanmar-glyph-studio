@@ -48,21 +48,34 @@
       <p class="tagline">Sketch over dimmed guides · <span class="mm">မိမိစိတ်ကြိုက် ဖောင့်ရေးဆွဲပါ</span></p>
     </div>
   </div>
-  <div class="meta-fields">
+  <div class="meta-fields" id="metaFields">
     <label><span data-i18n="fontName">Font name</span> <input id="fontName" type="text" spellcheck="false"></label>
     <label><span data-i18n="yourName">Your name</span> <input id="authorName" type="text" spellcheck="false" data-i18n-ph="yourNamePh" placeholder="for the OFL credit"></label>
   </div>
   <div class="project-actions">
-    <a href="gallery.html" class="btn icon-btn" title="Community font gallery / ဖောင့်ပြခန်း" style="text-decoration:none">🖼</a>
-    <button id="btnLang" class="btn icon-btn" title="Switch language / ဘာသာစကား">မြ</button>
-    <button id="btnTheme" class="btn icon-btn" title="Theme: auto / light / dark">🌗</button>
-    <button id="btnHelp" class="btn" data-i18n="help" title="How to use your exported font">Help</button>
-    <button id="btnSave" class="btn" data-i18n="save" title="Download the project file (JSON) — this is your source of truth">Save</button>
-    <button id="btnLoad" class="btn" data-i18n="load" title="Load a saved .glyphstudio.json project">Load</button>
+    <div class="secondary-actions" id="secondaryActions">
+      <a href="gallery.html" class="btn icon-btn" title="Community font gallery / ဖောင့်ပြခန်း" style="text-decoration:none">🖼</a>
+      <button id="btnLang" class="btn icon-btn" title="Switch language / ဘာသာစကား">မြ</button>
+      <button id="btnTheme" class="btn icon-btn" title="Theme: auto / light / dark">🌗</button>
+      <button id="btnHelp" class="btn" data-i18n="help" title="How to use your exported font">Help</button>
+      <button id="btnSave" class="btn" data-i18n="save" title="Download the project file (JSON) — this is your source of truth">Save</button>
+      <button id="btnLoad" class="btn" data-i18n="load" title="Load a saved .glyphstudio.json project">Load</button>
+    </div>
+    <button id="btnMenu" class="btn icon-btn menu-toggle" data-i18n-title="menu" title="Project menu" aria-label="Project menu">⋯</button>
     <button id="btnExportTTF" class="btn primary" data-i18n="exportFont" title="Export an installable font file (TTF)">Export font</button>
     <input id="fileInput" type="file" accept=".json,application/json" hidden>
   </div>
 </header>
+
+<div id="menuSheet" class="sheet" hidden>
+  <div class="sheet-card">
+    <div class="sheet-head">
+      <strong data-i18n="project">Project</strong>
+      <button id="btnMenuClose" class="btn icon-btn" aria-label="Close">✕</button>
+    </div>
+    <div class="sheet-body" id="sheetBody"></div>
+  </div>
+</div>
 
 <div class="layout">
   <div id="drawerOverlay" class="drawer-overlay" hidden></div>
@@ -105,8 +118,8 @@
         <button id="btnZoomOut" class="btn icon-btn" title="Zoom out">−</button>
         <button id="btnZoomIn" class="btn icon-btn" title="Zoom in">+</button>
         <button id="btnZoomReset" class="btn" title="Fit the whole drawing area"><span id="zoomLabel">100%</span></button>
-        <button id="btnMoreTools" class="btn icon-btn more-tools" title="Pen &amp; guide settings">⚙</button>
       </div>
+      <button id="btnMoreTools" class="btn icon-btn more-tools" title="Pen &amp; guide settings">⚙</button>
       <div class="tool-group sliders">
         <label title="Stroke thickness in font units"><span data-i18n="penW">Pen</span> <input id="penWidth" type="range" min="20" max="140" value="60"> <span id="penWidthVal">60</span></label>
         <label title="How strongly shaky input is steadied"><span data-i18n="steady">Steady</span> <input id="stabilizer" type="range" min="0" max="10" value="3"></label>
@@ -130,6 +143,8 @@
         <button id="btnSVG" class="btn" data-i18n="svg" title="Download this glyph as an SVG for design tools">SVG</button>
         <button id="btnSVGImport" class="btn" data-i18n="importSvg" title="Import an SVG's outlines onto this glyph — the path for vectorized paper sketches (Inkscape/Illustrator trace)">Import SVG</button>
         <input id="svgFileInput" type="file" accept=".svg,image/svg+xml" hidden>
+        <button id="btnGuideFont" class="btn" data-i18n="guideFont" title="Trace over a different font: load any TTF/OTF as the guide. Stays on your device.">Guide font</button>
+        <input id="guideFontInput" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf" hidden>
         <label title="Horizontal space this glyph occupies (font units)"><span data-i18n="advance">Advance</span> <input id="advanceInput" type="number" min="0" max="2000" step="10" class="advance"></label>
       </div>
     </div>
@@ -140,6 +155,7 @@
     </div>
 
     <div class="testdrive" id="testdrive">
+      <button id="btnTestToggle" class="td-toggle" data-i18n="testDrive">Test drive</button>
       <label for="previewInput" data-i18n="testDrive">Test drive</label>
       <input id="previewInput" type="text" class="mm"
         value="ကချင် မြန်မာစာ ၁၂၃" spellcheck="false">
@@ -149,6 +165,15 @@
     </div>
   </main>
 </div>
+
+<nav class="mobile-bar" id="mobileBar" aria-label="Drawing actions">
+  <button class="btn icon-btn" data-act="prev" aria-label="Previous glyph">←</button>
+  <button class="btn icon-btn" data-act="undo" aria-label="Undo">↩</button>
+  <button class="btn icon-btn" data-act="tool" id="mbTool" aria-label="Pen or eraser">✏️</button>
+  <button class="btn icon-btn" data-act="redo" aria-label="Redo">↪</button>
+  <button class="btn icon-btn" data-act="next" aria-label="Next glyph">→</button>
+  <button class="btn wide" data-act="nextEmpty" data-i18n="nextUndrawn">Next empty</button>
+</nav>
 
 <div id="helpModal" class="modal" hidden>
   <div class="modal-card">
@@ -195,6 +220,18 @@
         <li><strong>⚓ Anchors</strong> shows where vowel signs and marks will attach in the full build — drag a point to adjust it, double-click to reset. <strong>Import SVG</strong> brings a vectorized paper sketch (Inkscape/Illustrator trace) onto the current glyph.</li>
         <li>On iPad: draw with the Apple Pencil (pressure varies the stroke), pan &amp; zoom with two fingers. Add the studio to your Home Screen — it works offline.</li>
       </ul>
+      <h3>Touch gestures (phone &amp; tablet)</h3>
+      <ul>
+        <li><strong>Two-finger tap</strong> undo · <strong>three-finger tap</strong> redo — the same shortcuts drawing apps use.</li>
+        <li><strong>Pinch</strong> to zoom, <strong>two fingers</strong> to pan. Once a stylus is detected, fingers only pan and the pen draws (palm rejection).</li>
+        <li>The bar along the bottom is built for your thumb: previous/next glyph, undo, redo, pen↔eraser, and jump to the next empty glyph.</li>
+        <li><strong>⋯</strong> opens the project menu (name, save, load, help, theme, language, gallery); <strong>⚙</strong> reveals pen, guide and anchor settings.</li>
+      </ul>
+      <h3>Guides</h3>
+      <ul>
+        <li>The dimmed letter you trace comes from <strong>Padauk</strong>, bundled with the studio — so stacked guides (က္က) and kinzi (င်္က) are correct even when your device's own Myanmar font cannot draw them.</li>
+        <li><strong>⚙ → Guide font</strong> traces over a different face instead: load any TTF/OTF (an earlier font of your own, a style you admire). It stays on your device. Press it again to return to Padauk.</li>
+      </ul>
       <h3>Draft vs. full build</h3>
       <p>The in-browser export is a <em>draft</em>: perfect for testing your
       letterforms, but complex syllables (stacks like က္က, kinzi, vowel-mark
@@ -213,6 +250,7 @@
 <script src="data/glyphs-extended-ab.js"></script>
 <script src="data/glyphs-latin.js"></script>
 <script src="js/i18n.js"></script>
+<script src="js/guidefont.js"></script>
 <script src="js/store.js"></script>
 <script src="js/outline.js"></script>
 <script src="js/anchors.js"></script>

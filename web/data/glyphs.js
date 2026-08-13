@@ -161,7 +161,9 @@
   CONSONANTS.forEach(function (row) {
     glyphs.push({
       name: row[1] + "-myanmar.sub", cp: null,
-      label: ch(row[0]) + "̲", // letter + combining low line, chip only
+      // the plain letter; the chip marks the subjoined form with a bar
+      // (a combining low line is an empty box on many devices)
+      label: ch(row[0]), variant: "sub",
       guide: ch(row[0]) + VIRAMA + ch(row[0]),
       hint: "Subjoined form — draw ONLY the small lower " + ch(row[0]) + " of the stack",
       hintMy: "အောက်ဆင့်ပုံစံ — အောက်ရှိ " + ch(row[0]) + " ငယ်ကိုသာ ဆွဲပါ",
@@ -186,7 +188,7 @@
   });
 
   glyphs.push({
-    name: "u-myanmar.alt", cp: null, label: DOTTED + ch(0x102f) + "*",
+    name: "u-myanmar.alt", cp: null, label: DOTTED + ch(0x102f), variant: "alt",
     guide: ch(0x1014) + ch(0x102f),
     hint: "Short U variant — used when the base has a descender; draw only the vowel",
     hintMy: "တစ်ချောင်းငင်တို — အောက်ဆင်းဗျည်းများအတွက်; သရကိုသာ ဆွဲပါ",
@@ -194,7 +196,7 @@
   });
 
   glyphs.push({
-    name: "uu-myanmar.alt", cp: null, label: DOTTED + ch(0x1030) + "*",
+    name: "uu-myanmar.alt", cp: null, label: DOTTED + ch(0x1030), variant: "alt",
     guide: ch(0x1014) + ch(0x1030),
     hint: "Short UU variant — used when the base has a descender; draw only the vowel",
     hintMy: "နှစ်ချောင်းငင်တို — အောက်ဆင်းဗျည်းများအတွက်; သရကိုသာ ဆွဲပါ",

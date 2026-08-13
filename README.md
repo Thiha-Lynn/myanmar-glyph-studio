@@ -159,9 +159,10 @@ maintainer playbook. We follow the
 
 Fonts produced with this toolkit are meant to be released under the
 [SIL Open Font License 1.1](https://openfontlicense.org) (each family
-folder carries the OFL text); the toolkit code is [MIT](LICENSE).
-Tagged releases ship ready-to-install zips (TTF + WOFF2 + proof sheet)
-for every family.
+folder carries the OFL text); the toolkit code is [MIT](LICENSE). Full
+licensing details, including the bundled Padauk guide font, are in
+[NOTICE.md](NOTICE.md). Tagged releases ship ready-to-install zips
+(TTF + WOFF2 + proof sheet) for every family.
 
 ## Roadmap
 
