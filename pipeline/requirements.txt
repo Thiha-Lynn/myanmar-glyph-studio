@@ -4,7 +4,7 @@ fontmake>=3.8
 # fast, robust overlap removal for the stroke outlines fontmake compiles
 skia-pathops>=0.8
 # testing / proofing / sample generation (proof.py, make_sample.py)
-uharfbuzz>=0.39
+uharfbuzz>=0.56.0
 pillow>=10.0
 # font QA (CI and local checks)
 fontbakery>=0.12
