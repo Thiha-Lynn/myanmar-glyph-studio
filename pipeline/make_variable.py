@@ -27,12 +27,14 @@ import sys
 from pathlib import Path
 
 try:
-    from fontTools.designspaceLib import (AxisDescriptor, DesignSpaceDocument,
+    from fontTools.designspaceLib import (AxisDescriptor, AxisLabelDescriptor,
+                                          DesignSpaceDocument,
                                           InstanceDescriptor, SourceDescriptor)
 except ImportError:
     sys.exit("fontTools is required:  pip install -r requirements.txt")
 
 import json_to_ufo
+from json_to_ufo import RIBBI_STYLES
 
 # weight class -> style name for the usual stops
 STYLE_NAMES = {
@@ -64,10 +66,18 @@ def build(project_path, out_dir, weights, compile_font=True):
     out_dir.mkdir(parents=True, exist_ok=True)
 
     doc = DesignSpaceDocument()
+    doc.elidedFallbackName = "Regular"
     axis = AxisDescriptor()
     axis.name, axis.tag = "Weight", "wght"
     axis.minimum, axis.maximum, axis.default = min(weights), max(weights), 400
     axis.map = [(w, w) for w in weights]
+    # STAT labels, one per stop, so the variable font's style linking
+    # matches its fvar instances (Regular is the elided default)
+    axis.axisLabels = [
+        AxisLabelDescriptor(name=style_for(w), userValue=w,
+                            elidable=(w == 400))
+        for w in weights
+    ]
     doc.addAxis(axis)
 
     counts = {}
@@ -91,9 +101,19 @@ def build(project_path, out_dir, weights, compile_font=True):
             source.copyInfo = True
         doc.addSource(source)
 
+        # named instances need their full legacy naming too, or the
+        # variable font ships fvar entries with empty name records
         instance = InstanceDescriptor()
+        instance.name = f"{family} {style}"
         instance.familyName = family
         instance.styleName = style
+        instance.postScriptFontName = f"{family.replace(' ', '')}-{style}"
+        if style in RIBBI_STYLES:
+            instance.styleMapFamilyName = family
+            instance.styleMapStyleName = style.lower()
+        else:
+            instance.styleMapFamilyName = f"{family} {style}"
+            instance.styleMapStyleName = "regular"
         instance.location = {"Weight": weight}
         doc.addInstance(instance)
 

@@ -136,6 +136,9 @@ KNOWN_ANCHORS = {"top", "bottom", "_top", "_bottom"}
 
 SIGN_LSB = 60  # left sidebearing given to re-aligned spacing signs
 
+# the four styles that may share a legacy family name
+RIBBI_STYLES = {"Regular", "Bold", "Italic", "Bold Italic"}
+
 
 # ---------------------------------------------------------------------------
 # Stroke -> outline expansion (mirror of web/js/outline.js)
@@ -442,6 +445,18 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
     info.familyName = family
     info.styleName = style
     info.openTypeOS2WeightClass = weight_class
+    # Legacy (nameID 1/2) naming: only Regular/Bold/Italic/Bold Italic may
+    # share one family name. Every other weight becomes its own legacy
+    # family — "Family Light / Regular" — while the typographic family
+    # (nameID 16/17) keeps them together as one family for modern apps.
+    if style in RIBBI_STYLES:
+        info.styleMapFamilyName = family
+        info.styleMapStyleName = style.lower()
+    else:
+        info.styleMapFamilyName = f"{family} {style}"
+        info.styleMapStyleName = "regular"
+        info.openTypeNamePreferredFamilyName = family
+        info.openTypeNamePreferredSubfamilyName = style
     info.unitsPerEm = UPM
     info.ascender = ASCENDER
     info.descender = DESCENDER
