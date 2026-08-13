@@ -1,12 +1,14 @@
 /* Offline cache for the Glyph Studio (PWA).
  * Bump VERSION whenever any cached file changes. */
-var VERSION = "v4";
+var VERSION = "v5";
 var CACHE = "glyph-studio-" + VERSION;
 var ASSETS = [
   ".",
   "index.html",
   "css/app.css",
   "data/glyphs.js",
+  "data/glyphs-extended.js",
+  "data/glyphs-latin.js",
   "js/i18n.js",
   "js/store.js",
   "js/outline.js",
@@ -42,7 +44,9 @@ self.addEventListener("fetch", function (e) {
   if (e.request.method !== "GET") return;
   if (new URL(e.request.url).origin !== self.location.origin) return;
   e.respondWith(
-    fetch(e.request).then(function (res) {
+    // no-cache: always revalidate with the server so app updates land on
+    // the next load instead of waiting out the browser's heuristic cache
+    fetch(e.request, { cache: "no-cache" }).then(function (res) {
       if (res.ok) {
         var copy = res.clone();
         caches.open(CACHE).then(function (c) { c.put(e.request, copy); });

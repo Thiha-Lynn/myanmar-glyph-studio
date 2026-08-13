@@ -25,7 +25,9 @@ Stroke-to-outline expansion mirrors web/js/outline.js — keep them in sync.
 
 import json
 import math
+import re
 import sys
+import unicodedata
 from pathlib import Path
 
 try:
@@ -79,6 +81,22 @@ OTHER_CODEPOINTS = {
 
 CODEPOINTS = {f"{n}-myanmar": cp for cp, n in CONSONANTS}
 CODEPOINTS.update(OTHER_CODEPOINTS)
+
+_UNI_NAME = re.compile(r"^uni([0-9A-Fa-f]{4})$")
+
+
+def name_to_codepoint(name):
+    """Friendly names via CODEPOINTS; uniXXXX production names directly.
+
+    The extended-coverage and optional-Latin inventories
+    (web/data/glyphs-extended.js, glyphs-latin.js) use uniXXXX names, so
+    the pipeline needs no per-character tables for them.
+    """
+    cp = CODEPOINTS.get(name)
+    if cp:
+        return cp
+    m = _UNI_NAME.match(name)
+    return int(m.group(1), 16) if m else None
 
 # marks that attach ABOVE a base
 TOP_MARKS = {
@@ -264,23 +282,42 @@ def build_ufo(project, out_dir):
         draw_glyph(g, polys)
         x_min, y_min, x_max, y_max = poly_bounds(polys)
 
+        cp = name_to_codepoint(name)
+        if cp:
+            g.unicode = cp
+
+        # Mark classification: curated sets for the core Burmese inventory;
+        # the Unicode category (Mn = non-spacing mark) for everything else,
+        # so the extended ethnic-language groups need no hand-kept tables.
         is_mark = name in TOP_MARKS or name in BOTTOM_MARKS
+        if not is_mark and cp and name not in BASE_NAMES:
+            is_mark = unicodedata.category(chr(cp)) == "Mn"
+
         adv = data.get("advance")
         if adv is None:
             adv = 0 if is_mark else round(x_max + 60)
         g.width = max(0, adv)
-        cp = CODEPOINTS.get(name)
-        if cp:
-            g.unicode = cp
 
         cx = (x_min + x_max) / 2
-        if name in BASE_NAMES:
+        cy = (y_min + y_max) / 2
+        is_myanmar_base = (cp and 0x1000 <= cp <= 0x109F and not is_mark
+                           and unicodedata.category(chr(cp)) == "Lo")
+        if name in BASE_NAMES or (name not in TOP_MARKS
+                                  and name not in BOTTOM_MARKS
+                                  and is_myanmar_base):
             add_anchor(g, "top", cx, max(y_max, BODY) + 40)
             add_anchor(g, "bottom", cx, min(y_min, 0) - 40)
         elif name in TOP_MARKS:
             add_anchor(g, "_top", cx, y_min - 20)
         elif name in BOTTOM_MARKS:
             add_anchor(g, "_bottom", cx, y_max + 20)
+        elif is_mark:
+            # extension-language mark: decide the attachment side from
+            # where the ink was drawn relative to the letter body
+            if cy >= BODY / 2:
+                add_anchor(g, "_top", cx, y_min - 20)
+            else:
+                add_anchor(g, "_bottom", cx, y_max + 20)
 
         drawn.append(name)
 

@@ -84,10 +84,23 @@ time, so a font needs **parts + rules**, not a glyph per syllable.
 
 | You draw | The build system handles |
 |---|---|
-| ~90 base characters (consonants, vowels, signs, digits, punctuation) | glyph encoding, metrics, UFO packaging |
+| ~90 core Burmese characters (consonants, vowels, signs, digits, punctuation) | glyph encoding, metrics, UFO packaging |
 | ~34 subjoined (stacked) forms — guided by stacks like က္က | `blwf` substitutions so ္ + က renders your stack form |
 | kinzi, wide medial-ra, short u/uu variants | `rphf` / `pres` / `blws` contextual rules |
-| nothing else | mark positioning (GPOS) from auto-placed anchors |
+| the invisible virama — never; it's synthesized automatically | mark positioning (GPOS) from auto-placed anchors |
+
+**Coverage is complete.** The inventory spans the **entire Myanmar Unicode
+block U+1000–109F** — every Burmese character plus Pali/Sanskrit, Mon,
+S'gaw & Pwo Karen, Kayah, Shan (letters, tones, digits, symbols), Rumai
+Palaung, Khamti and Aiton — 159 encoded characters and 38 shaping
+variants. Draw the core Burmese groups for a usable font; the ethnic
+groups extend it as far as you want to go.
+
+**English is optional.** The A–Z / a–z / 0–9 / punctuation groups let one
+font cover Myanmar *and* English — but they are marked "(optional)":
+leave them empty and your font is simply Myanmar-only. Mark
+classification and codepoints for the extended groups are generated from
+the Unicode Character Database, not hand-typed.
 
 ## The sample font — see the whole pipeline work
 
@@ -131,9 +144,11 @@ is [MIT](LICENSE).
 - [x] Shared HarfBuzz shaping test corpus + visual proof tool
       (`pipeline/test_corpus.txt`, `pipeline/proof.py`)
 - [x] Complete sample font demonstrating the full pipeline
+- [x] Full Myanmar block U+1000–109F (Mon, Karen, Kayah, Shan, Pali,
+      Palaung, Khamti, Aiton) + optional Latin groups
 - [ ] Anchor editing in the studio (drag mark attachment points)
 - [ ] SVG import (scan pipeline for paper sketches, Calligraphr-style)
-- [ ] Mon / Shan / Karen / Kayah glyph groups (Extended-A/B/C blocks)
+- [ ] Myanmar Extended-A/B/C blocks (Khamti Shan, Tai Laing, Pa'O digits)
 - [ ] Dotted-circle (U+25CC) support glyph in the inventory
 - [ ] Gallery site of community fonts with live preview
 - [ ] fontbakery QA in CI for font submissions
