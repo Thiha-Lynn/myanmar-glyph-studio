@@ -35,7 +35,7 @@ jobs:
         run: |
           pip install fonttools
           python3 pipeline/make_gallery.py web/gallery-data
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
         with:
           # create the Pages site on first run — no manual settings step
           enablement: true
