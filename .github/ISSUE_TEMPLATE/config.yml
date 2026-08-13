@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 🎨 Try the studio first
+    url: https://github.com/OWNER/REPO#run-the-studio
+    about: Draw a glyph in your browser before filing — most questions answer themselves.
+  - name: 🖼 Community font gallery
+    url: https://github.com/OWNER/REPO#the-sample-font--see-the-whole-pipeline-work
+    about: See finished fonts with live preview.
+  - name: 💬 Questions & ideas (Discussions)
+    url: https://github.com/OWNER/REPO/discussions
+    about: For anything that isn't a bug or a glyph claim.

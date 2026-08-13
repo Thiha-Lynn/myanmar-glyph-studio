@@ -8,19 +8,19 @@ entry's guide string with HarfBuzz, rasterizing the outlines, thinning them
 to one-pixel centerlines, and tracing those into studio strokes.
 
 It exists so the repo always has a project that exercises the **full
-pipeline** end to end: it can be imported into the web studio (Manage
-project -> Import) and edited like any hand-drawn project, and it builds
-into a working font with real Myanmar shaping — subjoined stacks (`blwf`),
+pipeline** end to end: it can be loaded into the web studio (the **Load**
+button) and edited like any hand-drawn project, and it builds into a
+working font with real Myanmar shaping — subjoined stacks (`blwf`),
 kinzi (`rphf`), wide medial-ra (`pres`), short u/uu variants (`blws`), and
-GPOS mark positioning from the auto-placed anchors.
+GPOS mark/mkmk positioning from the auto-placed anchors.
 
 ## Coverage
 
-110 glyphs: 109 of the 112 studio inventory entries plus `virama-myanmar`
-(U+1039), which the studio never shows but the generated `blwf`/`rphf`
-rules require. Three entries are skipped because Padauk has no subjoined
-form for them (it renders the stack with a visible virama instead):
-`nya-myanmar.sub`, `wa-myanmar.sub`, `ha-myanmar.sub`.
+109 drawn entries of the 112-glyph core studio inventory. Three are
+skipped because Padauk has no subjoined form for them (it renders the
+stack with a visible virama instead): `nya-myanmar.sub`, `wa-myanmar.sub`,
+`ha-myanmar.sub`. The invisible virama (U+1039) is not drawn — the build
+synthesizes the empty zero-width glyph the `blwf`/`rphf` rules consume.
 
 ## Build it
 

@@ -6,15 +6,21 @@ a single well-drawn glyph, a bug report, a translated hint, a test sentence.
 ## Ways to contribute
 
 ### 1. Draw glyphs for a community font
-Open the studio, draw, click **Save project**, and open a pull request that
+Open the studio, draw, click **Save**, and open a pull request that
 adds or updates your `.glyphstudio.json` under `projects/<font-name>/`
 (create the folder on first contribution). One font family = one folder =
-one style owner (see below).
+one style owner (see below). You can also draw on paper: vectorize the
+scan (Inkscape/Illustrator trace) and use **Import SVG**. If a vowel sign
+sits wrong, fix it yourself with the **⚓ Anchors** mode — no font editor
+needed. CI builds every project, renders a HarfBuzz proof sheet, and runs
+fontbakery; families with a committed TTF appear in the
+[gallery](web/gallery.html) with live preview.
 
 ### 2. Improve the tools
 The studio is dependency-free vanilla JS (`web/`), the pipeline is small
-Python (`pipeline/`). Good first issues: anchor editing UI, SVG import,
-more glyph groups (Mon/Shan/Karen), better outline expansion.
+Python (`pipeline/`). Good first issues: kerning support, GDEF mark-class
+refinement, Myanmar Extended-C once guide fonts exist, in-studio component
+reuse, better outline expansion.
 
 ### 3. Review and test
 Install a draft TTF, type real Burmese/Mon/Shan text, and file issues with

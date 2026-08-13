@@ -53,8 +53,10 @@ proof.py prints each row's shaped glyph sequence in hb-shape style
 * **Below vowels (ကု ကူ), tall aa (ခါ vs ကာ), tones (ကား ကတ် ကံ့)** — marks
   attach centered, clear of descenders; ခ ဂ င ဒ ပ ဝ take the tall ါ.
 * **Marks piled on one spot or floating far away** — anchor positions are
-  off. `json_to_ufo.py` places starting-point anchors only; open the UFO
-  in a font editor and nudge the `top`/`bottom` anchors.
+  off. Fix them without leaving the browser: the studio's **⚓ Anchors**
+  mode shows every attachment point over your ink — drag it, save, rebuild.
+  (Dragged positions live in the project JSON and override the automatic
+  placement; a font editor on the UFO still works for finer control.)
 
 Quick regression check without opening the image:
 
@@ -96,14 +98,20 @@ the same place.
 
 ## Release QA: fontbakery
 
-Before publishing a font (and eventually for the Google Fonts onboarding
-path), run [fontbakery](https://fontbakery.readthedocs.io):
+Every pipeline build is checked in CI with
+[fontbakery](https://fontbakery.readthedocs.io)'s universal profile — the
+build workflow fails on FAIL-level findings and prints WARNs as a punch
+list. Run the same check locally (fontbakery is in
+`pipeline/requirements.txt`):
 
 ```bash
-pip install fontbakery
-fontbakery check-universal build/MyFont-Regular.ttf
+fontbakery check-universal --succinct -l WARN build/MyFont-Regular.ttf
 ```
 
-Early builds will collect warnings (vertical metrics, name table entries,
-hinting). Read the report as a release punch list, not as build failures —
-shaping correctness is what proof.py and the corpus already covered.
+The pipeline already produces fonts that pass clean: a visible `.notdef`
+box, space + no-break space, valid production glyph names
+(`public.postscriptNames`), gasp records, and the smart-dropout `prep`
+program (`pipeline/postbuild.py`). Remaining WARNs (kerning, GDEF mark
+classes) are genuine future work, not blockers. CI also renders the proof
+sheet for every built font and fails if the *sample* font shapes with any
+missing glyph — the toolchain's own regression test.

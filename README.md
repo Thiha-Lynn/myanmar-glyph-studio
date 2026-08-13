@@ -40,9 +40,15 @@ over it, and the toolchain turns your sketches into a working font.
    **Help** explains how to use it everywhere: install on
    Windows/macOS/Linux, ship it in Unity/Godot/Unreal games, bundle it in
    Android/iOS/Flutter apps, or serve it on the web with `@font-face`.
+   **⚓ Anchor mode** shows where vowel signs will attach — drag the
+   points to fix mark positioning without a font editor. **Import SVG**
+   brings vectorized paper sketches (Inkscape/Illustrator trace) straight
+   onto a glyph.
 3. **Build** — save your project file and run the pipeline to get proper
    UFO sources and a shaping-capable font (stacked consonants, kinzi,
-   mark positioning) via the industry-standard `fontmake` toolchain.
+   mark/mkmk positioning) via the industry-standard `fontmake` toolchain.
+   Finished fonts appear in the community **[gallery](web/gallery.html)**
+   with live preview.
 
 ## Run the studio
 
@@ -54,7 +60,7 @@ cd web && python3 -m http.server 8321
 
 Then open <http://localhost:8321>. (Opening `index.html` directly also works
 in most browsers.) Your work autosaves to the browser's local storage;
-**Save project** downloads the portable JSON you should keep and commit.
+**Save** downloads the portable project JSON you should keep and commit.
 
 The guides render from whatever Myanmar font your system has
 (Padauk, Myanmar MN, Noto Sans Myanmar, Myanmar Text). For the best guides,
@@ -84,17 +90,19 @@ time, so a font needs **parts + rules**, not a glyph per syllable.
 
 | You draw | The build system handles |
 |---|---|
-| ~90 core Burmese characters (consonants, vowels, signs, digits, punctuation) | glyph encoding, metrics, UFO packaging |
+| 74 core Burmese characters (consonants, vowels, signs, digits, punctuation) | glyph encoding, metrics, UFO packaging |
 | ~34 subjoined (stacked) forms — guided by stacks like က္က | `blwf` substitutions so ္ + က renders your stack form |
 | kinzi, wide medial-ra, short u/uu variants | `rphf` / `pres` / `blws` contextual rules |
-| the invisible virama — never; it's synthesized automatically | mark positioning (GPOS) from auto-placed anchors |
+| the invisible virama — never; it's synthesized automatically | mark positioning (GPOS `mark`/`mkmk`) from anchors — auto-placed, draggable in ⚓ anchor mode |
 
-**Coverage is complete.** The inventory spans the **entire Myanmar Unicode
-block U+1000–109F** — every Burmese character plus Pali/Sanskrit, Mon,
-S'gaw & Pwo Karen, Kayah, Shan (letters, tones, digits, symbols), Rumai
-Palaung, Khamti and Aiton — 159 encoded characters and 38 shaping
-variants. Draw the core Burmese groups for a usable font; the ethnic
-groups extend it as far as you want to go.
+**Coverage is complete — and then some.** The inventory spans the **entire
+Myanmar Unicode block U+1000–109F** — every Burmese character plus
+Pali/Sanskrit, Mon, S'gaw & Pwo Karen, Kayah, Shan (letters, tones,
+digits, symbols), Rumai Palaung, Khamti and Aiton — plus **Myanmar
+Extended-A** (Khamti Shan, Aiton) and **Extended-B** (Tai Laing, Shan
+Pali) and the ◌ dotted circle (U+25CC): 223 encoded characters and 38
+shaping variants. Draw the core Burmese groups for a usable font; the
+ethnic groups extend it as far as you want to go.
 
 **English is optional.** The A–Z / a–z / 0–9 / punctuation groups let one
 font cover Myanmar *and* English — but they are marked "(optional)":
@@ -131,13 +139,21 @@ The studio can be hosted for free on GitHub Pages
 (`.github/workflows/pages.yml` deploys `web/` — enable Pages → GitHub Actions
 in the repo settings), so contributors need nothing but a browser.
 
-## Contributing
+## Contributing & community
 
 All skill levels welcome — drawing a single glyph is a real contribution.
-See [CONTRIBUTING.md](CONTRIBUTING.md). Fonts produced with this toolkit
-are meant to be released under the
-[SIL Open Font License 1.1](https://openfontlicense.org); the toolkit code
-is [MIT](LICENSE).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the ways in (drawing, tools,
+testing, translation), [projects/README.md](projects/README.md) for the
+font-family folder layout, and [docs/LAUNCH.md](docs/LAUNCH.md) for the
+maintainer playbook. We follow the
+[Contributor Covenant](CODE_OF_CONDUCT.md); report security issues per
+[SECURITY.md](SECURITY.md).
+
+Fonts produced with this toolkit are meant to be released under the
+[SIL Open Font License 1.1](https://openfontlicense.org) (each family
+folder carries the OFL text); the toolkit code is [MIT](LICENSE).
+Tagged releases ship ready-to-install zips (TTF + WOFF2 + proof sheet)
+for every family.
 
 ## Roadmap
 
@@ -146,12 +162,22 @@ is [MIT](LICENSE).
 - [x] Complete sample font demonstrating the full pipeline
 - [x] Full Myanmar block U+1000–109F (Mon, Karen, Kayah, Shan, Pali,
       Palaung, Khamti, Aiton) + optional Latin groups
-- [ ] Anchor editing in the studio (drag mark attachment points)
-- [ ] SVG import (scan pipeline for paper sketches, Calligraphr-style)
-- [ ] Myanmar Extended-A/B/C blocks (Khamti Shan, Tai Laing, Pa'O digits)
-- [ ] Dotted-circle (U+25CC) support glyph in the inventory
-- [ ] Gallery site of community fonts with live preview
-- [ ] fontbakery QA in CI for font submissions
+- [x] Anchor editing in the studio (⚓ — drag mark attachment points,
+      stored in the project JSON, honored by the build)
+- [x] SVG import (vectorized paper sketches → filled contours on the
+      current glyph; studio SVG exports round-trip exactly)
+- [x] Myanmar Extended-A + Extended-B blocks (Khamti Shan, Aiton, Tai
+      Laing, Shan Pali) — generated from the UCD by
+      `pipeline/gen_inventory.py`
+- [x] Dotted-circle (U+25CC) support glyph in the inventory
+- [x] Gallery site of community fonts with live preview
+      ([web/gallery.html](web/gallery.html), auto-built on deploy)
+- [x] fontbakery QA in CI (universal profile, FAIL-gated) + HarfBuzz
+      shaping regression on the sample font
+- [ ] Myanmar Extended-C block (U+116D0–116FF, Unicode 16) — the pipeline
+      already accepts its uXXXXX names; waiting on guide-font coverage
+- [ ] Kerning (`kern`) and GDEF mark-class refinement
+- [ ] In-studio component reuse (draw once, place many times)
 
 ## Acknowledgements
 

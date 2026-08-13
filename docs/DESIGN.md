@@ -15,8 +15,13 @@ subjoined substitution. Reference: the
 
 Measured budgets (from official release binaries): SIL Padauk 6.000 covers
 the entire script area — 40+ languages — with 827 glyphs; Noto Sans Myanmar
-full build has 949; a Burmese-only font is ~400–650. Our starter inventory
-(112 glyphs) covers Burmese; ethnic-language groups are roadmap.
+full build has 949; a Burmese-only font is ~400–650. Our inventory: 112
+core glyphs cover Burmese, the extended groups add the rest of U+1000–109F
+(Mon, Karen, Kayah, Shan, Pali, Palaung, Khamti, Aiton), and Extended-A/B
+(Khamti Shan, Tai Laing, Shan Pali) plus U+25CC and optional Latin bring
+the full sidebar to 343 entries. `pipeline/gen_inventory.py` generates the
+extension data from the Unicode Character Database — regenerate, don't
+hand-edit.
 
 ## Why project JSON + UFO, not a custom binary
 
@@ -31,9 +36,14 @@ the Google Fonts onboarding path (OFL 1.1 + fontbakery checks).
 The OpenType feature logic is the expert-level part and it is nearly the
 same for every font. `json_to_ufo.py` generates the `mym2` starter rules
 (`blwf`, `rphf`, `pres`, `blws`) from whichever glyphs a contributor drew,
-and places default mark anchors so ufo2ft emits GPOS `mark`/`mkmk`.
-Contributors only draw; the build system does the shaping. Verified in CI
-spirit by shaping test strings with HarfBuzz against the built TTF.
+registered under the DFLT/mym2/mymr language systems, and places default
+mark anchors — `top`/`bottom` on bases, `_top`/`_bottom` plus a stacking
+anchor on marks — so ufo2ft emits GPOS `mark` *and* `mkmk`. Contributors
+only draw; the build system does the shaping, and the studio's anchor mode
+lets them adjust attachment points without a font editor. Verified in CI:
+the build workflow shapes the whole test corpus with HarfBuzz against
+every built TTF, fails if the sample font drops a glyph, and runs
+fontbakery's universal profile.
 
 ## Style consistency
 
