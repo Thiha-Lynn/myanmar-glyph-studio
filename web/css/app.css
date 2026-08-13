@@ -296,6 +296,17 @@ body.focus .glyph-head { margin: 0 0 0.3rem; }
 }
 .modal-body a { color: var(--accent); }
 
+.install-bar {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(0.8rem + env(safe-area-inset-bottom));
+  display: flex; align-items: center; gap: 0.6rem;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 12px; padding: 0.5rem 0.7rem; z-index: 58;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.28);
+  max-width: min(94vw, 30rem); font-size: 0.85rem;
+}
+@media (max-width: 640px) { .install-bar { bottom: calc(4.2rem + env(safe-area-inset-bottom)); } }
+
 #toast {
   position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%) translateY(20px);
   background: var(--ink); color: var(--bg); padding: 0.6rem 1.1rem; border-radius: 9px;

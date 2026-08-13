@@ -356,3 +356,23 @@ def test_pen_scale_matches_weight_class():
     assert pen_scale(400) == 1.0
     assert pen_scale(300) < 1.0 < pen_scale(700)
     assert style_for(700) == "Bold"
+
+
+def test_inked_spacing_glyph_never_stays_zero_width(tmp_path):
+    """Some source fonts leave modifier letters at advance 0; a glyph with
+    ink must still move the pen or it overprints its neighbour."""
+    font, _ = build(tmp_path, {
+        "uniAA70": {"advance": 0, "strokes": [BOX]},   # Lm modifier letter
+    })
+    assert font["uniAA70"].width > 0
+
+
+def test_ink_left_of_the_origin_is_normalised(tmp_path):
+    """A spacing glyph parked in negative space would otherwise derive a
+    negative advance and get clamped to zero."""
+    font, _ = build(tmp_path, {
+        "uniAA70": {"advance": 0,
+                    "strokes": [stroke([[-460, 560], [-100, 860]], 40)]},
+    })
+    assert font["uniAA70"].width > 0
+    assert ink_x_min(font, "uniAA70") >= 0

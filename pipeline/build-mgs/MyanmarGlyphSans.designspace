@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<designspace format="5.0">
+  <axes elidedfallbackname="Regular">
+    <axis tag="wght" name="Weight" minimum="300" maximum="700" default="400">
+      <map input="300" output="300"/>
+      <map input="400" output="400"/>
+      <map input="700" output="700"/>
+      <labels>
+        <label uservalue="300" name="Light"/>
+        <label uservalue="400" name="Regular" elidable="true"/>
+        <label uservalue="700" name="Bold"/>
+      </labels>
+    </axis>
+  </axes>
+  <sources>
+    <source filename="MyanmarGlyphSans-Light.ufo" familyname="Myanmar Glyph Sans" stylename="Light">
+      <location>
+        <dimension name="Weight" xvalue="300"/>
+      </location>
+    </source>
+    <source filename="MyanmarGlyphSans-Regular.ufo" familyname="Myanmar Glyph Sans" stylename="Regular">
+      <info copy="1"/>
+      <location>
+        <dimension name="Weight" xvalue="400"/>
+      </location>
+    </source>
+    <source filename="MyanmarGlyphSans-Bold.ufo" familyname="Myanmar Glyph Sans" stylename="Bold">
+      <location>
+        <dimension name="Weight" xvalue="700"/>
+      </location>
+    </source>
+  </sources>
+  <instances>
+    <instance name="Myanmar Glyph Sans Light" familyname="Myanmar Glyph Sans" stylename="Light" postscriptfontname="MyanmarGlyphSans-Light" stylemapfamilyname="Myanmar Glyph Sans Light" stylemapstylename="regular">
+      <location>
+        <dimension name="Weight" xvalue="300"/>
+      </location>
+    </instance>
+    <instance name="Myanmar Glyph Sans Regular" familyname="Myanmar Glyph Sans" stylename="Regular" postscriptfontname="MyanmarGlyphSans-Regular" stylemapfamilyname="Myanmar Glyph Sans" stylemapstylename="regular">
+      <location>
+        <dimension name="Weight" xvalue="400"/>
+      </location>
+    </instance>
+    <instance name="Myanmar Glyph Sans Bold" familyname="Myanmar Glyph Sans" stylename="Bold" postscriptfontname="MyanmarGlyphSans-Bold" stylemapfamilyname="Myanmar Glyph Sans" stylemapstylename="bold">
+      <location>
+        <dimension name="Weight" xvalue="700"/>
+      </location>
+    </instance>
+  </instances>
+</designspace>

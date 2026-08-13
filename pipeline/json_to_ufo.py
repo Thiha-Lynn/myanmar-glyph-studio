@@ -508,6 +508,11 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         if not polys:
             continue
 
+        # The contour plan is always taken from the drawing as sketched,
+        # before any re-alignment below: every weight master must decide
+        # the same points and corners or the masters cannot interpolate.
+        ref_polys = polygons_for(data, 1.0) if width_scale != 1.0 else polys
+
         cp = name_to_codepoint(name)
 
         # Mark classification: curated sets for the core Burmese inventory;
@@ -528,17 +533,19 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         is_spacing_sign = (not is_mark and cp is not None
                            and unicodedata.category(chr(cp)) == "Mc"
                            and name not in WRAP_SIGNS)
-        if adv is None and is_spacing_sign and x_min > SIGN_LSB:
+        auto_advance = not adv and not is_mark and name not in WRAP_SIGNS
+        # …and the same normalisation rescues any spacing glyph whose ink
+        # sits left of the origin (some source fonts park modifier letters
+        # in negative space to overprint the previous letter), which would
+        # otherwise yield a negative — so clamped to zero — advance.
+        if auto_advance and (is_spacing_sign and x_min > SIGN_LSB
+                             or x_min < 0):
             dx = SIGN_LSB - x_min
             polys = [[[p[0] + dx, p[1]] for p in poly] for poly in polys]
             x_min += dx
             x_max += dx
 
         g = font.newGlyph(name)
-        # weight masters take their point mask from the drawing as sketched,
-        # so every weight keeps the same topology (translation does not
-        # affect which points coincide, so the unshifted reference is fine)
-        ref_polys = polygons_for(data, 1.0) if width_scale != 1.0 else None
         draw_glyph(g, polys, ref_polys=ref_polys)
         if cp:
             g.unicode = cp
@@ -548,7 +555,10 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         # ignored for them rather than double-spacing every syllable.
         if is_mark or name in WRAP_SIGNS:
             adv = 0
-        elif adv is None:
+        elif not adv:
+            # None, or a stored 0 on a spacing glyph that has ink: a glyph
+            # with visible outlines must move the pen or it overprints its
+            # neighbour (some source fonts leave modifier letters at 0)
             adv = round(x_max + 60)
         g.width = max(0, adv)
 

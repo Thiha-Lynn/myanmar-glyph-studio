@@ -60,6 +60,11 @@ over it, and the toolchain turns your sketches into a working font.
 
 ## Run the studio
 
+It installs as a real app — Android, iPhone/iPad, Windows, macOS, Linux —
+and keeps working offline, guide font and all. See
+[docs/PLATFORMS.md](docs/PLATFORMS.md) for installing it and for wrapping
+it as a store app.
+
 No build step, no install — it is plain HTML/JS:
 
 ```bash
@@ -132,6 +137,22 @@ font cover Myanmar *and* English — but they are marked "(optional)":
 leave them empty and your font is simply Myanmar-only. Mark
 classification and codepoints for the extended groups are generated from
 the Unicode Character Database, not hand-typed.
+
+## Myanmar Glyph Sans — a complete font, free to use today
+
+[`projects/myanmar-glyph-sans/`](projects/myanmar-glyph-sans/) is a
+finished typeface built with this toolkit: **459 glyphs** covering the
+whole Myanmar block, Myanmar Extended-A/B, full English, and Western
+European accents, punctuation and currency — in **Light, Regular, Bold and
+a variable font**, under the OFL. Every weight passes fontbakery with no
+failures and shapes the entire test corpus with no missing glyphs.
+
+Download it from the [gallery](https://thiha-lynn.github.io/myanmar-glyph-studio/gallery.html)
+or a [release](https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases),
+and use it anywhere fonts work — see
+[docs/PLATFORMS.md](docs/PLATFORMS.md) for video, design, document and app
+workflows. Its project file opens in the studio, so you can redraw any
+glyph and build your own family from it.
 
 ## The sample font — see the whole pipeline work
 

@@ -66,7 +66,11 @@ import argparse
 import json
 import math
 import sys
+import unicodedata
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import gen_inventory  # noqa: E402  (shared codepoint lists)
 
 try:
     import uharfbuzz as hb
@@ -217,6 +221,60 @@ def build_inventory():
                          alternates=[(b + m, {0})
                                      for b in DESCENDER_ALT_BASES],
                          differ_from=plain))
+
+    # ---- everything beyond core Burmese ---------------------------------
+    # The rest of the Myanmar block (Pali, Mon, Karen, Kayah, Shan, Palaung,
+    # Khamti, Aiton), Myanmar Extended-A/B, the dotted circle and optional
+    # Latin. All are plain single characters: marks are shaped on the ◌
+    # carrier and the carrier's glyph is dropped, exactly as in the studio.
+    covered = {cp for cp, _ in CONSONANTS + INDEPENDENT_VOWELS + DIGITS}
+    covered |= {row[0] for row in DEPENDENT_SIGNS + MEDIALS + PUNCTUATION}
+    covered.add(0x1039)          # virama: synthesized, never drawn
+
+    def add_plain(cp, group):
+        ch = chr(cp)
+        category = unicodedata.category(ch)
+        if category in ("Mn", "Mc"):
+            inv.append(entry(f"uni{cp:04X}", DOTTED + ch, group, exclude={0}))
+        else:
+            inv.append(entry(f"uni{cp:04X}", ch, group))
+
+    for lo, hi, group in ((0x1000, 0x109F, "myanmarExt"),
+                          (0xA9E0, 0xA9FF, "extB"),
+                          (0xAA60, 0xAA7F, "extA")):
+        for cp in range(lo, hi + 1):
+            if cp in covered:
+                continue
+            try:
+                unicodedata.name(chr(cp))
+            except ValueError:
+                continue         # unassigned
+            add_plain(cp, group)
+
+    inv.append(entry("uni25CC", chr(0x25CC), "support"))
+
+    for cp in list(range(0x0041, 0x005B)) + list(range(0x0061, 0x007B)):
+        add_plain(cp, "latin")
+    for cp in range(0x0030, 0x003A):
+        add_plain(cp, "latinDigits")
+    # exactly the latinPunct group of web/data/glyphs-latin.js
+    for cp in (0x0021, 0x0022, 0x0023, 0x0024, 0x0025, 0x0026, 0x0027,
+               0x0028, 0x0029, 0x002A, 0x002B, 0x002C, 0x002D, 0x002E,
+               0x002F, 0x003A, 0x003B, 0x003D, 0x003F, 0x0040):
+        add_plain(cp, "latinPunct")
+
+    # the punctuation, symbols and accented letters that carry a font
+    # beyond plain English (shared with the studio inventory)
+    for group, codepoints in (
+            ("latinExtraPunct", gen_inventory.LATIN_EXTRA_PUNCT),
+            ("latinExtraSymbols", gen_inventory.LATIN_EXTRA_SYMBOLS),
+            ("latinExtraLetters", gen_inventory.LATIN_EXTRA_LETTERS)):
+        for cp in codepoints:
+            try:
+                unicodedata.name(chr(cp))
+            except ValueError:
+                continue
+            add_plain(cp, group)
 
     # No virama entry: U+1039 is invisible in rendered Burmese, and
     # json_to_ufo.py synthesizes the empty zero-width glyph it needs.
@@ -684,6 +742,29 @@ def extract_strokes(contours, px_per_unit):
     return strokes + dots
 
 
+def solid_shape_stroke(contours):
+    """One dot standing in for a solid shape whose skeleton vanished.
+
+    Only for shapes that are close to round — anything longer than it is
+    wide would be badly served by a disc, and is better reported as
+    skipped than silently mangled.
+    """
+    xs = [p[0] for contour in contours for p in contour]
+    ys = [p[1] for contour in contours for p in contour]
+    if not xs:
+        return []
+    width = max(xs) - min(xs)
+    height = max(ys) - min(ys)
+    if width <= 0 or height <= 0:
+        return []
+    if max(width, height) / min(width, height) > 1.6:
+        return []
+    return [{
+        "width": round(min(width, height)),
+        "points": [[round((min(xs) + max(xs)) / 2), round((min(ys) + max(ys)) / 2)]],
+    }]
+
+
 def debug_dump(contours, strokes, px_per_unit, path):
     """Optional PNG: ink in grey, skeleton strokes in red (needs Pillow)."""
     from PIL import Image
@@ -718,10 +799,24 @@ def main(argv=None):
     parser.add_argument("output_json", help="path to write *.glyphstudio.json")
     parser.add_argument("--debug", metavar="DIR",
                         help="write a per-glyph raster+skeleton PNG here")
+    parser.add_argument("--font-name", help="family name for the project")
+    parser.add_argument("--author", help="author credit for the project")
+    parser.add_argument("--core-only", action="store_true",
+                        help="core Burmese only (the original 112-entry set)")
     args = parser.parse_args(argv)
+
+    meta = dict(META)
+    if args.font_name:
+        meta["fontName"] = args.font_name
+    if args.author:
+        meta["author"] = args.author
 
     shaper = Shaper(args.source_font)
     inventory = build_inventory()
+    if args.core_only:
+        core = {"consonants", "vowels", "signs", "medials", "digits",
+                "punctuation", "variants"}
+        inventory = [i for i in inventory if i["group"] in core]
 
     glyphs = {}
     produced = {}          # name -> frozenset of source gids (differ_from)
@@ -750,6 +845,14 @@ def main(argv=None):
             strokes = extract_strokes(contours, scale)
             if strokes:
                 break
+        if not strokes:
+            # A solid, roughly round shape (the bullet •, a filled dot)
+            # thins away to nothing: there is no centre-LINE, only a centre
+            # POINT. Keep it as a single-point stroke, which the outline
+            # expander draws as a disc of that width.
+            strokes = solid_shape_stroke(contours)
+            if strokes:
+                note = (note + "; " if note else "") + "solid shape kept as a dot"
         if not strokes:
             skipped.append((name, "empty skeleton even at 2x raster scale"))
             print(f"  skip {name:26s} empty skeleton even at 2x raster scale")
@@ -780,7 +883,7 @@ def main(argv=None):
     project = {
         "format": "mm-glyph-studio",
         "version": 1,
-        "meta": dict(META),
+        "meta": meta,
         "glyphs": glyphs,
     }
     out_path = Path(args.output_json)
