@@ -10,4 +10,4 @@ pillow>=10.0
 fontbakery>=0.12
 pytest>=8
 # WOFF2 web-font compression (fonttools ttLib.woff2)
-brotli>=1.1
+brotli>=1.2.0
