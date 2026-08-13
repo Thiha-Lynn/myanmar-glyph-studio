@@ -1,6 +1,6 @@
 /* Offline cache for the Glyph Studio (PWA).
  * Bump VERSION whenever any cached file changes. */
-var VERSION = "v3";
+var VERSION = "v4";
 var CACHE = "glyph-studio-" + VERSION;
 var ASSETS = [
   ".",
@@ -40,10 +40,13 @@ self.addEventListener("activate", function (e) {
 /* network-first for same-origin, falling back to cache when offline */
 self.addEventListener("fetch", function (e) {
   if (e.request.method !== "GET") return;
+  if (new URL(e.request.url).origin !== self.location.origin) return;
   e.respondWith(
     fetch(e.request).then(function (res) {
-      var copy = res.clone();
-      caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
+      if (res.ok) {
+        var copy = res.clone();
+        caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
+      }
       return res;
     }).catch(function () {
       return caches.match(e.request, { ignoreSearch: true });

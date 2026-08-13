@@ -284,6 +284,16 @@ def build_ufo(project, out_dir):
 
         drawn.append(name)
 
+    # The blwf/rphf rules consume U+1039 VIRAMA, but the studio never asks
+    # contributors to draw it (it is invisible in rendered Burmese).  When
+    # any subjoined form exists, synthesize an empty zero-width virama so
+    # stacking works in every user-drawn font.
+    if "virama-myanmar" not in drawn and any(n.endswith(".sub") for n in drawn):
+        v = font.newGlyph("virama-myanmar")
+        v.width = 0
+        v.unicode = 0x1039
+        drawn.append("virama-myanmar")
+
     font.features.text = generate_features(set(drawn))
 
     out_dir.mkdir(parents=True, exist_ok=True)

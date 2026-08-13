@@ -113,7 +113,10 @@
       box.innerHTML = "";
       box.appendChild(new Option(sel === "#ghostSelect" ? window.I18N.t("ghostNone") : "—", ""));
       window.GLYPHS.forEach(function (g) {
-        if (window.Store.hasInk(g.name)) box.appendChild(new Option(g.label, g.name));
+        if (!window.Store.hasInk(g.name)) return;
+        // copying a glyph onto itself is meaningless — hide it from Copy from
+        if (sel === "#copySelect" && current && g.name === current.name) return;
+        box.appendChild(new Option(g.label, g.name));
       });
       box.value = prev;
       if (box.selectedIndex < 0) box.value = "";
