@@ -21,6 +21,9 @@ jobs:
       - name: Install toolchain
         run: pip install -r pipeline/requirements.txt
 
+      - name: Unit tests (pipeline)
+        run: python3 -m pytest pipeline/tests/ -q
+
       - name: Build every project font
         run: |
           shopt -s nullglob
@@ -31,15 +34,51 @@ jobs:
             echo "::group::Building $name"
             python3 pipeline/json_to_ufo.py "$project" "dist/$name"
             fontmake -u dist/$name/*.ufo -o ttf --output-dir "dist/$name"
+            python3 pipeline/postbuild.py dist/$name/*.ttf
             echo "::endgroup::"
           done
           if [ "$found" = 0 ]; then
             echo "No projects/*/*.glyphstudio.json found — nothing to build."
           fi
 
-      - name: Upload built fonts
+      - name: Shaping proof sheets (HarfBuzz corpus)
+        if: hashFiles('dist/**/*.ttf') != ''
+        run: |
+          shopt -s nullglob
+          for ttf in dist/*/*.ttf; do
+            echo "::group::Proofing $ttf"
+            python3 pipeline/proof.py "$ttf" pipeline/test_corpus.txt \
+              "$(dirname "$ttf")/proof.png"
+            echo "::endgroup::"
+          done
+
+      - name: Toolchain regression — the sample font must shape completely
+        if: hashFiles('dist/sample/*.ttf') != ''
+        run: |
+          python3 pipeline/proof.py dist/sample/*.ttf pipeline/test_corpus.txt \
+            dist/sample/proof-check.png | tee proof-sample.log
+          grep -q " 0 missing-glyph boxes" proof-sample.log
+
+      - name: fontbakery QA (universal profile)
+        if: hashFiles('dist/**/*.ttf') != ''
+        run: |
+          shopt -s nullglob
+          fontbakery check-universal --succinct -l WARN dist/*/*.ttf
+
+      - name: Web fonts (WOFF2)
+        if: hashFiles('dist/**/*.ttf') != ''
+        run: |
+          shopt -s nullglob
+          for ttf in dist/*/*.ttf; do
+            fonttools ttLib.woff2 compress -o "${ttf%.ttf}.woff2" "$ttf"
+          done
+
+      - name: Upload built fonts + proofs
         if: hashFiles('dist/**/*.ttf') != ''
         uses: actions/upload-artifact@v4
         with:
           name: fonts
-          path: dist/**/*.ttf
+          path: |
+            dist/**/*.ttf
+            dist/**/*.woff2
+            dist/**/proof.png

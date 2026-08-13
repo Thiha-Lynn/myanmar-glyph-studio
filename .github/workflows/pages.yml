@@ -7,7 +7,8 @@ name: Deploy studio to Pages
 on:
   push:
     branches: [main]
-    paths: ["web/**", ".github/workflows/pages.yml"]
+    # projects/** so a new community font redeploys the gallery
+    paths: ["web/**", "projects/**", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
 permissions:
@@ -27,6 +28,13 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build the gallery data (committed TTFs under projects/)
+        run: |
+          pip install fonttools
+          python3 pipeline/make_gallery.py web/gallery-data
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

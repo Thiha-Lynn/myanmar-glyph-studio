@@ -1,0 +1,57 @@
+# Tag a version (git tag v1.0.0 && git push --tags) and this workflow
+# builds every community font and attaches per-family zips (TTF + WOFF2 +
+# proof sheet + OFL text) to a GitHub Release — a stable download link for
+# people who will never open a repo.
+name: Release fonts
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install toolchain
+        run: pip install -r pipeline/requirements.txt
+
+      - name: Unit tests
+        run: python3 -m pytest pipeline/tests/ -q
+
+      - name: Build, check and package every family
+        run: |
+          shopt -s nullglob
+          mkdir -p release
+          for project in projects/*/*.glyphstudio.json; do
+            name=$(basename "$(dirname "$project")")
+            echo "::group::Building $name"
+            python3 pipeline/json_to_ufo.py "$project" "dist/$name"
+            fontmake -u dist/$name/*.ufo -o ttf --output-dir "dist/$name"
+            python3 pipeline/postbuild.py dist/$name/*.ttf
+            for ttf in dist/$name/*.ttf; do
+              fonttools ttLib.woff2 compress -o "${ttf%.ttf}.woff2" "$ttf"
+            done
+            python3 pipeline/proof.py dist/$name/*.ttf pipeline/test_corpus.txt \
+              "dist/$name/proof.png"
+            cp "projects/$name/OFL.txt" "dist/$name/" 2>/dev/null || true
+            (cd "dist/$name" && zip -r "../../release/$name-fonts.zip" .)
+            echo "::endgroup::"
+          done
+
+      - name: fontbakery QA
+        run: fontbakery check-universal --succinct -l WARN dist/*/*.ttf
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*.zip
+          generate_release_notes: true
