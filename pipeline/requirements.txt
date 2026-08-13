@@ -1,4 +1,4 @@
-ufoLib2>=0.16
+ufoLib2>=0.18.1
 fonttools>=4.50
 fontmake>=3.8
 # fast, robust overlap removal for the stroke outlines fontmake compiles
