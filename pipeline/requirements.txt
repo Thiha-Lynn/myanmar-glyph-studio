@@ -8,6 +8,6 @@ uharfbuzz>=0.39
 pillow>=10.0
 # font QA (CI and local checks)
 fontbakery>=0.12
-pytest>=8
+pytest>=9.1.1
 # WOFF2 web-font compression (fonttools ttLib.woff2)
 brotli>=1.1
