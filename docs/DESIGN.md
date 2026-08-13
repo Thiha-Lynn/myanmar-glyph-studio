@@ -52,6 +52,24 @@ workshops, crowd-averaging experiments) solved style drift structurally.
 Ours: dimmed guide skeletons at fixed metrics (trace = proportions match by
 construction) plus the lead-designer rule in CONTRIBUTING.md.
 
+## Why strokes, not outlines — and what that buys
+
+Contributors draw centre-lines with a pen width, not filled outlines. That
+is easier to draw by hand, and it pays off twice in the build:
+
+* **Curves, not polygon soup.** `json_to_ufo.py` expands each stroke to a
+  dense polygon, then decimates it (Ramer-Douglas-Peucker with a tolerance
+  scaled to the contour — about 3 units on a letter, far less on a tone
+  dot) and marks only real corners (turns sharper than 50°) as on-curve.
+  The result is emitted as **cubic** curves, the native curve of UFO, so
+  the sources open properly in Fontra/FontForge/Glyphs and ufo2ft converts
+  to TrueType quadratics at build time.
+* **A weight axis for free.** Scaling the pen width re-runs the same
+  expansion and produces a heavier or lighter master of the same drawing.
+  Decimation deliberately keys off the *unscaled* geometry, so every
+  master has identical point counts and curve structure and interpolates.
+  `make_variable.py` turns that into a `wght` variable font.
+
 ## Metrics
 
 1000 UPM; baseline 0; body height 550 (the height of the base letter circle,

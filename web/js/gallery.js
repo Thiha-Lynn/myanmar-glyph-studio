@@ -51,15 +51,39 @@
     }
     box.appendChild(actions);
 
+    // a variable build gets a live weight slider over the same preview
+    var vf = font.variable;
+    var wght = vf && vf.axes && vf.axes.filter(function (a) {
+      return a.tag === "wght";
+    })[0];
+    if (wght) {
+      var row = el("div", "vf-row");
+      row.appendChild(el("span", "vf-label", "Weight"));
+      var slider = document.createElement("input");
+      slider.type = "range";
+      slider.min = wght.min; slider.max = wght.max; slider.value = wght.default;
+      slider.step = 1;
+      slider.setAttribute("aria-label", font.family + " weight");
+      var value = el("span", "vf-value", String(wght.default));
+      slider.addEventListener("input", function () {
+        preview.style.fontVariationSettings = '"wght" ' + slider.value;
+        value.textContent = slider.value;
+      });
+      row.appendChild(slider);
+      row.appendChild(value);
+      box.insertBefore(row, actions);
+    }
+
     // load the real font and swap the preview onto it
     var faceName = "GalleryFont" + index;
-    var face = new FontFace(faceName, "url(gallery-data/" + font.file + ")");
+    var src = (wght ? vf.file : font.file);
+    var face = new FontFace(faceName, "url(gallery-data/" + src + ")");
     face.load().then(function (loaded) {
       document.fonts.add(loaded);
       preview.style.fontFamily = '"' + faceName + '", Padauk, "Myanmar MN", ' +
         '"Noto Sans Myanmar", "Myanmar Text", sans-serif';
     }).catch(function () {
-      preview.textContent = "(could not load " + font.file + ")";
+      preview.textContent = "(could not load " + src + ")";
       preview.style.fontSize = "14px";
     });
 

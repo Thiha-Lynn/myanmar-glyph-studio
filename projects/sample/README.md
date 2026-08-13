@@ -22,11 +22,20 @@ stack with a visible virama instead): `nya-myanmar.sub`, `wa-myanmar.sub`,
 `ha-myanmar.sub`. The invisible virama (U+1039) is not drawn — the build
 synthesizes the empty zero-width glyph the `blwf`/`rphf` rules consume.
 
+`variable/GlyphStudioSample-VF.ttf` is the same drawing compiled as a
+weight-variable font (`wght` 300–700) — the pen is thinned for Light and
+fattened for Bold, no glyph is redrawn. The
+[gallery](https://thiha-lynn.github.io/myanmar-glyph-studio/gallery.html)
+has a live slider for it.
+
 ## Build it
 
 ```sh
 python3 pipeline/json_to_ufo.py projects/sample/GlyphStudioSample.glyphstudio.json build/
 fontmake -u build/GlyphStudioSample-Regular.ufo -o ttf --output-dir build/
+
+# …or the whole weight axis at once
+python3 pipeline/make_variable.py projects/sample/GlyphStudioSample.glyphstudio.json build/
 ```
 
 Quick shaping smoke test of the result (uses `uharfbuzz`): shaping

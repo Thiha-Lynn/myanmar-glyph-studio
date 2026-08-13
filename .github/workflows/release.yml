@@ -36,8 +36,9 @@ jobs:
             echo "::group::Building $name"
             python3 pipeline/json_to_ufo.py "$project" "dist/$name"
             fontmake -u dist/$name/*.ufo -o ttf --output-dir "dist/$name"
-            python3 pipeline/postbuild.py dist/$name/*.ttf
-            for ttf in dist/$name/*.ttf; do
+            python3 pipeline/make_variable.py "$project" "dist/$name/variable"
+            python3 pipeline/postbuild.py dist/$name/*.ttf dist/$name/variable/*.ttf
+            for ttf in dist/$name/*.ttf dist/$name/variable/*.ttf; do
               fonttools ttLib.woff2 compress -o "${ttf%.ttf}.woff2" "$ttf"
             done
             python3 pipeline/proof.py dist/$name/*.ttf pipeline/test_corpus.txt \

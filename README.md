@@ -91,6 +91,21 @@ shaping features and mark anchors. Verify shaping with HarfBuzz:
 hb-view build/*.ttf "ကျွန်ုပ်တို့ မြန်မာစာ" --output-file proof.png
 ```
 
+### One drawing, a whole weight axis
+
+Because a sketch is stored as centre-lines plus a pen width, thinning and
+fattening the pen gives you real weights — no redrawing:
+
+```bash
+python3 pipeline/make_variable.py ~/Downloads/MyFont.glyphstudio.json build/
+```
+
+That writes Light/Regular/Bold masters and a designspace, then compiles a
+**variable font with a `wght` axis** plus one static TTF per weight. The
+masters are interpolation-compatible by construction: point decimation keys
+off the unscaled drawing, so every weight shares the same point structure.
+Pick your own stops with `--weights 300,400,900`.
+
 ## What you draw (and what you don't)
 
 Myanmar is a complex script: the text engine composes syllables at render
@@ -183,10 +198,19 @@ licensing details, including the bundled Padauk guide font, are in
       ([web/gallery.html](web/gallery.html), auto-built on deploy)
 - [x] fontbakery QA in CI (universal profile, FAIL-gated) + HarfBuzz
       shaping regression on the sample font
+- [x] Smooth curve outlines — strokes are decimated and fitted to cubic
+      curves (adaptive tolerance, corner detection) instead of shipping as
+      dense polygons
+- [x] **Weight-variable fonts from one drawing** — `pipeline/make_variable.py`
+      derives Light/Regular/Bold masters by scaling the pen and compiles a
+      `wght` variable font; try the slider in the
+      [gallery](https://thiha-lynn.github.io/myanmar-glyph-studio/gallery.html)
+- [x] Explicit GDEF classes and kerning support in the pipeline
 - [ ] Myanmar Extended-C block (U+116D0–116FF, Unicode 16) — the pipeline
       already accepts its uXXXXX names; waiting on guide-font coverage
-- [ ] Kerning (`kern`) and GDEF mark-class refinement
+- [ ] Kerning UI in the studio (the pipeline already carries pairs/groups)
 - [ ] In-studio component reuse (draw once, place many times)
+- [ ] A second axis: width, or a slant/italic
 
 ## Acknowledgements
 

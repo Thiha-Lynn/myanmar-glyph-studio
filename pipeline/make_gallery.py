@@ -60,6 +60,23 @@ def font_record(project_dir, out_dir):
     if has_proof:
         shutil.copy2(proof, dest / "proof.png")
 
+    # a variable build next to the static one gets a live weight slider
+    variable = None
+    vf_files = sorted(project_dir.glob("*-VF.ttf")) + \
+        sorted((project_dir / "variable").glob("*-VF.ttf"))
+    if vf_files and TTFont is not None:
+        vf = vf_files[0]
+        try:
+            tt = TTFont(vf, lazy=True)
+            axes = [{"tag": a.axisTag, "min": a.minValue,
+                     "max": a.maxValue, "default": a.defaultValue}
+                    for a in tt["fvar"].axes]
+            tt.close()
+            shutil.copy2(vf, dest / vf.name)
+            variable = {"file": f"{project_dir.name}/{vf.name}", "axes": axes}
+        except Exception:
+            variable = None
+
     return {
         "dir": project_dir.name,
         "family": family,
@@ -71,6 +88,7 @@ def font_record(project_dir, out_dir):
         "drawnGlyphs": drawn,
         "glyphs": glyph_count,
         "bytes": ttf.stat().st_size,
+        "variable": variable,
     }
 
 

@@ -22,3 +22,7 @@ venv/
 .DS_Store
 .vscode/
 .idea/
+
+# scratch build dirs
+pipeline/build-var/
+pipeline/build-sample/

@@ -72,6 +72,20 @@ def test_marks_carry_stacking_anchor(tmp_path):
     assert font["u-myanmar"].width == 0
 
 
+def test_marks_are_zero_width_even_if_the_project_says_otherwise(tmp_path):
+    # a non-spacing mark with an advance would double-space every syllable
+    font, _ = build(tmp_path, {
+        "u-myanmar": {"advance": 420,
+                      "strokes": [stroke([[250, -150], [350, -150]], 40)]},
+        "ka-myanmar.sub": {"advance": 500, "strokes": [BOX]},
+        "medialRa-myanmar": {"advance": 300,
+                             "strokes": [stroke([[0, 600], [700, 600]], 50)]},
+    })
+    assert font["u-myanmar"].width == 0
+    assert font["ka-myanmar.sub"].width == 0
+    assert font["medialRa-myanmar"].width == 0
+
+
 def test_spacing_sign_ink_left_aligned_when_auto(tmp_path):
     # aa (U+102C, Mc) sketched beside the ◌ carrier at x≈600
     font, _ = build(tmp_path, {
@@ -162,7 +176,9 @@ def test_fill_stroke_contour_passes_through_verbatim(tmp_path):
                        "strokes": [{"fill": True, "points": contour}]},
     })
     pts = [(p.x, p.y) for p in font["wa-myanmar"].contours[0].points]
-    assert pts == [tuple(p) for p in contour]
+    # every corner is square, so all four survive as on-curve points
+    assert sorted(pts) == sorted(tuple(p) for p in contour)
+    assert all(p.type == "line" for p in font["wa-myanmar"].contours[0].points)
 
 
 def test_dotted_circle_is_mark_base(tmp_path):
@@ -218,3 +234,125 @@ def test_empty_and_unknown_glyphs_skipped(tmp_path):
     })
     assert drawn == {"kha-myanmar"}
     assert "ka-myanmar" not in {g.name for g in font}
+
+
+# ---------------------------------------------------------------------------
+# curves, GDEF, kerning and weight masters
+# ---------------------------------------------------------------------------
+
+CURVE = stroke([[100, 0], [140, 300], [260, 460], [420, 380], [470, 120],
+                [380, 20], [200, 30]], 60)
+
+
+def test_outlines_are_curves_not_polygon_soup(tmp_path):
+    font, _ = build(tmp_path, {"ka-myanmar": {"advance": None,
+                                              "strokes": [CURVE]}})
+    types = [p.type for c in font["ka-myanmar"].contours for p in c.points]
+    assert "curve" in types                       # real cubic segments
+    assert types.count(None) > 0                  # with off-curve controls
+
+
+def test_decimation_compresses_a_hand_drawn_curve(tmp_path):
+    """The circle a Myanmar letter is built on should cost a few segments,
+    not the hundreds of points a drawn stroke arrives with."""
+    import math
+    ring = stroke([[500 + 220 * math.cos(i / 200 * 2 * math.pi),
+                    300 + 220 * math.sin(i / 200 * 2 * math.pi)]
+                   for i in range(201)], 55)
+    font, _ = build(tmp_path, {"wa-myanmar": {"advance": None,
+                                              "strokes": [ring]}})
+    types = [p.type for c in font["wa-myanmar"].contours for p in c.points]
+    segments = sum(1 for t in types if t is not None)
+    raw = sum(len(p) for p in json_to_ufo.polygons_for({"strokes": [ring]}))
+    assert raw > 400                       # a dense hand-drawn ring
+    assert segments < raw / 5              # …becomes a handful of curves
+
+
+def test_straight_lines_stay_straight(tmp_path):
+    square = {"fill": True,
+              "points": [[100, 0], [400, 0], [400, 300], [100, 300]]}
+    font, _ = build(tmp_path, {"ka-myanmar": {"advance": None,
+                                              "strokes": [square]}})
+    pts = font["ka-myanmar"].contours[0].points
+    assert all(p.type == "line" for p in pts)
+    assert len(pts) == 4
+
+
+def test_small_shapes_keep_their_detail(tmp_path):
+    """A tone dot must not be flattened by the same tolerance as a letter."""
+    dot = stroke([[300, 300]], 30)          # single point -> circle
+    font, _ = build(tmp_path, {"dotBelow-myanmar": {"advance": None,
+                                                    "strokes": [dot]}})
+    pts = [p for c in font["dotBelow-myanmar"].contours for p in c.points]
+    assert len(pts) >= 8                    # still round, not a triangle
+
+
+def test_gdef_categories_split_marks_from_spacing_signs(tmp_path):
+    font, _ = build(tmp_path, {
+        "ka-myanmar": {"advance": None, "strokes": [BOX]},
+        "i-myanmar": {"advance": None,
+                      "strokes": [stroke([[200, 650], [400, 650]], 40)]},
+        "aa-myanmar": {"advance": None,
+                       "strokes": [stroke([[600, 100], [600, 500]])]},
+    })
+    cats = font.lib["public.openTypeCategories"]
+    assert cats["ka-myanmar"] == "base"
+    assert cats["i-myanmar"] == "mark"
+    assert cats["aa-myanmar"] == "base"     # Mc spacing sign is NOT a mark
+
+
+def test_kerning_and_groups_reach_the_ufo(tmp_path):
+    project = {
+        "format": "mm-glyph-studio", "version": 1,
+        "meta": {"fontName": "Test"},
+        "glyphs": {
+            "ka-myanmar": {"advance": None, "strokes": [BOX]},
+            "ta-myanmar": {"advance": None, "strokes": [BOX]},
+        },
+        "groups": {"public.kern1.round": ["ka-myanmar"]},
+        "kerning": {"ka-myanmar ta-myanmar": -25},
+    }
+    ufo_path, _ = json_to_ufo.build_ufo(project, tmp_path)
+    font = ufoLib2.Font.open(ufo_path)
+    assert font.kerning[("ka-myanmar", "ta-myanmar")] == -25
+    assert font.groups["public.kern1.round"] == ["ka-myanmar"]
+
+
+def test_weight_masters_are_interpolation_compatible(tmp_path):
+    project = {
+        "format": "mm-glyph-studio", "version": 1,
+        "meta": {"fontName": "Test"},
+        "glyphs": {
+            "ka-myanmar": {"advance": None, "strokes": [CURVE]},
+            "i-myanmar": {"advance": None,
+                          "strokes": [stroke([[200, 650], [400, 650]], 40)]},
+        },
+    }
+    shapes, widths = {}, {}
+    for style, scale, weight in (("Light", 0.8, 300), ("Regular", 1.0, 400),
+                                 ("Bold", 1.5, 700)):
+        out = tmp_path / style
+        ufo_path, _ = json_to_ufo.build_ufo(project, out, width_scale=scale,
+                                            style_name=style,
+                                            weight_class=weight)
+        font = ufoLib2.Font.open(ufo_path)
+        assert font.info.openTypeOS2WeightClass == weight
+        for name in ("ka-myanmar", "i-myanmar"):
+            g = font[name]
+            shapes.setdefault(name, set()).add(
+                tuple((len(c.points), tuple(p.type for p in c.points))
+                      for c in g.contours))
+        xs = [p.x for c in font["ka-myanmar"].contours for p in c.points]
+        widths[style] = max(xs) - min(xs)
+
+    for name, sigs in shapes.items():
+        assert len(sigs) == 1, f"{name} is not interpolatable across weights"
+    # and the pen really did get heavier
+    assert widths["Light"] < widths["Regular"] < widths["Bold"]
+
+
+def test_pen_scale_matches_weight_class():
+    from make_variable import pen_scale, style_for
+    assert pen_scale(400) == 1.0
+    assert pen_scale(300) < 1.0 < pen_scale(700)
+    assert style_for(700) == "Bold"

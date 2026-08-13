@@ -41,6 +41,17 @@ jobs:
             echo "No projects/*/*.glyphstudio.json found — nothing to build."
           fi
 
+      - name: Weight-variable build (one drawing → a wght axis)
+        run: |
+          shopt -s nullglob
+          for project in projects/*/*.glyphstudio.json; do
+            name=$(basename "$(dirname "$project")")
+            echo "::group::Variable $name"
+            python3 pipeline/make_variable.py "$project" "dist/$name/variable"
+            python3 pipeline/postbuild.py dist/$name/variable/*.ttf
+            echo "::endgroup::"
+          done
+
       - name: Shaping proof sheets (HarfBuzz corpus)
         if: hashFiles('dist/**/*.ttf') != ''
         run: |
@@ -64,6 +75,7 @@ jobs:
         run: |
           shopt -s nullglob
           fontbakery check-universal --succinct -l WARN dist/*/*.ttf
+          fontbakery check-universal --succinct -l WARN dist/*/variable/*.ttf
 
       - name: Web fonts (WOFF2)
         if: hashFiles('dist/**/*.ttf') != ''

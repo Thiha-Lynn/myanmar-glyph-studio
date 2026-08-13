@@ -193,11 +193,16 @@ def _circle(cx, cy, r):
              cy + r * math.sin(2 * math.pi * i / n)] for i in range(n)]
 
 
-def stroke_to_polygon(stroke):
+def stroke_to_polygon(stroke, width_scale=1.0):
     """Points are [x, y] or [x, y, w] (per-point pressure width).
 
     A stroke marked "fill": true is already a closed contour (e.g. an
     imported SVG outline): its points ARE the polygon, no expansion.
+
+    width_scale thickens or thins the stroke — this is how weight masters
+    are derived from one drawing. Point decimation deliberately uses the
+    UNSCALED width, so every weight produces the identical point count and
+    contour order and the masters interpolate.
     """
     if stroke.get("fill"):
         pts = stroke.get("points") or []
@@ -208,12 +213,13 @@ def stroke_to_polygon(stroke):
         return None
     if len(pts) == 1:
         return _circle(pts[0][0], pts[0][1],
-                       _pt_width(pts[0], stroke["width"]) / 2.0)
+                       _pt_width(pts[0], stroke["width"]) * width_scale / 2.0)
     pts = _smooth(pts, 2)
 
     radii, normals = [], []
     for i in range(len(pts)):
-        radii.append(max(1.0, _pt_width(pts[i], stroke["width"]) / 2.0))
+        radii.append(max(1.0, _pt_width(pts[i], stroke["width"])
+                         * width_scale / 2.0))
         a = pts[max(0, i - 1)]
         b = pts[min(len(pts) - 1, i + 1)]
         dx, dy = b[0] - a[0], b[1] - a[1]
@@ -236,10 +242,10 @@ def stroke_to_polygon(stroke):
     return poly
 
 
-def polygons_for(glyph_data):
+def polygons_for(glyph_data, width_scale=1.0):
     polys = []
     for stroke in glyph_data.get("strokes", []):
-        poly = stroke_to_polygon(stroke)
+        poly = stroke_to_polygon(stroke, width_scale)
         if poly:
             polys.append(poly)
     return polys
@@ -255,12 +261,163 @@ def poly_bounds(polys):
 # UFO construction
 # ---------------------------------------------------------------------------
 
-def draw_glyph(ufo_glyph, polys):
+RDP_EPSILON = 3.0     # max font units a decimated point may stray (see below)
+RDP_RELATIVE = 0.006  # …but never more than this fraction of the contour size
+RDP_FLOOR = 0.6       # …and never less than this, so tiny marks keep detail
+CORNER_DEGREES = 50   # sharper turns than this stay crisp (on-curve)
+
+
+def _rdp_indices(points, epsilon, first, last, keep):
+    """Ramer-Douglas-Peucker, collecting the indices worth keeping."""
+    ax, ay = points[first][0], points[first][1]
+    bx, by = points[last][0], points[last][1]
+    dx, dy = bx - ax, by - ay
+    norm = math.hypot(dx, dy)
+    worst, worst_i = -1.0, None
+    for i in range(first + 1, last):
+        px, py = points[i][0], points[i][1]
+        if norm:
+            d = abs(dy * px - dx * py + bx * ay - by * ax) / norm
+        else:
+            d = math.hypot(px - ax, py - ay)
+        if d > worst:
+            worst, worst_i = d, i
+    if worst_i is not None and worst > epsilon:
+        _rdp_indices(points, epsilon, first, worst_i, keep)
+        keep.add(worst_i)
+        _rdp_indices(points, epsilon, worst_i, last, keep)
+
+
+def contour_plan(poly, epsilon=RDP_EPSILON, corner_degrees=CORNER_DEGREES):
+    """Decide the shape of one contour: which points to keep, and which of
+    them are corners.
+
+    Stroke expansion emits a dense polygon (smoothing quadruples the point
+    count). Decimating it and marking only real corners as on-curve turns
+    that polygon into a compact, genuinely curved TrueType contour: smooth
+    where the hand was smooth, crisp where the letter turns.
+
+    Returns [(index_into_poly, is_on_curve), …], or [] for a degenerate
+    contour. Computed from ONE geometry and reused across weight masters,
+    so every master stays interpolation-compatible.
+    """
+    rounded = [(round(p[0]), round(p[1])) for p in poly]
+    uniq = [i for i in range(len(rounded))
+            if i == 0 or rounded[i] != rounded[i - 1]]
+    while len(uniq) > 1 and rounded[uniq[0]] == rounded[uniq[-1]]:
+        uniq.pop()
+    if len(uniq) < 3:
+        return []
+
+    pts = [rounded[i] for i in uniq]
+    # Scale the tolerance to the contour: 3 units is invisible on a letter
+    # but would flatten a tone dot, so small shapes keep their detail.
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    diagonal = math.hypot(max(xs) - min(xs), max(ys) - min(ys))
+    epsilon = max(RDP_FLOOR, min(epsilon, diagonal * RDP_RELATIVE))
+
+    keep = {0, len(pts) - 1}
+    _rdp_indices(pts, epsilon, 0, len(pts) - 1, keep)
+    kept = sorted(keep)
+    if len(kept) < 3:
+        kept = list(range(len(pts)))
+
+    limit = math.radians(corner_degrees)
+    plan = []
+    for n, k in enumerate(kept):
+        a = pts[kept[n - 1]]
+        b = pts[k]
+        c = pts[kept[(n + 1) % len(kept)]]
+        turn = abs(math.atan2(c[1] - b[1], c[0] - b[0])
+                   - math.atan2(b[1] - a[1], b[0] - a[0]))
+        if turn > math.pi:
+            turn = 2 * math.pi - turn
+        plan.append((uniq[k], turn > limit))
+
+    # a fully smooth contour still needs one on-curve point: a contour of
+    # nothing but off-curve points is a TrueType special case that several
+    # tools (notably overlap removal) cannot read
+    if not any(on for _, on in plan):
+        plan[0] = (plan[0][0], True)
+    return plan
+
+
+def _curve_segments(points):
+    """[(x, y, on_curve)] -> closed list of (start, control, end) segments.
+
+    Off-curve runs follow the TrueType reading: consecutive control points
+    imply an on-curve point at their midpoint. control is None for a
+    straight line.
+    """
+    start = next((i for i, p in enumerate(points) if p[2]), 0)
+    ordered = points[start:] + points[:start]
+    origin = (ordered[0][0], ordered[0][1])
+    cur = origin
+    pending, segments = [], []
+    for x, y, on_curve in ordered[1:] + [ordered[0]]:
+        if not on_curve:
+            pending.append((x, y))
+            continue
+        if not pending:
+            segments.append((cur, None, (x, y)))
+        else:
+            for i, control in enumerate(pending):
+                if i < len(pending) - 1:
+                    nxt = pending[i + 1]
+                    end = ((control[0] + nxt[0]) / 2.0,
+                           (control[1] + nxt[1]) / 2.0)
+                else:
+                    end = (x, y)
+                segments.append((cur, control, end))
+                cur = end
+            pending = []
+        cur = (x, y)
+    return origin, segments
+
+
+def _quad_to_cubic(p0, q, p1):
+    """Exact quadratic -> cubic control points."""
+    return ((p0[0] + 2.0 / 3.0 * (q[0] - p0[0]),
+             p0[1] + 2.0 / 3.0 * (q[1] - p0[1])),
+            (p1[0] + 2.0 / 3.0 * (q[0] - p1[0]),
+             p1[1] + 2.0 / 3.0 * (q[1] - p1[1])))
+
+
+def draw_glyph(ufo_glyph, polys, smooth=True, ref_polys=None):
+    """Write the expanded polygons into the glyph as cubic contours.
+
+    Cubic is the native curve of UFO sources, so what lands in the .ufo is
+    what Fontra, FontForge, Glyphs and RoboFont expect to open, and ufo2ft
+    converts it to TrueType quadratics at build time.
+
+    ref_polys supplies the geometry the contour plan is computed from.
+    Weight masters pass the reference (unscaled) polygons so every master
+    keeps identical point counts and curve structure, which is what makes
+    them interpolatable.
+    """
     pen = ufo_glyph.getPen()
-    for poly in polys:
-        pen.moveTo((round(poly[0][0]), round(poly[0][1])))
-        for p in poly[1:]:
-            pen.lineTo((round(p[0]), round(p[1])))
+    reference = ref_polys if ref_polys is not None else polys
+    r = lambda p: (round(p[0]), round(p[1]))   # noqa: E731
+    for poly, ref in zip(polys, reference):
+        plan = contour_plan(ref)
+        if not plan:
+            continue
+        pts = [(poly[i][0], poly[i][1], on) for i, on in plan]
+        if not smooth:
+            pen.moveTo(r(pts[0]))
+            for p in pts[1:]:
+                pen.lineTo(r(p))
+            pen.closePath()
+            continue
+        origin, segments = _curve_segments(pts)
+        pen.moveTo(r(origin))
+        for p0, control, p1 in segments:
+            if control is None:
+                pen.lineTo(r(p1))
+            else:
+                c1, c2 = _quad_to_cubic(p0, control, p1)
+                pen.curveTo(r(c1), r(c2), r(p1))
         pen.closePath()
 
 
@@ -268,16 +425,23 @@ def add_anchor(glyph, name, x, y):
     glyph.appendAnchor({"name": name, "x": round(x), "y": round(y)})
 
 
-def build_ufo(project, out_dir):
+def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
+              weight_class=400):
+    """Build one UFO master.
+
+    width_scale derives weights from a single drawing (see make_variable.py);
+    style_name/weight_class name that master.
+    """
     meta = project.get("meta", {})
     family = meta.get("fontName", "MyMyanmarFont")
-    style = meta.get("styleName", "Regular")
+    style = style_name or meta.get("styleName", "Regular")
     author = meta.get("author", "")
 
     font = ufoLib2.Font()
     info = font.info
     info.familyName = family
     info.styleName = style
+    info.openTypeOS2WeightClass = weight_class
     info.unitsPerEm = UPM
     info.ascender = ASCENDER
     info.descender = DESCENDER
@@ -319,12 +483,13 @@ def build_ufo(project, out_dir):
     nbspace.unicode = 0xA0
 
     drawn = []
+    categories = {}   # glyph -> GDEF class, written as public.openTypeCategories
     for name, data in project.get("glyphs", {}).items():
         if name == "virama-myanmar":
             # U+1039 is invisible in rendered Burmese — ignore any sketched
             # ink and let the synthesizer below emit the empty control glyph.
             continue
-        polys = polygons_for(data)
+        polys = polygons_for(data, width_scale)
         if not polys:
             continue
 
@@ -355,12 +520,21 @@ def build_ufo(project, out_dir):
             x_max += dx
 
         g = font.newGlyph(name)
-        draw_glyph(g, polys)
+        # weight masters take their point mask from the drawing as sketched,
+        # so every weight keeps the same topology (translation does not
+        # affect which points coincide, so the unshifted reference is fine)
+        ref_polys = polygons_for(data, 1.0) if width_scale != 1.0 else None
+        draw_glyph(g, polys, ref_polys=ref_polys)
         if cp:
             g.unicode = cp
 
-        if adv is None:
-            adv = 0 if (is_mark or name in WRAP_SIGNS) else round(x_max + 60)
+        # Non-spacing marks and the wrapping medial ra never advance the pen:
+        # the shaper positions them onto the base. A stored advance is
+        # ignored for them rather than double-spacing every syllable.
+        if is_mark or name in WRAP_SIGNS:
+            adv = 0
+        elif adv is None:
+            adv = round(x_max + 60)
         g.width = max(0, adv)
 
         # ---- anchors: hand-placed positions from the studio win ----------
@@ -411,6 +585,12 @@ def build_ufo(project, out_dir):
         for anchor_name in sorted(set(manual) & (KNOWN_ANCHORS - placed)):
             anchor(anchor_name, 0, 0)
 
+        # GDEF class: non-spacing marks are "mark", everything else "base".
+        # Stated explicitly so spacing signs (Mc: aa, medial ya, …) are not
+        # mistaken for marks by the shaper. The wrapping medial ra joins the
+        # marks — it takes no advance and the base renders inside its wrap,
+        # which is how Padauk classifies it too.
+        categories[name] = "mark" if (is_mark or name in WRAP_SIGNS) else "base"
         drawn.append(name)
 
     # The blwf/rphf rules consume U+1039 VIRAMA, but the studio never asks
@@ -421,7 +601,25 @@ def build_ufo(project, out_dir):
         v = font.newGlyph("virama-myanmar")
         v.width = 0
         v.unicode = 0x1039
+        categories["virama-myanmar"] = "mark"
         drawn.append("virama-myanmar")
+
+    font.lib["public.openTypeCategories"] = categories
+
+    # Optional kerning carried straight through to the UFO, so ufo2ft's
+    # KernFeatureWriter emits GPOS kern. Project JSON:
+    #   "groups":  { "public.kern1.round": ["ka-myanmar", ...] },
+    #   "kerning": { "ka-myanmar ta-myanmar": -20 }   (space-separated pair)
+    groups = project.get("groups") or {}
+    if groups:
+        font.groups = {k: list(v) for k, v in groups.items()}
+    kerning = {}
+    for pair, value in (project.get("kerning") or {}).items():
+        parts = pair.split() if " " in pair else pair.split(",")
+        if len(parts) == 2:
+            kerning[(parts[0].strip(), parts[1].strip())] = value
+    if kerning:
+        font.kerning = kerning
 
     font.features.text = generate_features(set(drawn))
 

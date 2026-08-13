@@ -110,8 +110,29 @@ fontbakery check-universal --succinct -l WARN build/MyFont-Regular.ttf
 
 The pipeline already produces fonts that pass clean: a visible `.notdef`
 box, space + no-break space, valid production glyph names
-(`public.postscriptNames`), gasp records, and the smart-dropout `prep`
-program (`pipeline/postbuild.py`). Remaining WARNs (kerning, GDEF mark
-classes) are genuine future work, not blockers. CI also renders the proof
-sheet for every built font and fails if the *sample* font shapes with any
-missing glyph — the toolchain's own regression test.
+(`public.postscriptNames`), explicit GDEF classes
+(`public.openTypeCategories`), zero-width non-spacing marks, gasp records,
+and the smart-dropout `prep` program (`pipeline/postbuild.py`). The
+remaining WARNs are honest ones: no kerning pairs yet, and strokes that
+overlap by design (Myanmar letters are built from overlapping circles;
+TrueType's nonzero winding renders them correctly).
+
+CI also renders the proof sheet for every built font and fails if the
+*sample* font shapes with any missing glyph — the toolchain's own
+regression test.
+
+## Variable fonts
+
+`make_variable.py` refuses to write a designspace whose masters disagree on
+glyph count, and `pipeline/tests/` asserts that masters stay
+interpolation-compatible point for point. After building, check the axis
+landed:
+
+```bash
+python3 -c "from fontTools.ttLib import TTFont; f=TTFont('build/MyFont-VF.ttf'); \
+print([(a.axisTag, a.minValue, a.maxValue) for a in f['fvar'].axes])"
+```
+
+Then look at the extremes: `hb-view MyFont-VF.ttf --variations=wght=700`
+should be visibly heavier with the same letterforms, no collapsed counters
+and no crossed outlines.
