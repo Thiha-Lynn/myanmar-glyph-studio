@@ -1,11 +1,18 @@
 # Keep CI actions and the Python toolchain current with weekly PRs.
+# Updates arrive grouped (one PR per ecosystem) so the queue stays quiet.
 version: 2
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      github-actions:
+        patterns: ["*"]
   - package-ecosystem: "pip"
     directory: "/pipeline"
     schedule:
       interval: "weekly"
+    groups:
+      python-toolchain:
+        patterns: ["*"]

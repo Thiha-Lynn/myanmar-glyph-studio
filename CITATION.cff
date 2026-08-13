@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: >-
+  If you use Myanmar Glyph Studio, or publish a font built with it,
+  please cite the software as below. Fonts themselves are released
+  under the SIL Open Font License 1.1 with their own credits.
+title: "Myanmar Glyph Studio"
+type: software
+authors:
+  - name: "Thiha Lynn"
+repository-code: "https://github.com/Thiha-Lynn/myanmar-glyph-studio"
+url: "https://thiha-lynn.github.io/myanmar-glyph-studio/"
+license: MIT
+version: 0.3.0
+date-released: 2026-08-13
+keywords:
+  - Myanmar script
+  - Burmese
+  - font
+  - OpenType shaping
+  - Unicode
+  - UFO
+  - fontmake
+abstract: >-
+  A browser-based font-creation studio for the Myanmar script:
+  contributors trace glyphs over dimmed guide characters (phone,
+  tablet with stylus, or desktop), and a Python toolchain generates
+  OpenType shaping rules (mym2: blwf/rphf/pres/blws, GPOS mark/mkmk),
+  UFO sources, and installable TTF/WOFF2 fonts with fontmake —
+  covering the full Myanmar Unicode block plus Extended-A/B for
+  Burmese, Mon, Shan, Karen, Kayah, Khamti and related languages.

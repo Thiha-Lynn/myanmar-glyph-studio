@@ -4,11 +4,13 @@
 [![Deploy studio](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/pages.yml/badge.svg)](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/pages.yml)
 [![Studio](https://img.shields.io/badge/studio-draw%20in%20your%20browser-a8352f)](https://thiha-lynn.github.io/myanmar-glyph-studio/)
 [![License: MIT + OFL](https://img.shields.io/badge/license-MIT%20%2B%20OFL--1.1-blue)](LICENSE)
+[![Good first issues](https://img.shields.io/github/issues/Thiha-Lynn/myanmar-glyph-studio/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
 **Sketch your own Myanmar font, glyph by glyph, over dimmed guide characters — then build a real, installable, Unicode-correct font.**
 
 **✏️ Try it now — no install: <https://thiha-lynn.github.io/myanmar-glyph-studio/>**
 · **🖼 Font gallery: <https://thiha-lynn.github.io/myanmar-glyph-studio/gallery.html>**
+· **🇲🇲 မြန်မာဘာသာဖြင့် ဖတ်ရန် → [README.my.md](README.my.md)**
 
 An open-source toolkit for the Myanmar fonts community. Anyone who can draw
 can make a font: the studio shows each Myanmar character (and the combined
@@ -198,9 +200,15 @@ All skill levels welcome — drawing a single glyph is a real contribution.
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the ways in (drawing, tools,
 testing, translation), [projects/README.md](projects/README.md) for the
 font-family folder layout, and [docs/LAUNCH.md](docs/LAUNCH.md) for the
-maintainer playbook. We follow the
+maintainer playbook. New here? Pick a
+[good first issue](https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+Questions and ideas go to
+[Discussions](https://github.com/Thiha-Lynn/myanmar-glyph-studio/discussions)
+or [SUPPORT.md](SUPPORT.md) — Burmese welcome. We follow the
 [Contributor Covenant](CODE_OF_CONDUCT.md); report security issues per
-[SECURITY.md](SECURITY.md).
+[SECURITY.md](SECURITY.md). Releases are chronicled in
+[CHANGELOG.md](CHANGELOG.md), and academic users can cite the project via
+[CITATION.cff](CITATION.cff).
 
 Fonts produced with this toolkit are meant to be released under the
 [SIL Open Font License 1.1](https://openfontlicense.org) (each family
@@ -236,10 +244,15 @@ licensing details, including the bundled Padauk guide font, are in
       `wght` variable font; try the slider in the
       [gallery](https://thiha-lynn.github.io/myanmar-glyph-studio/gallery.html)
 - [x] Explicit GDEF classes and kerning support in the pipeline
+- [x] **Pro drawing tools** — Bézier pen with editable paths, selection
+      with move/scale/rotate, node editing, cross-glyph copy/paste,
+      shape tools with snapping, partial eraser
 - [ ] Myanmar Extended-C block (U+116D0–116FF, Unicode 16) — the pipeline
       already accepts its uXXXXX names; waiting on guide-font coverage
 - [ ] Kerning UI in the studio (the pipeline already carries pairs/groups)
 - [ ] In-studio component reuse (draw once, place many times)
+- [ ] Per-language shaping test corpora (Mon, Shan, S'gaw/Pwo Karen) and
+      automated visual regression of rendered proofs
 - [ ] A second axis: width, or a slant/italic
 
 ## Acknowledgements

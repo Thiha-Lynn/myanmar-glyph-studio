@@ -12,9 +12,21 @@ something public. Update the numbers (marked `‹…›`) on the day you submit.
 
 ## Which category do you fit?
 
-Answer honestly: **"Don't quite fit — I maintain something the ecosystem
-quietly depends on."** Optionally also *Community builder* once the
-contributor count is there (see the checklist at the bottom).
+The program's five lanes, checked against this repo (verified against the
+program page 2026-08-13 — it offers 6 months of Claude Max 20x):
+
+| Lane | Bar | Us today | Fit? |
+|---|---|---|---|
+| Maintainers / library authors | 500+ dependent repos, 100+ dependent packages, or 200k+ monthly downloads | Not a registry package | ✗ |
+| Core contributors | Committer on CPython/Rust/Node/Apache/CNCF-class projects | — | ✗ |
+| Active contributors | 100+ merged PRs into repos you don't own, 12 mo | Check your own profile before claiming | likely ✗ |
+| Community builders | 20+ unique external contributors merged, 12 mo | 0 external contributors yet | ✗ (goal) |
+| Critical infrastructure | OpenSSF criticality ≥ 0.4 | Repo is days old; score will be ~0 | ✗ |
+
+The program adds, verbatim: *"If you maintain something the ecosystem
+quietly depends on, apply anyway and tell us about it."* **That is our
+lane.** Answer honestly under it, and re-check the Community-builder lane
+once the contributor count is real (see the checklist at the bottom).
 
 Do **not** claim the download/dependent-count lanes — this is an
 application and toolchain, not a package on npm/PyPI.
@@ -71,9 +83,17 @@ application and toolchain, not a package on npm/PyPI.
   it proves stacks, kinzi, medial wraps and mark positioning end to end,
   with a committed proof sheet.
 * **Community-ready:** Code of Conduct, security policy with private
-  reporting, Dependabot, issue templates, contributor guide in English
-  and Burmese, per-family OFL compliance, tagged releases with
-  installable font zips.
+  reporting, Dependabot (grouped weekly updates), four issue templates
+  (bug, shaping report, glyph claim, feature request), PR template,
+  contributor guide, a full Burmese README (`README.my.md`), SUPPORT.md,
+  CHANGELOG.md, CITATION.cff, per-family OFL compliance, topical labels,
+  and tagged releases with installable font zips — GitHub community
+  profile at 100%.
+* **A real editor, not a toy:** the studio ships professional vector
+  tools (Bézier pen with permanently editable paths, selection with
+  transform handles, node editing, cross-glyph copy/paste, snapping,
+  partial eraser) in vanilla JS with no build step, fully translated
+  into Burmese, working offline as a PWA on phones and tablets.
 
 ## How Claude would be used
 
@@ -101,16 +121,22 @@ application and toolchain, not a package on npm/PyPI.
 
 ## Before you submit — strengthen the application
 
-1. **Ship the first release** (`git tag v0.1.0 && git push --tags`) so
-   there is a downloadable artifact, not just source.
+1. ~~**Ship the first release**~~ ✅ Done — v0.1.0, v0.2.0 and v0.3.0 are
+   tagged with installable font zips.
 2. **Get external contributors.** The single highest-value action: run a
    glyph drive (see [LAUNCH.md](LAUNCH.md) §5). Even 3–5 merged glyph PRs
    from strangers changes the story from "personal project" to
    "community infrastructure"; 20 puts you in the Community-builder lane
-   outright.
+   outright. **This is the main open gap — 4 `good first issue` tasks
+   (#11–14) are staged and waiting for the visibility push.**
 3. **Show usage:** a second community font family in the gallery, or a
    real product/site using a font made with the tool, is worth more than
-   any adjective in the pitch.
-4. **Be candid about stage.** Say plainly that the project is new, that
-   you built it to fill a gap you personally hit, and what you will do
-   with the support. The program explicitly invites this case.
+   any adjective in the pitch. (Myanmar Glyph Sans exists but is
+   maintainer-made — a font by someone else is the proof.)
+4. **Be candid about stage.** Say plainly that the project is days old,
+   that you built it to fill a gap you personally hit, and what you will
+   do with the support. The program explicitly invites this case — the
+   age is only fatal if you hide it.
+5. **Let the repo age a few weeks with visible activity** (merged PRs,
+   answered Discussions, gallery growth) before submitting: every
+   reviewer will open the Insights tab first.
