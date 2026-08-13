@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://thiha-lynn.github.io/myanmar-glyph-studio/sitemap.xml

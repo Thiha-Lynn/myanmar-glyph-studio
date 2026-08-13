@@ -1,6 +1,14 @@
 # Myanmar Glyph Studio · မြန်မာဖောင့် ရေးဆွဲကိရိယာ
 
+[![Build fonts](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/build.yml/badge.svg)](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/build.yml)
+[![Deploy studio](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/pages.yml/badge.svg)](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/pages.yml)
+[![Studio](https://img.shields.io/badge/studio-draw%20in%20your%20browser-a8352f)](https://thiha-lynn.github.io/myanmar-glyph-studio/)
+[![License: MIT + OFL](https://img.shields.io/badge/license-MIT%20%2B%20OFL--1.1-blue)](LICENSE)
+
 **Sketch your own Myanmar font, glyph by glyph, over dimmed guide characters — then build a real, installable, Unicode-correct font.**
+
+**✏️ Try it now — no install: <https://thiha-lynn.github.io/myanmar-glyph-studio/>**
+· **🖼 Font gallery: <https://thiha-lynn.github.io/myanmar-glyph-studio/gallery.html>**
 
 An open-source toolkit for the Myanmar fonts community. Anyone who can draw
 can make a font: the studio shows each Myanmar character (and the combined
