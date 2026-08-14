@@ -62,13 +62,18 @@ def test_manual_anchor_overrides_auto(tmp_path):
     assert "top" in a                # stacking anchor still present (mkmk)
 
 
-def test_marks_carry_stacking_anchor(tmp_path):
+def test_marks_carry_side_chain_anchors(tmp_path):
+    # Below-marks chain BESIDE each other (side/_side, tops aligned), never
+    # underneath: hanging the next mark below is how ရွှံ့'s tone dot ended
+    # up 748 units deep. ha lands right of wa in ကွှ, u beside ha in ရှု.
     font, _ = build(tmp_path, {
         "u-myanmar": {"advance": None,
                       "strokes": [stroke([[250, -150], [350, -150]], 40)]},
     })
     a = anchors_of(font, "u-myanmar")
-    assert set(a) == {"_bottom", "bottom"}
+    assert set(a) == {"_bottom", "side", "_side"}
+    assert a["side"][0] > a["_side"][0]       # side exits right, _side left
+    assert a["side"][1] == a["_side"][1]      # chained marks align their tops
     assert font["u-myanmar"].width == 0
 
 
@@ -411,3 +416,95 @@ def test_descender_base_keeps_plain_vowel_at_side_anchor(tmp_path):
     a = anchors_of(font, "na-myanmar")
     assert a["bottom"][1] == -90                   # clamped, not -400
     assert a["stack"][1] == -430                   # stacks keep full depth
+
+
+# ---------------------------------------------------------------------------
+# medial-cluster variants and their contextual rules
+# ---------------------------------------------------------------------------
+
+YA = stroke([[-180, 400], [-40, 430], [60, 300], [60, -380]], 50)
+WA = stroke([[220, -120], [380, -120], [380, -400], [220, -400]], 45)
+HA = stroke([[250, -110], [250, -420], [330, -420]], 45)
+RA_WRAP = {"advance": 168,
+           "strokes": [stroke([[94, 850], [620, 850], [620, -380],
+                               [94, -380]], 50)]}
+
+
+def test_ya_medial_gets_side_anchor_beside_leg(tmp_path):
+    # ကျု: the vowel sits beside the leg at normal below-vowel depth, not
+    # hanging from the leg's bottom (the old bottom anchor at yMin−40)
+    font, _ = build(tmp_path, {
+        "medialYa-myanmar": {"advance": 158, "strokes": [YA]},
+    })
+    a = anchors_of(font, "medialYa-myanmar")
+    assert set(a) == {"side", "top"}
+    assert a["side"][1] == -40                # normal depth, not −420
+    assert a["side"][0] > 0                   # beside the leg's outer edge
+
+
+def test_ya_beforewa_variant_and_pres_rule(tmp_path):
+    # ကျွ nests wa UNDER THE BASE (Padauk: uni103B103D) — a ya variant with
+    # a tucked side anchor, substituted only when wa/ha follows
+    font, drawn = build(tmp_path, {
+        "medialYa-myanmar": {"advance": 158, "strokes": [YA]},
+        "medialWa-myanmar": {"advance": None, "strokes": [WA]},
+    })
+    assert "medialYa-myanmar.beforewa" in drawn
+    a = anchors_of(font, "medialYa-myanmar.beforewa")
+    assert a["side"][0] < -200                # tucked left, under the base
+    assert "top" in a                         # ကျွိ still gets its i-ring
+    assert ("sub medialYa-myanmar' [medialWa-myanmar] "
+            "by medialYa-myanmar.beforewa;") in font.features.text
+    cats = font.lib["public.openTypeCategories"]
+    assert cats["medialYa-myanmar.beforewa"] == "base"
+
+
+def test_small_variants_synthesized_for_ra_context(tmp_path):
+    # After the medial-ra wrap, below-marks shrink to fit INSIDE the wrap
+    # (Padauk: uni103D103E.small & friends)
+    font, drawn = build(tmp_path, {
+        "ka-myanmar": {"advance": None, "strokes": [BOX]},
+        "medialRa-myanmar": RA_WRAP,
+        "medialWa-myanmar": {"advance": None, "strokes": [WA]},
+        "medialHa-myanmar": {"advance": None, "strokes": [HA]},
+    })
+    assert {"medialWa-myanmar.small", "medialHa-myanmar.small"} <= drawn
+    big = font["medialWa-myanmar"].getBounds(font)
+    small = font["medialWa-myanmar.small"].getBounds(font)
+    assert small.yMax == pytest.approx(big.yMax, abs=2)   # top edge kept
+    assert (small.yMax - small.yMin) < 0.8 * (big.yMax - big.yMin)
+    fea = font.features.text
+    assert "feature psts" in fea
+    assert ("sub @RA_WRAPS @RA_BASES medialWa-myanmar' "
+            "by medialWa-myanmar.small;") in fea
+    # second-mark pass: a mark chained onto an already-small one (ကြွှ)
+    assert ("sub @RA_WRAPS @RA_BASES @BELOW_SMALLS medialHa-myanmar' "
+            "by medialHa-myanmar.small;") in fea
+    assert "UseMarkFilteringSet" in fea.split("feature psts")[1]
+
+
+def test_no_small_variants_without_medial_ra(tmp_path):
+    font, drawn = build(tmp_path, {
+        "ka-myanmar": {"advance": None, "strokes": [BOX]},
+        "medialWa-myanmar": {"advance": None, "strokes": [WA]},
+    })
+    assert "medialWa-myanmar.small" not in drawn
+    assert "feature psts" not in font.features.text
+
+
+def test_leg_avoidance_moves_bottom_anchor_off_a_right_leg(tmp_path):
+    # A letter whose tail descends under its right bowl (ည): the below-mark
+    # anchor slides left to the nearest open column band instead of drawing
+    # the mark through the tail. The wide bowl spans x 100…900 at baseline;
+    # the leg drops deep at x 700…780.
+    bowl = stroke([[100, 0], [900, 0]], 40)
+    body = stroke([[100, 0], [100, 550], [900, 550], [900, 0]], 40)
+    leg = stroke([[740, 0], [740, -400]], 40)
+    font, _ = build(tmp_path, {
+        "nnya-myanmar": {"advance": None, "strokes": [body, bowl, leg]},
+    })
+    a = anchors_of(font, "nnya-myanmar")
+    # preferred 0.75 of ink ≈ x 710 — its ±50 band catches the leg; the
+    # anchor slides to the nearest band that clears it (leg ink starts 720)
+    assert a["bottom"][0] < 700
+    assert a["bottom"][1] == -90              # depth clamp still applies

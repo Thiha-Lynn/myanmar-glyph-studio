@@ -62,6 +62,21 @@
    * (stored in the project), false when it is the auto default.
    * Empty until the glyph has ink (there is nothing to anchor to).
    */
+  // Lowest ink y inside the x band [x0, x1], or null when no ink there —
+  // used by the leg-avoidance scan below (mirrors json_to_ufo.py).
+  function columnDepth(polys, x0, x1) {
+    var lowest = null;
+    for (var i = 0; i < polys.length; i++) {
+      var poly = polys[i];
+      for (var j = 0; j < poly.length; j++) {
+        var p = poly[j];
+        if (p[0] >= x0 && p[0] <= x1 &&
+            (lowest === null || p[1] < lowest)) lowest = p[1];
+      }
+    }
+    return lowest;
+  }
+
   function listFor(meta, data) {
     var role = roleFor(meta);
     if (!role) return [];
@@ -80,23 +95,46 @@
       // calibration: ကီ 0.73 / ကု 0.78 / ခု 0.56 / stacks 0.50)
       var w = Math.max(1, b.xMax - b.xMin);
       var mx = b.xMin + w * (w > 700 ? 0.75 : 0.55);
+      // leg avoidance (below-marks only): if the letter's own ink descends
+      // through the anchor spot (ည's tail), slide the BOTTOM anchor to the
+      // nearest open column band — mirrors json_to_ufo.py; letters that
+      // are deep everywhere keep the spot
+      var bx = mx;
+      var band = columnDepth(polys, mx - 50, mx + 50);
+      if (band !== null && band < -160) {
+        var best = null;
+        for (var k = 0; k < 19; k++) {          // 0.40 … 0.85
+          var cand = b.xMin + w * (0.40 + k * 0.025);
+          var d = columnDepth(polys, cand - 50, cand + 50);
+          if ((d === null || d >= -160) &&
+              (best === null || Math.abs(cand - mx) < Math.abs(best - mx))) {
+            best = cand;
+          }
+        }
+        if (best !== null) bx = best;
+      }
       defaults.top = [mx, Math.max(b.yMax, BODY) + 40];
       // bottom marks stay near baseline depth even under deep legs (န ရ) —
       // the plain vowel beside the leg IS the side-form (Padauk zone
       // −95…−450); only stacks follow the ink all the way down
-      defaults.bottom = [mx, Math.max(Math.min(b.yMin, 0), -50) - 40];
+      defaults.bottom = [bx, Math.max(Math.min(b.yMin, 0), -50) - 40];
       defaults.stack = [cx, Math.min(b.yMin, 0) - 40];
     } else if (role === "ya-medial") {
-      // ကျု: the below-vowel hangs from the ya-pinn's leg; the top anchor
-      // keeps ကျိ working (ya intercepts the mark's base scan)
-      defaults.bottom = [b.xMax - 40, b.yMin - 40];
+      // ကျု: the below-vowel sits BESIDE the ya-pinn's leg at normal depth
+      // (side anchor); the top anchor keeps ကျိ working (ya intercepts the
+      // mark's base scan)
+      defaults.side = [b.xMax - 30, -40];
       defaults.top = [cx, Math.max(b.yMax, BODY) + 40];
     } else if (role === "top-mark") {
       defaults._top = [cx, b.yMin - 20];
       defaults.top = [cx, b.yMax + 20];
     } else if (role === "bottom-mark") {
+      // no plain "bottom" chain: marks that follow a below-mark chain
+      // BESIDE it (side/_side, tops aligned) — ha right of wa in ကွှ, the
+      // tone dot beside a deep hook in ရွှံ့ — mirrors json_to_ufo.py
       defaults._bottom = [cx, b.yMax + 20];
-      defaults.bottom = [cx, b.yMin - 20];
+      defaults.side = [b.xMax, b.yMax + 20];
+      defaults._side = [b.xMin - 40, b.yMax + 20];
     } else if (role === "stack-mark") {
       defaults._stack = [cx, b.yMax + 20];
       defaults.bottom = [cx, b.yMin - 20];

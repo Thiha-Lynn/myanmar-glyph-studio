@@ -142,7 +142,13 @@ WRAP_SIGNS = {"medialRa-myanmar", "medialRa-myanmar.wide"}
 WRAP_ADVANCE_RATIO = 0.30
 
 # Anchor names the studio may store per glyph ("anchors": {name: [x, y]}).
-KNOWN_ANCHORS = {"top", "bottom", "_top", "_bottom", "stack", "_stack"}
+# side/_side chain marks BESIDE the previous below-mark at normal depth:
+# ha to the right of wa (ကွှ), u beside wa (သွူ), the tone dot beside a deep
+# hook (ရွှံ့) — Padauk solves all of these with ligatures (uni103D103E,
+# uni103E102F) whose parts sit side by side; the side chain reproduces that
+# geometry without extra artwork.
+KNOWN_ANCHORS = {"top", "bottom", "_top", "_bottom", "stack", "_stack",
+                 "side", "_side"}
 
 SIGN_LSB = 60  # left sidebearing given to re-aligned spacing signs
 
@@ -268,6 +274,37 @@ def poly_bounds(polys):
     xs = [p[0] for poly in polys for p in poly]
     ys = [p[1] for poly in polys for p in poly]
     return min(xs), min(ys), max(xs), max(ys)
+
+
+def column_depth(polys, x0, x1):
+    """Lowest ink y inside the x band [x0, x1], or None when no ink there.
+
+    The expanded stroke polygons are dense (smoothing quadruples the points),
+    so sampling the polygon vertices is an accurate picture of where the
+    letter actually descends.
+    """
+    lowest = None
+    for poly in polys:
+        for p in poly:
+            if x0 <= p[0] <= x1 and (lowest is None or p[1] < lowest):
+                lowest = p[1]
+    return lowest
+
+
+def scale_about_top(polys, s):
+    """Scale polygons by s about the top-centre of their joint bounds.
+
+    Used for the .small below-mark variants that must fit INSIDE the
+    medial-ra wrap: keeping the top edge fixed preserves the attachment
+    relationship while the ink shrinks upward, clear of the wrap's
+    under-stroke.
+    """
+    if not polys:
+        return polys
+    x0, _, x1, y1 = poly_bounds(polys)
+    cx = (x0 + x1) / 2
+    return [[[cx + (p[0] - cx) * s, y1 + (p[1] - y1) * s] for p in poly]
+            for poly in polys]
 
 
 # ---------------------------------------------------------------------------
@@ -513,6 +550,9 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
     ink_right = {}    # glyph -> right edge of its ink, for the pres measurement
     advances = {}     # glyph -> advance width
     base_glyphs = []  # glyphs that carry top/bottom anchors
+    geo = {}          # sources for the synthesized contextual variants below
+    variant_sources = {"medialWa-myanmar", "medialHa-myanmar",
+                       "u-myanmar", "uu-myanmar", "medialYa-myanmar"}
     for name, data in project.get("glyphs", {}).items():
         if name == "virama-myanmar":
             # U+1039 is invisible in rendered Burmese — ignore any sketched
@@ -600,6 +640,28 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         # dead centre (0.50) via their own stack anchor.
         ink_w = max(1, x_max - x_min)
         mark_x = x_min + ink_w * (0.75 if ink_w > 700 else 0.55)
+        # Leg avoidance (BELOW-marks only — top marks never meet the leg):
+        # when the letter's own ink descends through the anchor spot (ည's
+        # tail sweeps under its right bowl), slide the bottom anchor to the
+        # nearest genuinely open column band so the below-mark is not drawn
+        # through the leg. Letters with a clear underside at the preferred
+        # spot (က ခ န ရ …) are untouched, and letters that are deep
+        # everywhere keep the preferred spot — the −50 depth clamp already
+        # handles those.
+        bottom_x = mark_x
+        if not is_mark:
+            band = column_depth(polys, mark_x - 50, mark_x + 50)
+            if band is not None and band < -160:
+                best = None
+                for i in range(19):                    # 0.40 … 0.85
+                    cand = x_min + ink_w * (0.40 + i * 0.025)
+                    d = column_depth(polys, cand - 50, cand + 50)
+                    if (d is None or d >= -160) and (
+                            best is None
+                            or abs(cand - mark_x) < abs(best - mark_x)):
+                        best = cand
+                if best is not None:
+                    bottom_x = best
         # U+25CC DOTTED CIRCLE also carries base anchors: shaping engines
         # place it under isolated marks, and the mark must attach to it.
         is_myanmar_base = bool(
@@ -621,24 +683,32 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             # long stack-form .alt here (it is 868 units tall and belongs
             # under subjoined letters only). Stacks keep full ink depth.
             anchor("top", mark_x, max(y_max, BODY) + 40)
-            anchor("bottom", mark_x, max(min(y_min, 0), -50) - 40)
+            anchor("bottom", bottom_x, max(min(y_min, 0), -50) - 40)
             anchor("stack", cx, min(y_min, 0) - 40)
             base_glyphs.append(name)
         elif name == "medialYa-myanmar":
-            # ကျု: the below-vowel hangs from the ya-pinn's leg, not from
-            # the base letter away to the left (Padauk renders a spacing
-            # form beside the leg; attaching under it reads the same).
+            # ကျု: the below-vowel sits BESIDE the ya-pinn's leg at normal
+            # below-vowel depth (Padauk renders u/uu as spacing forms after
+            # the leg, at −95…−450 — never hanging from the leg's bottom).
+            # The side anchor's x puts the attaching mark's ink just right
+            # of the leg; its y −40 lands the mark's top at −60.
             # A top anchor must come with it: once ya is a mark base, it
             # intercepts the backwards base scan, so ကျိ would lose its
             # i-ring without one (Padauk anchors i over the ya curve too).
-            anchor("bottom", x_max - 40, y_min - 40)
+            anchor("side", x_max - 30, -40)
             anchor("top", cx, max(y_max, BODY) + 40)
         elif name in TOP_MARKS:
             anchor("_top", cx, y_min - 20)
             anchor("top", cx, y_max + 20)
         elif name in BOTTOM_MARKS:
+            # No plain "bottom" chain here: hanging the next mark UNDER a
+            # below-mark is how ရွှံ့ ended up 748 units deep. Marks that
+            # follow a below-mark chain BESIDE it instead (side/_side):
+            # tops aligned, next ink starting 40 units right — which is the
+            # geometry of Padauk's uni103D103E / uni103E102F ligatures.
             anchor("_bottom", cx, y_max + 20)
-            anchor("bottom", cx, y_min - 20)
+            anchor("side", x_max, y_max + 20)
+            anchor("_side", x_min - 40, y_max + 20)
         elif name in STACK_MARKS:
             anchor("_stack", cx, y_max + 20)
             # further marks (tall uu, below-vowels) chain BELOW the stack
@@ -667,6 +737,8 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         categories[name] = "mark" if is_mark else "base"
         ink_right[name] = x_max
         advances[name] = adv
+        if name in variant_sources:
+            geo[name] = (polys, ref_polys, adv)
         drawn.append(name)
 
     # The blwf/rphf rules consume U+1039 VIRAMA, but the studio never asks
@@ -679,6 +751,53 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         v.unicode = 0x1039
         categories["virama-myanmar"] = "mark"
         drawn.append("virama-myanmar")
+
+    # ---- synthesized contextual variants (no extra artwork needed) -------
+    # Padauk covers the awkward medial clusters with dedicated ligature and
+    # small-form glyphs; these variants reproduce that behaviour from the
+    # contributor's own drawing.
+    #
+    # X.small (wa/ha/u/uu, 75%): a below-mark after the medial-ra wrap must
+    # fit INSIDE the wrap — full-size ink crosses the wrap's under-stroke
+    # (Padauk's own answer is uni103D103E.small & friends). Anchored high
+    # (_bottom at y_max−30) so the ink tucks right under the base.
+    SMALL_SCALE = 0.75
+    if "medialRa-myanmar" in drawn:
+        for src in ("medialWa-myanmar", "medialHa-myanmar",
+                    "u-myanmar", "uu-myanmar"):
+            if src not in geo:
+                continue
+            polys_m, ref_m, _ = geo[src]
+            vname = src + ".small"
+            g = font.newGlyph(vname)
+            tp = scale_about_top(polys_m, SMALL_SCALE)
+            tr = tp if ref_m is polys_m else scale_about_top(ref_m, SMALL_SCALE)
+            draw_glyph(g, tp, ref_polys=tr)
+            g.width = 0
+            vx0, _, vx1, vy1 = poly_bounds(tp)
+            add_anchor(g, "_bottom", (vx0 + vx1) / 2, vy1 - 30)
+            add_anchor(g, "side", vx1, vy1 + 20)
+            add_anchor(g, "_side", vx0 - 40, vy1 + 20)
+            categories[vname] = "mark"
+            drawn.append(vname)
+
+    # medialYa.beforewa: ကျွ nests the wa UNDER THE BASE inside the ya hook
+    # (Padauk: uni103B103D, wa centred ≈220 units left of the ya origin) —
+    # not beside the leg where ကျု's vowel goes. A ya variant with its side
+    # anchor at that tuck position, substituted only when wa/ha follows,
+    # gives each context its own geometry.
+    if "medialYa-myanmar" in geo and any(
+            n in drawn for n in ("medialWa-myanmar", "medialHa-myanmar")):
+        polys_m, ref_m, ya_adv = geo["medialYa-myanmar"]
+        vname = "medialYa-myanmar.beforewa"
+        g = font.newGlyph(vname)
+        draw_glyph(g, polys_m, ref_polys=ref_m)
+        g.width = max(0, ya_adv)
+        vx0, _, vx1, vy1 = poly_bounds(polys_m)
+        add_anchor(g, "top", (vx0 + vx1) / 2, max(vy1, BODY) + 40)
+        add_anchor(g, "side", vx0 - 225, -40)
+        categories[vname] = "base"
+        drawn.append(vname)
 
     font.lib["public.openTypeCategories"] = categories
 
@@ -699,7 +818,8 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
 
     font.features.text = generate_features(
         set(drawn), wide_bases=measure_wide_bases(base_glyphs, ink_right,
-                                                  advances))
+                                                  advances),
+        bases=base_glyphs)
 
     # PostScript production names: the friendly source names carry hyphens,
     # which are not valid in shipped glyph names. ufo2ft renames at compile
@@ -757,7 +877,7 @@ def measure_wide_bases(base_glyphs, ink_right, advances):
                   if base_start + ink_right.get(name, 0) > wrap_reach + 100)
 
 
-def generate_features(drawn, wide_bases=None):
+def generate_features(drawn, wide_bases=None, bases=None):
     """Emit only rules whose glyphs were actually drawn.
 
     Rules are written before any script statement so they register under
@@ -804,10 +924,22 @@ def generate_features(drawn, wide_bases=None):
              "ha", "a")
         ]
     wide_bases = [n for n in wide_bases if n in drawn]
+    pres_rules = []
     if "medialRa-myanmar.wide" in drawn and "medialRa-myanmar" in drawn and wide_bases:
         lines.append(f"@WIDE_BASES = [{' '.join(wide_bases)}];")
+        pres_rules.append(
+            "  sub medialRa-myanmar' @WIDE_BASES by medialRa-myanmar.wide;")
+    # ya before wa/ha: swap in the variant whose side anchor tucks the
+    # following mark under the base (ကျွ), instead of beside the leg (ကျု)
+    ya_targets = [n for n in ("medialWa-myanmar", "medialHa-myanmar")
+                  if n in drawn]
+    if "medialYa-myanmar.beforewa" in drawn and ya_targets:
+        pres_rules.append(
+            f"  sub medialYa-myanmar' [{' '.join(ya_targets)}] "
+            "by medialYa-myanmar.beforewa;")
+    if pres_rules:
         lines.append("feature pres {")
-        lines.append("  sub medialRa-myanmar' @WIDE_BASES by medialRa-myanmar.wide;")
+        lines.extend(pres_rules)
         lines.append("} pres;")
         lines.append("")
 
@@ -840,8 +972,37 @@ def generate_features(drawn, wide_bases=None):
         lines.append("} blws;")
         lines.append("")
 
+    # psts: below-marks after the medial-ra wrap shrink to the .small
+    # variants that fit INSIDE the wrap (its under-stroke passes beneath the
+    # base — full-size wa/u ink would cross it). Two passes: the first mark
+    # after the base, then a mark chained onto an already-small one (ကြွှ).
+    # The filtering set makes intervening other marks (ကြို's i) invisible
+    # to the context while keeping the below-marks themselves visible.
+    smalls = [(n, f"{n}.small")
+              for n in ("medialWa-myanmar", "medialHa-myanmar",
+                        "u-myanmar", "uu-myanmar")
+              if f"{n}.small" in drawn and n in drawn]
+    ra_cls = [n for n in ("medialRa-myanmar", "medialRa-myanmar.wide")
+              if n in drawn]
+    base_cls = [n for n in (bases or []) if n in drawn]
+    if smalls and ra_cls and base_cls:
+        lines.append(f"@RA_WRAPS = [{' '.join(ra_cls)}];")
+        lines.append(f"@RA_BASES = [{' '.join(base_cls)}];")
+        lines.append(f"@BELOW_SMALLS = [{' '.join(v for _, v in smalls)}];")
+        lines.append("feature psts {")
+        filter_set = [n for n, _ in smalls] + [v for _, v in smalls]
+        lines.append(
+            f"  lookupflag UseMarkFilteringSet [{' '.join(filter_set)}];")
+        for n, v in smalls:
+            lines.append(f"  sub @RA_WRAPS @RA_BASES {n}' by {v};")
+        for n, v in smalls:
+            lines.append(
+                f"  sub @RA_WRAPS @RA_BASES @BELOW_SMALLS {n}' by {v};")
+        lines.append("} psts;")
+        lines.append("")
+
     # mark/mkmk GPOS is generated automatically by ufo2ft's MarkFeatureWriter
-    # from the top/bottom anchors placed on each glyph.
+    # from the top/bottom/side anchors placed on each glyph.
     return "\n".join(lines)
 
 
