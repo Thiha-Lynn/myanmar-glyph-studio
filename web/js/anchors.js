@@ -38,11 +38,14 @@
     return false;
   }
 
-  /* "base" | "top-mark" | "bottom-mark" | "auto-mark" | null */
+  /* "base" | "top-mark" | "bottom-mark" | "stack-mark" | "ya-medial" |
+     "auto-mark" | null */
   function roleFor(meta) {
     if (!meta) return null;
+    if (meta.name === "medialYa-myanmar") return "ya-medial";
     if (TOP_MARKS[meta.name]) return "top-mark";
-    if (BOTTOM_MARKS[meta.name] || /\.sub$/.test(meta.name)) return "bottom-mark";
+    if (/\.sub$/.test(meta.name)) return "stack-mark";
+    if (BOTTOM_MARKS[meta.name]) return "bottom-mark";
     if (meta.mark) return "auto-mark";
     if (meta.cp === 0x25CC || meta.name === "greatSa-myanmar") return "base";
     if (meta.cp && inMyanmarBlocks(meta.cp) &&
@@ -72,13 +75,27 @@
     // side, so further marks can stack on them (GPOS mkmk).
     var defaults = {};
     if (role === "base") {
+      // vowel marks sit over the right bowl of wide two-bowl letters,
+      // stacks hang from dead centre — mirrors json_to_ufo.py (Padauk
+      // calibration: ကီ 0.73 / ကု 0.78 / ခု 0.56 / stacks 0.50)
+      var w = Math.max(1, b.xMax - b.xMin);
+      var mx = b.xMin + w * (w > 700 ? 0.75 : 0.55);
+      defaults.top = [mx, Math.max(b.yMax, BODY) + 40];
+      defaults.bottom = [mx, Math.min(b.yMin, 0) - 40];
+      defaults.stack = [cx, Math.min(b.yMin, 0) - 40];
+    } else if (role === "ya-medial") {
+      // ကျု: the below-vowel hangs from the ya-pinn's leg; the top anchor
+      // keeps ကျိ working (ya intercepts the mark's base scan)
+      defaults.bottom = [b.xMax - 40, b.yMin - 40];
       defaults.top = [cx, Math.max(b.yMax, BODY) + 40];
-      defaults.bottom = [cx, Math.min(b.yMin, 0) - 40];
     } else if (role === "top-mark") {
       defaults._top = [cx, b.yMin - 20];
       defaults.top = [cx, b.yMax + 20];
     } else if (role === "bottom-mark") {
       defaults._bottom = [cx, b.yMax + 20];
+      defaults.bottom = [cx, b.yMin - 20];
+    } else if (role === "stack-mark") {
+      defaults._stack = [cx, b.yMax + 20];
       defaults.bottom = [cx, b.yMin - 20];
     } else if (role === "auto-mark") {
       if (cy >= BODY / 2) {

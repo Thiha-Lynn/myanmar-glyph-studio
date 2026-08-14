@@ -122,7 +122,12 @@ BOTTOM_MARKS = {
     "u-myanmar", "uu-myanmar", "dotBelow-myanmar",
     "medialWa-myanmar", "medialHa-myanmar",
     "u-myanmar.alt", "uu-myanmar.alt",
-} | {f"{n}-myanmar.sub" for _, n in CONSONANTS}
+}
+# subjoined consonants form their own attachment class: stacks hang from
+# the base's CENTRE (Padauk: 0.50 of ink width) while below-vowels hang
+# from its right bowl (0.78 on wide letters) — one shared anchor cannot
+# serve both, so stacks use stack/_stack and vowels keep bottom/_bottom
+STACK_MARKS = {f"{n}-myanmar.sub" for _, n in CONSONANTS}
 
 BASE_NAMES = {f"{n}-myanmar" for _, n in CONSONANTS} | {"greatSa-myanmar"}
 
@@ -137,7 +142,7 @@ WRAP_SIGNS = {"medialRa-myanmar", "medialRa-myanmar.wide"}
 WRAP_ADVANCE_RATIO = 0.30
 
 # Anchor names the studio may store per glyph ("anchors": {name: [x, y]}).
-KNOWN_ANCHORS = {"top", "bottom", "_top", "_bottom"}
+KNOWN_ANCHORS = {"top", "bottom", "_top", "_bottom", "stack", "_stack"}
 
 SIGN_LSB = 60  # left sidebearing given to re-aligned spacing signs
 
@@ -526,7 +531,8 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         # Mark classification: curated sets for the core Burmese inventory;
         # the Unicode category (Mn = non-spacing mark) for everything else,
         # so the extended ethnic-language groups need no hand-kept tables.
-        is_mark = name in TOP_MARKS or name in BOTTOM_MARKS
+        is_mark = (name in TOP_MARKS or name in BOTTOM_MARKS
+                   or name in STACK_MARKS)
         if not is_mark and cp and name not in BASE_NAMES:
             is_mark = unicodedata.category(chr(cp)) == "Mn"
 
@@ -586,6 +592,13 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
 
         cx = (x_min + x_max) / 2
         cy = (y_min + y_max) / 2
+        # Vowel marks sit over the letter's right bowl on wide two-bowl
+        # letters and just right of centre on narrow ones — calibrated
+        # against Padauk on the traced sample: ကီ lands at 0.73 and ကု at
+        # 0.78 of the ink width, ခု at 0.56. Stacked consonants stay at
+        # dead centre (0.50) via their own stack anchor.
+        ink_w = max(1, x_max - x_min)
+        mark_x = x_min + ink_w * (0.75 if ink_w > 700 else 0.55)
         # U+25CC DOTTED CIRCLE also carries base anchors: shaping engines
         # place it under isolated marks, and the mark must attach to it.
         is_myanmar_base = bool(
@@ -597,15 +610,30 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         # outer side so further marks can stack on them (GPOS mkmk).
         if name in BASE_NAMES or (name not in TOP_MARKS
                                   and name not in BOTTOM_MARKS
+                                  and name not in STACK_MARKS
                                   and is_myanmar_base):
-            anchor("top", cx, max(y_max, BODY) + 40)
-            anchor("bottom", cx, min(y_min, 0) - 40)
+            anchor("top", mark_x, max(y_max, BODY) + 40)
+            anchor("bottom", mark_x, min(y_min, 0) - 40)
+            anchor("stack", cx, min(y_min, 0) - 40)
             base_glyphs.append(name)
+        elif name == "medialYa-myanmar":
+            # ကျု: the below-vowel hangs from the ya-pinn's leg, not from
+            # the base letter away to the left (Padauk renders a spacing
+            # form beside the leg; attaching under it reads the same).
+            # A top anchor must come with it: once ya is a mark base, it
+            # intercepts the backwards base scan, so ကျိ would lose its
+            # i-ring without one (Padauk anchors i over the ya curve too).
+            anchor("bottom", x_max - 40, y_min - 40)
+            anchor("top", cx, max(y_max, BODY) + 40)
         elif name in TOP_MARKS:
             anchor("_top", cx, y_min - 20)
             anchor("top", cx, y_max + 20)
         elif name in BOTTOM_MARKS:
             anchor("_bottom", cx, y_max + 20)
+            anchor("bottom", cx, y_min - 20)
+        elif name in STACK_MARKS:
+            anchor("_stack", cx, y_max + 20)
+            # further marks (tall uu, below-vowels) chain BELOW the stack
             anchor("bottom", cx, y_min - 20)
         elif is_mark:
             # extension-language mark: decide the attachment side from

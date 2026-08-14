@@ -45,7 +45,7 @@ BOX = stroke([[100, 0], [100, 550], [500, 550], [500, 0]])
 def test_base_gets_top_and_bottom_anchors(tmp_path):
     font, _ = build(tmp_path, {"ka-myanmar": {"advance": None, "strokes": [BOX]}})
     a = anchors_of(font, "ka-myanmar")
-    assert set(a) == {"top", "bottom"}
+    assert set(a) == {"top", "bottom", "stack"}
     assert a["top"][1] >= 590        # above the body line + clearance
     assert a["bottom"][1] <= -40
     assert font["ka-myanmar"].width > 550
@@ -196,7 +196,7 @@ def test_dotted_circle_is_mark_base(tmp_path):
         "uni25CC": {"advance": None,
                     "strokes": [stroke([[250, 275]], 30)]},
     })
-    assert set(anchors_of(font, "uni25CC")) == {"top", "bottom"}
+    assert set(anchors_of(font, "uni25CC")) == {"top", "bottom", "stack"}
 
 
 def test_extension_blocks_classified(tmp_path):
@@ -207,7 +207,7 @@ def test_extension_blocks_classified(tmp_path):
         "uniA9E5": {"advance": None,
                     "strokes": [stroke([[300, 700], [420, 700]], 40)]},
     })
-    assert set(anchors_of(font, "uniAA60")) == {"top", "bottom"}
+    assert set(anchors_of(font, "uniAA60")) == {"top", "bottom", "stack"}
     assert set(anchors_of(font, "uniA9E5")) == {"_top", "top"}
     assert font["uniA9E5"].width == 0
 
