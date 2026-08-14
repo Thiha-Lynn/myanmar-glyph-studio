@@ -29,7 +29,7 @@
       path: new opentype.Path()
     });
     var space = new opentype.Glyph({
-      name: "space", unicode: 0x20, advanceWidth: 500,
+      name: "space", unicode: 0x20, advanceWidth: 380, // Burmese spacing (Padauk: 378)
       path: new opentype.Path()
     });
     var glyphs = [notdef, space];

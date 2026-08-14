@@ -386,3 +386,21 @@ def test_ink_left_of_the_origin_is_normalised(tmp_path):
     })
     assert font["uniAA70"].width > 0
     assert ink_x_min(font, "uniAA70") >= 0
+
+
+def test_descender_base_triggers_short_u(tmp_path):
+    # na's leg reaches y=-360: the drawn short u must substitute after it,
+    # and the context must see through an intervening mark (asat)
+    deep = stroke([[250, 550], [250, -360]])
+    font, _ = build(tmp_path, {
+        "na-myanmar": {"advance": None, "strokes": [deep]},
+        "ka-myanmar": {"advance": None, "strokes": [BOX]},
+        "u-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, -150], [350, -150]], 40)]},
+        "u-myanmar.alt": {"advance": None,
+                          "strokes": [stroke([[250, -120], [300, -120]], 30)]},
+    })
+    fea = font.features.text
+    assert "na-myanmar" in fea.split("@DESC_U = [")[1].split("]")[0]
+    assert "ka-myanmar" not in fea.split("@DESC_U = [")[1].split("]")[0]
+    assert "UseMarkFilteringSet" in fea

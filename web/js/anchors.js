@@ -81,7 +81,9 @@
       var w = Math.max(1, b.xMax - b.xMin);
       var mx = b.xMin + w * (w > 700 ? 0.75 : 0.55);
       defaults.top = [mx, Math.max(b.yMax, BODY) + 40];
-      defaults.bottom = [mx, Math.min(b.yMin, 0) - 40];
+      // bottom marks stay near baseline depth even under deep legs (န ရ);
+      // only stacks follow the ink all the way down
+      defaults.bottom = [mx, Math.max(Math.min(b.yMin, 0), -150) - 40];
       defaults.stack = [cx, Math.min(b.yMin, 0) - 40];
     } else if (role === "ya-medial") {
       // ကျု: the below-vowel hangs from the ya-pinn's leg; the top anchor
