@@ -702,6 +702,15 @@ def measure_wide_bases(base_glyphs, ink_right, advances):
 
     Returns the base glyphs that need the wide variant, or None when the
     font has no narrow ra to compare against.
+
+    The base does NOT have to end before the wrap's ink does: in
+    traditional designs the narrow hook finishes over the base's right
+    shoulder, with the base poking a little past it. Calibrated against
+    Padauk's own narrow/wide split measured on the traced sample project:
+    every base Padauk keeps narrow overhangs the wrap by at most ~73
+    units, every base it widens overhangs by 136+ — so 100 splits the
+    gap. (The old strict rule sent nearly every letter to the wide wrap,
+    which is why ခြ ပြ မြ looked loose.)
     """
     narrow = "medialRa-myanmar"
     if narrow not in ink_right:
@@ -709,7 +718,7 @@ def measure_wide_bases(base_glyphs, ink_right, advances):
     wrap_reach = ink_right[narrow]
     base_start = advances.get(narrow, 0)
     return sorted(name for name in base_glyphs
-                  if base_start + ink_right.get(name, 0) > wrap_reach - 20)
+                  if base_start + ink_right.get(name, 0) > wrap_reach + 100)
 
 
 def generate_features(drawn, wide_bases=None):
