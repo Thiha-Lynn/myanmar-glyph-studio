@@ -388,19 +388,26 @@ def test_ink_left_of_the_origin_is_normalised(tmp_path):
     assert ink_x_min(font, "uniAA70") >= 0
 
 
-def test_descender_base_triggers_short_u(tmp_path):
-    # na's leg reaches y=-360: the drawn short u must substitute after it,
-    # and the context must see through an intervening mark (asat)
+def test_descender_base_keeps_plain_vowel_at_side_anchor(tmp_path):
+    # Beside a deep leg the PLAIN vowel at the clamped side anchor is the
+    # side-form (Padauk's u.med equivalent). The long stack-form .alt must
+    # apply only after subjoined letters, and the bottom anchor must not
+    # chase the descender below the -50 floor.
     deep = stroke([[250, 550], [250, -360]])
     font, _ = build(tmp_path, {
         "na-myanmar": {"advance": None, "strokes": [deep]},
-        "ka-myanmar": {"advance": None, "strokes": [BOX]},
+        "ta-myanmar": {"advance": None, "strokes": [BOX]},
+        "ta-myanmar.sub": {"advance": None,
+                           "strokes": [stroke([[200, -100], [400, -100]])]},
         "u-myanmar": {"advance": None,
                       "strokes": [stroke([[250, -150], [350, -150]], 40)]},
         "u-myanmar.alt": {"advance": None,
                           "strokes": [stroke([[250, -120], [300, -120]], 30)]},
     })
     fea = font.features.text
-    assert "na-myanmar" in fea.split("@DESC_U = [")[1].split("]")[0]
-    assert "ka-myanmar" not in fea.split("@DESC_U = [")[1].split("]")[0]
-    assert "UseMarkFilteringSet" in fea
+    desc_class = fea.split("@DESC_U = [")[1].split("]")[0]
+    assert "na-myanmar" not in desc_class          # bases keep the plain vowel
+    assert "ta-myanmar.sub" in desc_class          # stacks take the long form
+    a = anchors_of(font, "na-myanmar")
+    assert a["bottom"][1] == -90                   # clamped, not -400
+    assert a["stack"][1] == -430                   # stacks keep full depth

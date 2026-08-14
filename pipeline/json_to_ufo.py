@@ -511,7 +511,6 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
     drawn = []
     categories = {}   # glyph -> GDEF class, written as public.openTypeCategories
     ink_right = {}    # glyph -> right edge of its ink, for the pres measurement
-    ink_bottom = {}   # glyph -> bottom edge of its ink, for the blws measurement
     advances = {}     # glyph -> advance width
     base_glyphs = []  # glyphs that carry top/bottom anchors
     for name, data in project.get("glyphs", {}).items():
@@ -615,11 +614,14 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
                                   and name not in STACK_MARKS
                                   and is_myanmar_base):
             # bottom marks stay near baseline depth even when the base has
-            # a deep leg (န ရ ဋ …) — Padauk tucks the (short) vowel beside
-            # the leg rather than dangling it underneath. Stacks are the
-            # exception: a subjoined letter genuinely goes below everything.
+            # a deep leg (န ရ ဋ …): the PLAIN vowel tucked beside the leg
+            # is Padauk's own side-form solution — its u.med is 355 units
+            # tall, the same size as our plain ု, sitting at y −95…−450.
+            # The −50 floor puts ours at −90…−441. Never substitute the
+            # long stack-form .alt here (it is 868 units tall and belongs
+            # under subjoined letters only). Stacks keep full ink depth.
             anchor("top", mark_x, max(y_max, BODY) + 40)
-            anchor("bottom", mark_x, max(min(y_min, 0), -150) - 40)
+            anchor("bottom", mark_x, max(min(y_min, 0), -50) - 40)
             anchor("stack", cx, min(y_min, 0) - 40)
             base_glyphs.append(name)
         elif name == "medialYa-myanmar":
@@ -664,7 +666,6 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         # the base inside the wrap.
         categories[name] = "mark" if is_mark else "base"
         ink_right[name] = x_max
-        ink_bottom[name] = y_min
         advances[name] = adv
         drawn.append(name)
 
@@ -696,14 +697,9 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
     if kerning:
         font.kerning = kerning
 
-    # bases whose ink descends well below the baseline (န ရ ဋ ဌ ဠ …) take
-    # the short u/uu so the vowel clears the leg — measured from the
-    # drawing like everything else, not from a letter list
-    desc_bases = sorted(n for n in base_glyphs if ink_bottom.get(n, 0) < -150)
     font.features.text = generate_features(
         set(drawn), wide_bases=measure_wide_bases(base_glyphs, ink_right,
-                                                  advances),
-        desc_bases=desc_bases)
+                                                  advances))
 
     # PostScript production names: the friendly source names carry hyphens,
     # which are not valid in shipped glyph names. ufo2ft renames at compile
@@ -761,7 +757,7 @@ def measure_wide_bases(base_glyphs, ink_right, advances):
                   if base_start + ink_right.get(name, 0) > wrap_reach + 100)
 
 
-def generate_features(drawn, wide_bases=None, desc_bases=None):
+def generate_features(drawn, wide_bases=None):
     """Emit only rules whose glyphs were actually drawn.
 
     Rules are written before any script statement so they register under
@@ -820,9 +816,12 @@ def generate_features(drawn, wide_bases=None, desc_bases=None):
     # The mark-filtering set lets the context see through intervening
     # marks (ကျွန်ုပ် is န + ် + ု: the asat must not break the match)
     # while still matching the u/uu target itself.
+    # The long .alt vowels apply ONLY after subjoined forms — beside a
+    # descender leg the plain vowel at the clamped side anchor is already
+    # Padauk's med-form answer (see the anchor comment above).
     sub_ctx = [f"{n}-myanmar.sub" for _, n in CONSONANTS
                if f"{n}-myanmar.sub" in drawn]
-    desc_ctx = sub_ctx + list(desc_bases or [])
+    desc_ctx = list(sub_ctx)
     blws_rules = []
     filter_marks = list(sub_ctx)  # subjoined forms are marks the context
     if desc_ctx:                  # must SEE (skipping them breaks စက္ကူ)
