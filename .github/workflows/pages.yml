@@ -33,7 +33,9 @@ jobs:
           python-version: "3.12"
       - name: Build the gallery data (committed TTFs under projects/)
         run: |
-          pip install fonttools
+          # brotli is what lets make_gallery compress the WOFF2 webfont
+          # kits — without it they are silently skipped
+          pip install fonttools brotli
           python3 pipeline/make_gallery.py web/gallery-data
       - uses: actions/configure-pages@v6
         with:
