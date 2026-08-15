@@ -26,6 +26,48 @@ except ImportError:  # metadata falls back to the project JSON
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def write_woff2(src, dest):
+    """Compress a TTF to WOFF2 beside it in the gallery data (the webfont
+    kit browsers actually load). Needs fontTools + brotli; silently skipped
+    when either is missing so the gallery still builds."""
+    if TTFont is None:
+        return False
+    try:
+        import brotli  # noqa: F401  (fontTools' woff2 flavor requires it)
+        tt = TTFont(str(src))
+        tt.flavor = "woff2"
+        tt.save(str(dest))
+        tt.close()
+        return True
+    except Exception:
+        return False
+
+
+def unicode_range(ttf_path):
+    """The font's cmap coverage as a CSS unicode-range value, so the
+    @font-face snippet only claims codepoints the font actually has."""
+    if TTFont is None:
+        return None
+    try:
+        tt = TTFont(str(ttf_path), lazy=True)
+        cps = sorted(tt.getBestCmap())
+        tt.close()
+    except Exception:
+        return None
+    if not cps:
+        return None
+    ranges, start, prev = [], cps[0], cps[0]
+    for cp in cps[1:]:
+        if cp == prev + 1:
+            prev = cp
+            continue
+        ranges.append((start, prev))
+        start = prev = cp
+    ranges.append((start, prev))
+    return ", ".join(f"U+{a:04X}" if a == b else f"U+{a:04X}-{b:04X}"
+                     for a, b in ranges)
+
+
 def font_record(project_dir, out_dir):
     jsons = sorted(project_dir.glob("*.glyphstudio.json"))
     ttfs = sorted(project_dir.glob("*.ttf"))
@@ -33,7 +75,10 @@ def font_record(project_dir, out_dir):
         return None
     project = json.loads(jsons[0].read_text(encoding="utf-8"))
     meta = project.get("meta", {})
-    ttf = ttfs[0]
+    # prefer the Regular static ("Bold" sorts first alphabetically and
+    # would otherwise become the card's download + webfont kit)
+    regulars = [t for t in ttfs if t.stem.endswith("-Regular")]
+    ttf = regulars[0] if regulars else ttfs[0]
 
     drawn = sum(1 for g in project.get("glyphs", {}).values()
                 if g.get("strokes"))
@@ -55,6 +100,8 @@ def font_record(project_dir, out_dir):
     dest = out_dir / project_dir.name
     dest.mkdir(parents=True, exist_ok=True)
     shutil.copy2(ttf, dest / ttf.name)
+    woff2_name = ttf.stem + ".woff2"
+    has_woff2 = write_woff2(ttf, dest / woff2_name)
     proof = project_dir / "proof.png"
     has_proof = proof.is_file()
     if has_proof:
@@ -74,6 +121,9 @@ def font_record(project_dir, out_dir):
             tt.close()
             shutil.copy2(vf, dest / vf.name)
             variable = {"file": f"{project_dir.name}/{vf.name}", "axes": axes}
+            vf_woff2 = vf.stem + ".woff2"
+            if write_woff2(vf, dest / vf_woff2):
+                variable["woff2"] = f"{project_dir.name}/{vf_woff2}"
         except Exception:
             variable = None
 
@@ -84,6 +134,8 @@ def font_record(project_dir, out_dir):
         "author": meta.get("author", ""),
         "license": meta.get("license", "OFL-1.1"),
         "file": f"{project_dir.name}/{ttf.name}",
+        "woff2": f"{project_dir.name}/{woff2_name}" if has_woff2 else None,
+        "unicodeRange": unicode_range(ttf),
         "proof": f"{project_dir.name}/proof.png" if has_proof else None,
         "drawnGlyphs": drawn,
         "glyphs": glyph_count,

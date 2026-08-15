@@ -714,6 +714,11 @@
     { label: "က္က", text: "စက္ကူ ဗုဒ္ဓ မန္တလေး" },
     { label: "င်္", text: "သင်္ဘော အင်္ဂါ" },
     { label: "ျြွှ", text: "ကျောင်း ကြီး ကျွန် မြွှေ" },
+    // the medial clusters that exercise every contextual rule the pipeline
+    // generates: tuck (ကျွ), side forms (ကျု ရှု), small-in-wrap (ကြွ မြို့),
+    // side chains (လွှ ရွှံ့), side bases (နု ညှ), tall wraps (ကြီ), ိံ
+    { label: "ကျွ", text: "ကြွ ကျွ ကျု ကျူ လွှ သွူ ရွှံ့ လွံ့" },
+    { label: "နု", text: "နု ရု ညှ ညှန် ရှု မြို့ ကြီ ကိံ" },
     { label: "ုူ", text: "ကုန် ပူ နူး ကူး" },
     { label: "၀-၉", text: "၀၁၂၃၄၅၆၇၈၉ ၊ ။" },
     // minority-language lines (Extended-A letters get exercised too)

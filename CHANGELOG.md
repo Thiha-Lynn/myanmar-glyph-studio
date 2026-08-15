@@ -8,6 +8,27 @@ versions are git tags with installable font zips on the
 ## [Unreleased]
 
 ### Added
+- **Padauk-parity shaping variants** ([#19]): six new drawable glyphs and
+  the contextual rules that drive them — tall medial-ra wraps
+  (`medialRa.tall` / `.tall.wide`, picked when ိ/ီ/ဲ sits over the
+  wrapped base, so ကြီး's ring no longer crowds the hook), side-form
+  bases (`na/nnya/ra-myanmar.alt`, the leg-free letters Padauk swaps in
+  before below-marks: နု ညှ ရု), and the fused ိ+ံ ligature (ကိံ). All
+  traced automatically by `make_sample.py`; both shipped fonts rebuilt
+  with them.
+- **Medial-cluster engine**: below-marks now chain *beside* each other
+  (side/_side anchors) instead of stacking underneath; synthesized
+  `.small` (in-wrap) and ya-tuck variants place ကျွ ကြွ ကျု လွှ ရွှံ့
+  မြို့ correctly with no extra drawing. Base bottom anchors slide off
+  descending tails (ညှန်).
+- **Webfont kits in the gallery**: every font card now offers a WOFF2
+  download and a *"</> Use on your site"* panel with a copy-ready
+  `@font-face` snippet — correct `unicode-range` from the font's real
+  coverage, and one variable-weight file when a VF build exists.
+- Test-drive preset chips for the tricky medial clusters (studio and
+  gallery), so a font's shaping rules can be exercised in one tap.
+
+[#19]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues/19
 - **Contribute without Git**: ⚙ → *Copy glyph* turns the current glyph
   into a text snippet you can paste into an issue or chat; *Paste glyph*
   imports one — so a drawing can travel from any contributor to any

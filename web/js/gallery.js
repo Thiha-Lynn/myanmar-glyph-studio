@@ -42,6 +42,12 @@
     dl.href = "gallery-data/" + font.file;
     dl.setAttribute("download", "");
     actions.appendChild(dl);
+    if (font.woff2) {
+      var wf = el("a", null, "🌐 Webfont (WOFF2)");
+      wf.href = "gallery-data/" + font.woff2;
+      wf.setAttribute("download", "");
+      actions.appendChild(wf);
+    }
     if (font.proof) {
       var proof = el("a", null, "🔍 Shaping proof");
       proof.href = "gallery-data/" + font.proof;
@@ -50,6 +56,56 @@
       actions.appendChild(proof);
     }
     box.appendChild(actions);
+
+    // "Use on your site": a ready-to-paste @font-face kit for the woff2 —
+    // variable builds advertise their weight range so one file serves
+    // every weight
+    if (font.woff2) {
+      var snippet = el("div", "css-snippet");
+      var wghtAxis = font.variable && font.variable.axes &&
+        font.variable.axes.filter(function (a) { return a.tag === "wght"; })[0];
+      var useVf = !!(wghtAxis && font.variable.woff2);
+      var srcFile = (useVf ? font.variable.woff2 : font.woff2).split("/").pop();
+      var cssLines = [
+        "@font-face {",
+        '  font-family: "' + font.family + '";',
+        '  src: url("' + srcFile + '") format("woff2");',
+        "  font-display: swap;"
+      ];
+      if (useVf) {
+        cssLines.push("  font-weight: " + wghtAxis.min + " " + wghtAxis.max + ";");
+      }
+      if (font.unicodeRange) {
+        cssLines.push("  unicode-range: " + font.unicodeRange + ";");
+      }
+      cssLines.push("}");
+      cssLines.push("");
+      cssLines.push('body { font-family: "' + font.family +
+        '", "Padauk", "Myanmar Text", sans-serif; }');
+      var cssText = cssLines.join("\n");
+
+      var copyBtn = el("button", "copy-btn", "Copy");
+      copyBtn.addEventListener("click", function () {
+        (navigator.clipboard ? navigator.clipboard.writeText(cssText)
+                             : Promise.reject())
+          .then(function () { copyBtn.textContent = "Copied ✓"; })
+          .catch(function () { copyBtn.textContent = "Select + copy"; });
+        setTimeout(function () { copyBtn.textContent = "Copy"; }, 1600);
+      });
+      var pre = el("pre", null, cssText);
+      snippet.appendChild(copyBtn);
+      snippet.appendChild(pre);
+
+      var useLink = el("a", null, "</> Use on your site");
+      useLink.href = "#";
+      useLink.addEventListener("click", function (ev) {
+        ev.preventDefault();
+        snippet.classList.toggle("open");
+        useLink.classList.toggle("toggled");
+      });
+      actions.appendChild(useLink);
+      box.appendChild(snippet);
+    }
 
     // a variable build gets a live weight slider over the same preview
     var vf = font.variable;

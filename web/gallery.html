@@ -82,6 +82,23 @@
     border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px;
   }
   .card .actions a:hover { background: var(--accent-soft); }
+  .card .actions a.toggled { background: var(--accent-soft); }
+  .css-snippet {
+    display: none; background: #26211c; color: #efe9df; border-radius: 8px;
+    padding: 12px; font-size: 12px; line-height: 1.55; position: relative;
+    overflow-x: auto;
+  }
+  .css-snippet.open { display: block; }
+  .css-snippet pre {
+    margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    white-space: pre;
+  }
+  .css-snippet .copy-btn {
+    position: absolute; top: 8px; right: 8px; border: 1px solid #4c443c;
+    background: transparent; color: #efe9df; border-radius: 6px;
+    padding: 3px 10px; font-size: 12px; cursor: pointer;
+  }
+  .css-snippet .copy-btn:hover { background: #3a332c; }
   .badge {
     display: inline-block; background: var(--accent-soft); color: var(--accent);
     border-radius: 6px; padding: 1px 8px; font-size: 12px;
@@ -109,6 +126,7 @@
   <button class="mm" data-t="စက္ကူ ဗုဒ္ဓ မန္တလေး">က္က</button>
   <button class="mm" data-t="သင်္ဘော အင်္ဂါ">င်္</button>
   <button class="mm" data-t="ကျောင်း ကြီး ကျွန် မြွှေ">ျြွှ</button>
+  <button class="mm" data-t="ကြွ ကျွ ကျု လွှ ရွှံ့ နု ရု ညှန် မြို့ ကိံ">ကျွ</button>
   <button class="mm" data-t="၀၁၂၃၄၅၆၇၈၉ ၊ ။">၀-၉</button>
   <button class="mm" data-t="သီဟိုဠ်မှ ဉာဏ်ကြီးရှင်သည် အာယုဝဍ္ဎနဆေးညွှန်းစာကို ဇလွန်ဈေးဘေး ဗာဒံပင်ထက် အဓိဋ္ဌာန်လျက် ဂဃနဏဖတ်ခဲ့သည်။">ပန်ဂရမ်</button>
 </div>
