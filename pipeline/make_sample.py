@@ -153,7 +153,7 @@ DESCENDER_ALT_BASES = [chr(0x100B), chr(0x1008), chr(0x100D)]        # ဋ ဈ �
 
 
 def build_inventory():
-    """Recreate the 112 studio entries plus the synthetic virama glyph.
+    """Recreate the 118 studio entries plus the synthetic virama glyph.
 
     Each entry:
         name       production glyph name
@@ -221,6 +221,40 @@ def build_inventory():
                          alternates=[(b + m, {0})
                                      for b in DESCENDER_ALT_BASES],
                          differ_from=plain))
+
+    # Tall medial RA (narrow + wide): the wrap's hook rises so ိ/ီ/ဲ has
+    # room over the wrapped base (Padauk: uni103C.alt.narr / .alt.wide,
+    # shaped by ခြီ / ကြီ).
+    II = chr(0x102E)
+    inv.append(entry("medialRa-myanmar.tall",
+                     chr(0x1001) + chr(0x103C) + II, "variants",
+                     exclude={0, 2},
+                     alternates=[(b + chr(0x103C) + II, {0, 2})
+                                 for b in (chr(0x1019), chr(0x1015))],
+                     differ_from="medialRa-myanmar"))
+    inv.append(entry("medialRa-myanmar.tall.wide",
+                     chr(0x1000) + chr(0x103C) + II, "variants",
+                     exclude={0, 2},
+                     alternates=[(b + chr(0x103C) + II, {0, 2})
+                                 for b in WIDE_RA_ALT_BASES],
+                     differ_from="medialRa-myanmar.wide"))
+
+    # Side-form bases: Padauk swaps the BASE for a leg-free variant in
+    # front of below-marks (နု ညွ ရူ → uni1014.alt / uni100A.alt /
+    # uni101B.alt) so the mark has room beside it.
+    for base_cp, name in ((0x1014, "na"), (0x100A, "nnya"), (0x101B, "ra")):
+        c = chr(base_cp)
+        inv.append(entry(f"{name}-myanmar.alt", c + chr(0x102F), "variants",
+                         exclude={1},
+                         alternates=[(c + chr(0x1030), {1})],
+                         differ_from=f"{name}-myanmar"))
+
+    # i + anusvara fused ligature (ကိံ → uni102D1036): the ring and the
+    # dot are drawn as one mark, the dot tucked beside the ring instead of
+    # stacked on top of it.
+    inv.append(entry("iAnusvara-myanmar",
+                     DOTTED + chr(0x102D) + chr(0x1036), "variants",
+                     exclude={0}))
 
     # ---- everything beyond core Burmese ---------------------------------
     # The rest of the Myanmar block (Pali, Mon, Karen, Kayah, Shan, Palaung,
@@ -802,7 +836,7 @@ def main(argv=None):
     parser.add_argument("--font-name", help="family name for the project")
     parser.add_argument("--author", help="author credit for the project")
     parser.add_argument("--core-only", action="store_true",
-                        help="core Burmese only (the original 112-entry set)")
+                        help="core Burmese only (the 118-entry studio set)")
     args = parser.parse_args(argv)
 
     meta = dict(META)

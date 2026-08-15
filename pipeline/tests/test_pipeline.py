@@ -492,6 +492,79 @@ def test_no_small_variants_without_medial_ra(tmp_path):
     assert "feature psts" not in font.features.text
 
 
+def test_tall_wrap_rule_and_sticky_lookupflag_reset(tmp_path):
+    # ကြီ: the wrap grows tall when ိ/ီ/ဲ sits over the wrapped base. The
+    # tall lookup's filtering set is STICKY within the feature block — the
+    # ya_tuck lookup after it must reset it or ကျွ silently stops tucking.
+    font, drawn = build(tmp_path, {
+        "ka-myanmar": {"advance": None, "strokes": [BOX]},
+        "medialRa-myanmar": RA_WRAP,
+        "medialRa-myanmar.tall": {"advance": 168,
+                                  "strokes": [stroke([[94, 950], [620, 950],
+                                                      [620, -380]], 50)]},
+        "i-myanmar": {"advance": None,
+                      "strokes": [stroke([[200, 650], [400, 650]], 40)]},
+        "medialYa-myanmar": {"advance": 158, "strokes": [YA]},
+        "medialWa-myanmar": {"advance": None, "strokes": [WA]},
+    })
+    fea = font.features.text
+    assert ("sub medialRa-myanmar' @TALLABLE_BASES @RA_TALL_TRIGGERS "
+            "by medialRa-myanmar.tall;") in fea
+    # the reset guards the tuck rule against inheriting the filtering set
+    ya_lookup = fea.split("lookup ya_tuck")[1]
+    assert "lookupflag 0;" in ya_lookup
+    assert font["medialRa-myanmar.tall"].width == 168   # wrap keeps advance
+
+
+def test_side_form_bases_substituted_before_below_marks(tmp_path):
+    # နု: the base itself swaps for its leg-free .alt in front of below
+    # marks; the variant carries full base anchors but must not join the
+    # wide-base measurement (it never follows a wrap in text)
+    deep_na = stroke([[100, 500], [100, 0], [250, 550], [250, -360]])
+    flat_alt = stroke([[100, 500], [100, 0], [250, 550], [250, -30]])
+    font, drawn = build(tmp_path, {
+        "na-myanmar": {"advance": None, "strokes": [deep_na]},
+        "na-myanmar.alt": {"advance": None, "strokes": [flat_alt]},
+        "u-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, -150], [350, -150]], 40)]},
+        "medialRa-myanmar": RA_WRAP,
+        "medialRa-myanmar.wide": {"advance": 168,
+                                  "strokes": [stroke([[94, 850], [900, 850],
+                                                      [900, -380]], 50)]},
+    })
+    fea = font.features.text
+    assert "lookup side_bases" in fea
+    assert "sub na-myanmar' [u-myanmar] by na-myanmar.alt;" in fea
+    a = anchors_of(font, "na-myanmar.alt")
+    assert {"top", "bottom", "stack"} <= set(a)
+    cats = font.lib["public.openTypeCategories"]
+    assert cats["na-myanmar.alt"] == "base"
+    ra_bases = fea.split("@RA_BASES = [")[1].split("]")[0]
+    assert "na-myanmar.alt" not in ra_bases
+    assert "na-myanmar" in ra_bases
+
+
+def test_i_anusvara_ligature(tmp_path):
+    # ကိံ: ring + dot fuse into the drawn uni102D1036 ligature (a top mark)
+    font, drawn = build(tmp_path, {
+        "ka-myanmar": {"advance": None, "strokes": [BOX]},
+        "i-myanmar": {"advance": None,
+                      "strokes": [stroke([[200, 650], [400, 650]], 40)]},
+        "anusvara-myanmar": {"advance": None,
+                             "strokes": [stroke([[300, 700]], 30)]},
+        "iAnusvara-myanmar": {"advance": None,
+                              "strokes": [stroke([[200, 650], [420, 650]],
+                                                 40)]},
+    })
+    fea = font.features.text
+    assert ("sub i-myanmar anusvara-myanmar by iAnusvara-myanmar;"
+            in fea.split("feature abvs")[1])
+    a = anchors_of(font, "iAnusvara-myanmar")
+    assert set(a) == {"_top", "top"}
+    assert font["iAnusvara-myanmar"].width == 0
+    assert font.lib["public.postscriptNames"]["iAnusvara-myanmar"] == "uni102D1036"
+
+
 def test_leg_avoidance_moves_bottom_anchor_off_a_right_leg(tmp_path):
     # A letter whose tail descends under its right bowl (ည): the below-mark
     # anchor slides left to the nearest open column band instead of drawing

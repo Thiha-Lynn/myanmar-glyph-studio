@@ -115,7 +115,7 @@ def in_myanmar_blocks(cp):
 # marks that attach ABOVE a base
 TOP_MARKS = {
     "i-myanmar", "ii-myanmar", "ai-myanmar", "anusvara-myanmar",
-    "asat-myanmar", "kinzi-myanmar",
+    "asat-myanmar", "kinzi-myanmar", "iAnusvara-myanmar",
 }
 # marks that attach BELOW a base
 BOTTOM_MARKS = {
@@ -136,7 +136,8 @@ BASE_NAMES = {f"{n}-myanmar" for _, n in CONSONANTS} | {"greatSa-myanmar"}
 # moves the pen past the wrap's left stem so the base lands inside the
 # wrap. Zero would stack the base on top of that stem (Padauk gives U+103C
 # an advance of 172/1024 for exactly this reason).
-WRAP_SIGNS = {"medialRa-myanmar", "medialRa-myanmar.wide"}
+WRAP_SIGNS = {"medialRa-myanmar", "medialRa-myanmar.wide",
+              "medialRa-myanmar.tall", "medialRa-myanmar.tall.wide"}
 # fraction of the wrap's ink width that sits left of the base — only used
 # when a project supplies no advance; reproduces Padauk's proportion
 WRAP_ADVANCE_RATIO = 0.30
@@ -669,12 +670,19 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             and ((in_myanmar_blocks(cp)
                   and unicodedata.category(chr(cp)) == "Lo")
                  or cp == 0x25CC))
+        # Side-form base variants (na-myanmar.alt …) carry the same anchors
+        # as the letters they stand in for: they are swapped in by GSUB in
+        # front of below-marks, and the marks must still find their spots.
+        is_base_variant = (not is_mark and "." in name
+                           and name.partition(".")[0] in BASE_NAMES
+                           and name not in WRAP_SIGNS)
         # Marks carry the attaching _anchor plus a plain anchor on their
         # outer side so further marks can stack on them (GPOS mkmk).
-        if name in BASE_NAMES or (name not in TOP_MARKS
-                                  and name not in BOTTOM_MARKS
-                                  and name not in STACK_MARKS
-                                  and is_myanmar_base):
+        if name in BASE_NAMES or is_base_variant or (
+                name not in TOP_MARKS
+                and name not in BOTTOM_MARKS
+                and name not in STACK_MARKS
+                and is_myanmar_base):
             # bottom marks stay near baseline depth even when the base has
             # a deep leg (န ရ ဋ …): the PLAIN vowel tucked beside the leg
             # is Padauk's own side-form solution — its u.med is 355 units
@@ -685,7 +693,10 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             anchor("top", mark_x, max(y_max, BODY) + 40)
             anchor("bottom", bottom_x, max(min(y_min, 0), -50) - 40)
             anchor("stack", cx, min(y_min, 0) - 40)
-            base_glyphs.append(name)
+            if not is_base_variant:
+                # variants are GSUB-only stand-ins: they never follow a
+                # wrap and must not skew the wide-base measurement
+                base_glyphs.append(name)
         elif name == "medialYa-myanmar":
             # ကျု: the below-vowel sits BESIDE the ya-pinn's leg at normal
             # below-vowel depth (Padauk renders u/uu as spacing forms after
@@ -829,6 +840,9 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         if gname == "kinzi-myanmar":
             ps_names[gname] = "uni1004103A1039"  # AGL ligature form
             continue
+        if gname == "iAnusvara-myanmar":
+            ps_names[gname] = "uni102D1036"      # AGL ligature form
+            continue
         base, dot, suffix = gname.partition(".")
         cp = name_to_codepoint(base if dot else gname)
         if cp:
@@ -924,22 +938,54 @@ def generate_features(drawn, wide_bases=None, bases=None):
              "ha", "a")
         ]
     wide_bases = [n for n in wide_bases if n in drawn]
-    pres_rules = []
+    base_cls = [n for n in (bases or []) if n in drawn]
+    pres_lookups = []
     if "medialRa-myanmar.wide" in drawn and "medialRa-myanmar" in drawn and wide_bases:
         lines.append(f"@WIDE_BASES = [{' '.join(wide_bases)}];")
-        pres_rules.append(
-            "  sub medialRa-myanmar' @WIDE_BASES by medialRa-myanmar.wide;")
+        pres_lookups.append([
+            "  lookup ra_wide {",
+            "    sub medialRa-myanmar' @WIDE_BASES by medialRa-myanmar.wide;",
+            "  } ra_wide;"])
+    # Tall wraps: the hook rises when ိ/ီ/ဲ sits over the WRAPPED base
+    # (Padauk: ကြီ → uni103C.alt.wide, ခြီ → uni103C.alt.narr). A separate
+    # lookup AFTER ra_wide, so the narrow/wide choice is made first and
+    # this one only adds height. The filtering set leaves only the trigger
+    # marks visible: ကြွီ still goes tall across the intervening ွ.
+    tall_triggers = [n for n in ("i-myanmar", "ii-myanmar", "ai-myanmar")
+                     if n in drawn]
+    tall_pairs = [(p, t) for p, t in
+                  (("medialRa-myanmar", "medialRa-myanmar.tall"),
+                   ("medialRa-myanmar.wide", "medialRa-myanmar.tall.wide"))
+                  if p in drawn and t in drawn]
+    if tall_pairs and tall_triggers and base_cls:
+        lines.append(f"@RA_TALL_TRIGGERS = [{' '.join(tall_triggers)}];")
+        lines.append(f"@TALLABLE_BASES = [{' '.join(base_cls)}];")
+        block = [
+            "  lookup ra_tall {",
+            "    lookupflag UseMarkFilteringSet @RA_TALL_TRIGGERS;"]
+        for plain, tall in tall_pairs:
+            block.append(f"    sub {plain}' @TALLABLE_BASES "
+                         f"@RA_TALL_TRIGGERS by {tall};")
+        block.append("  } ra_tall;")
+        pres_lookups.append(block)
     # ya before wa/ha: swap in the variant whose side anchor tucks the
     # following mark under the base (ကျွ), instead of beside the leg (ကျု)
     ya_targets = [n for n in ("medialWa-myanmar", "medialHa-myanmar")
                   if n in drawn]
     if "medialYa-myanmar.beforewa" in drawn and ya_targets:
-        pres_rules.append(
-            f"  sub medialYa-myanmar' [{' '.join(ya_targets)}] "
-            "by medialYa-myanmar.beforewa;")
-    if pres_rules:
+        pres_lookups.append([
+            "  lookup ya_tuck {",
+            # lookupflag is STICKY within a feature block: without the
+            # reset this lookup inherits ra_tall's filtering set, which
+            # hides the wa it must see (ကျွ silently stops tucking)
+            "    lookupflag 0;",
+            f"    sub medialYa-myanmar' [{' '.join(ya_targets)}] "
+            "by medialYa-myanmar.beforewa;",
+            "  } ya_tuck;"])
+    if pres_lookups:
         lines.append("feature pres {")
-        lines.extend(pres_rules)
+        for block in pres_lookups:
+            lines.extend(block)
         lines.append("} pres;")
         lines.append("")
 
@@ -964,12 +1010,53 @@ def generate_features(drawn, wide_bases=None, bases=None):
                 lines.append(f"{cls} = [{' '.join(desc_ctx)}];")
                 blws_rules.append(f"  sub {cls} {base_v}' by {alt_v};")
                 filter_marks.append(base_v)
-    if blws_rules:
+    # Side-form bases: swap the base itself for its leg-free variant in
+    # front of below-marks (Padauk: နု→uni1014.alt, ညွ→uni100A.alt,
+    # ရူ→uni101B.alt — measured per base: ra only swaps before u/uu, ရွ
+    # stays plain). The filtering set holds ONLY the trigger marks, so the
+    # swap still fires across an intervening top mark (နို့) or asat
+    # (ကျွန်ုပ် — Padauk swaps there too).
+    side_specs = (
+        ("na-myanmar", ("u-myanmar", "uu-myanmar", "medialWa-myanmar",
+                        "medialHa-myanmar", "medialYa-myanmar",
+                        "medialYa-myanmar.beforewa")),
+        ("nnya-myanmar", ("u-myanmar", "uu-myanmar", "medialWa-myanmar",
+                          "medialHa-myanmar")),
+        ("ra-myanmar", ("u-myanmar", "uu-myanmar")),
+    )
+    side_rules = []
+    side_filter = set()
+    for side_base, trigger_names in side_specs:
+        alt = f"{side_base}.alt"
+        trigs = [t for t in trigger_names if t in drawn]
+        if alt in drawn and side_base in drawn and trigs:
+            side_rules.append(
+                f"    sub {side_base}' [{' '.join(trigs)}] by {alt};")
+            side_filter.update(t for t in trigs
+                               if not t.startswith("medialYa"))
+    if blws_rules or side_rules:
         lines.append("feature blws {")
-        lines.append(
-            f"  lookupflag UseMarkFilteringSet [{' '.join(filter_marks)}];")
-        lines.extend(blws_rules)
+        if blws_rules:
+            lines.append("  lookup desc_vowels {")
+            lines.append("    lookupflag UseMarkFilteringSet "
+                         f"[{' '.join(filter_marks)}];")
+            lines.extend("  " + r for r in blws_rules)
+            lines.append("  } desc_vowels;")
+        if side_rules:
+            lines.append("  lookup side_bases {")
+            lines.append("    lookupflag UseMarkFilteringSet "
+                         f"[{' '.join(sorted(side_filter))}];")
+            lines.extend(side_rules)
+            lines.append("  } side_bases;")
         lines.append("} blws;")
+        lines.append("")
+
+    # abvs: i + anusvara fuse into the drawn ligature (ကိံ → uni102D1036),
+    # the dot tucked beside the ring instead of stacked tall above it
+    if {"iAnusvara-myanmar", "i-myanmar", "anusvara-myanmar"} <= drawn:
+        lines.append("feature abvs {")
+        lines.append("  sub i-myanmar anusvara-myanmar by iAnusvara-myanmar;")
+        lines.append("} abvs;")
         lines.append("")
 
     # psts: below-marks after the medial-ra wrap shrink to the .small
@@ -982,9 +1069,10 @@ def generate_features(drawn, wide_bases=None, bases=None):
               for n in ("medialWa-myanmar", "medialHa-myanmar",
                         "u-myanmar", "uu-myanmar")
               if f"{n}.small" in drawn and n in drawn]
-    ra_cls = [n for n in ("medialRa-myanmar", "medialRa-myanmar.wide")
+    ra_cls = [n for n in ("medialRa-myanmar", "medialRa-myanmar.wide",
+                          "medialRa-myanmar.tall",
+                          "medialRa-myanmar.tall.wide")
               if n in drawn]
-    base_cls = [n for n in (bases or []) if n in drawn]
     if smalls and ra_cls and base_cls:
         lines.append(f"@RA_WRAPS = [{' '.join(ra_cls)}];")
         lines.append(f"@RA_BASES = [{' '.join(base_cls)}];")

@@ -18,7 +18,8 @@
 
   var TOP_MARKS = {
     "i-myanmar": 1, "ii-myanmar": 1, "ai-myanmar": 1,
-    "anusvara-myanmar": 1, "asat-myanmar": 1, "kinzi-myanmar": 1
+    "anusvara-myanmar": 1, "asat-myanmar": 1, "kinzi-myanmar": 1,
+    "iAnusvara-myanmar": 1
   };
   var BOTTOM_MARKS = {
     "u-myanmar": 1, "uu-myanmar": 1, "dotBelow-myanmar": 1,
@@ -43,6 +44,7 @@
   function roleFor(meta) {
     if (!meta) return null;
     if (meta.name === "medialYa-myanmar") return "ya-medial";
+    if (meta.baseVariant) return "base";  // side-form bases (na-myanmar.alt …)
     if (TOP_MARKS[meta.name]) return "top-mark";
     if (/\.sub$/.test(meta.name)) return "stack-mark";
     if (BOTTOM_MARKS[meta.name]) return "bottom-mark";

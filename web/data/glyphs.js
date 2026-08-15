@@ -203,6 +203,57 @@
     mark: true, group: "variants"
   });
 
+  glyphs.push({
+    name: "medialRa-myanmar.tall", cp: null, label: DOTTED + ch(0x103c) + "^",
+    guide: ch(0x1001) + ch(0x103c) + ch(0x102e),
+    hint: "Tall medial RA (narrow) — hook rises so ိ/ီ/ဲ fits above; draw only the RA wrap",
+    hintMy: "ရရစ်အမြင့် (ကျဉ်း) — အပေါ်သရအတွက် ချိတ်မြင့်သည်; ရရစ်ကိုသာ ဆွဲပါ",
+    mark: true, group: "variants"
+  });
+
+  glyphs.push({
+    name: "medialRa-myanmar.tall.wide", cp: null, label: DOTTED + ch(0x103c) + "+^",
+    guide: ch(0x1000) + ch(0x103c) + ch(0x102e),
+    hint: "Tall medial RA (wide) — for wide bases like က with ိ/ီ/ဲ above; draw only the RA wrap",
+    hintMy: "ရရစ်အမြင့် (ကျယ်) — က ကဲ့သို့ ဗျည်းကျယ် + အပေါ်သရအတွက်; ရရစ်ကိုသာ ဆွဲပါ",
+    mark: true, group: "variants"
+  });
+
+  glyphs.push({
+    name: "na-myanmar.alt", cp: null, label: ch(0x1014), variant: "alt",
+    baseVariant: true,
+    guide: ch(0x1014) + ch(0x102f),
+    hint: "Side-form NA — leg-free variant used in front of below-marks (နု); draw only the NA",
+    hintMy: "န ခြေတိုပုံစံ — အောက်သရရှေ့တွင် သုံးသည် (နု); န ကိုသာ ဆွဲပါ",
+    mark: false, group: "variants"
+  });
+
+  glyphs.push({
+    name: "nnya-myanmar.alt", cp: null, label: ch(0x100a), variant: "alt",
+    baseVariant: true,
+    guide: ch(0x100a) + ch(0x102f),
+    hint: "Side-form NNYA — variant used in front of below-marks (ညု); draw only the ည",
+    hintMy: "ည ပုံစံကွဲ — အောက်သရရှေ့တွင် သုံးသည် (ညု); ည ကိုသာ ဆွဲပါ",
+    mark: false, group: "variants"
+  });
+
+  glyphs.push({
+    name: "ra-myanmar.alt", cp: null, label: ch(0x101b), variant: "alt",
+    baseVariant: true,
+    guide: ch(0x101b) + ch(0x102f),
+    hint: "Side-form RA — short-leg variant used in front of ု/ူ (ရု); draw only the RA",
+    hintMy: "ရ ခြေတိုပုံစံ — ု/ူ ရှေ့တွင် သုံးသည် (ရု); ရ ကိုသာ ဆွဲပါ",
+    mark: false, group: "variants"
+  });
+
+  glyphs.push({
+    name: "iAnusvara-myanmar", cp: null, label: DOTTED + ch(0x102d) + ch(0x1036),
+    guide: DOTTED + ch(0x102d) + ch(0x1036),
+    hint: "Fused ိ + ံ ligature (ကိံ) — ring and dot drawn as one mark",
+    hintMy: "လုံးကြီးတင် + သေးသေးတင် ပေါင်းစပ်ပုံစံ (ကိံ) — တစ်ခုတည်းအဖြစ် ဆွဲပါ",
+    mark: true, group: "variants"
+  });
+
   window.GLYPH_GROUPS = [
     { key: "consonants", en: "Consonants", my: "ဗျည်း" },
     { key: "vowels", en: "Independent vowels", my: "သရ (လွတ်)" },
