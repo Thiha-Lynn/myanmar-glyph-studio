@@ -267,6 +267,11 @@ licensing details, including the bundled Padauk guide font, are in
       `wght` variable font; try the slider in the
       [gallery](https://thiha-lynn.github.io/myanmar-glyph-studio/gallery.html)
 - [x] Explicit GDEF classes and kerning support in the pipeline
+- [x] **Every shaping engine checked automatically** — HarfBuzz in CI,
+      CoreText via a Swift shaper on macOS (`pipeline/coretext/`), and
+      DirectWrite via a C++ shaper on a Windows runner
+      (`pipeline/directwrite/`). 6,357 cluster comparisons per engine
+      across both corpora, zero rendering differences
 - [x] **Pro drawing tools** — Bézier pen with editable paths, selection
       with move/scale/rotate, node editing, cross-glyph copy/paste,
       shape tools with snapping, partial eraser
