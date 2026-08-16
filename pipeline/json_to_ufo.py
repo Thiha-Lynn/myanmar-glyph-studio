@@ -121,8 +121,18 @@ TOP_MARKS = {
 BOTTOM_MARKS = {
     "u-myanmar", "uu-myanmar", "dotBelow-myanmar",
     "medialWa-myanmar", "medialHa-myanmar",
-    "u-myanmar.alt", "uu-myanmar.alt",
 }
+# The long u/uu forms drawn for stacked clusters (စက္ကူ) are not below-marks
+# at all: they are as tall as the letter body and belong BESIDE the cluster,
+# to the right of the stack — which is what Padauk does (its uni1030 after a
+# subjoined form is a spacing glyph with a 288-unit advance, ink −439…434,
+# exactly the proportions of our .alt drawings). Hanging them from the
+# stack's bottom anchor instead is how စက္ကူ's vowel reached −1341.
+SPACING_VOWELS = {"u-myanmar.alt", "uu-myanmar.alt"}
+# Spacing signs that render BEFORE their base. Marks never attach to these,
+# so they carry no anchors (a mark following one in the cluster belongs to
+# the base, which the shaper has already moved in front of).
+PRE_BASE_SIGNS = {"e-myanmar", "uni1084"}
 # subjoined consonants form their own attachment class: stacks hang from
 # the base's CENTRE (Padauk: 0.50 of ink width) while below-vowels hang
 # from its right bowl (0.78 on wide letters) — one shared anchor cannot
@@ -152,6 +162,25 @@ KNOWN_ANCHORS = {"top", "bottom", "_top", "_bottom", "stack", "_stack",
                  "side", "_side"}
 
 SIGN_LSB = 60  # left sidebearing given to re-aligned spacing signs
+
+# Vertical clearance between a letter's own ink and the mark above it.
+# Measured on Padauk: its ကိ leaves 76 units between the base's ink top
+# (448) and the ring's ink bottom (524). Ours adds 20 more on the mark's
+# own _top anchor, so 60 here reproduces that gap — and keeps stacked
+# above-marks inside the +900 ascender.
+TOP_CLEARANCE = 60
+# Deepest a subjoined letter may hang from, whatever the base's leg does.
+# Same floor the below-vowels use: Padauk's subjoined band is −440…−80.
+STACK_FLOOR = -50
+# How far right of the kinzi's ink the next above-mark's centre is planted
+# (half a vowel ring plus a gap): Padauk's fused kinzi+anusvara puts the
+# added ink to the right of the hook (သင်္ခံ: 1098…1466 vs bare 1113…1301).
+KINZI_SIDE_GAP = 210
+# How far the kinzi.left variant's ink is pre-shifted when a medial ya
+# follows in the cluster (the vowel then belongs to the ya and cannot chain
+# beside the kinzi) — clears the vowel over the ya with ~200 units to spare
+# on the widest base while staying over the base's body.
+KINZI_MEDIAL_SHIFT = 250
 
 # the four styles that may share a legacy family name
 RIBBI_STYLES = {"Regular", "Bold", "Italic", "Bold Italic"}
@@ -472,6 +501,15 @@ def draw_glyph(ufo_glyph, polys, smooth=True, ref_polys=None):
         pen.closePath()
 
 
+def top_anchor_y(y_max):
+    """Where an above-mark attaches on a glyph whose ink tops at y_max.
+
+    Follows the ink so tall letters push their marks up, with BODY as the
+    floor so a short letter still carries its mark at the usual height.
+    """
+    return max(y_max + TOP_CLEARANCE, BODY - 40)
+
+
 def add_anchor(glyph, name, x, y):
     glyph.appendAnchor({"name": name, "x": round(x), "y": round(y)})
 
@@ -553,7 +591,8 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
     base_glyphs = []  # glyphs that carry top/bottom anchors
     geo = {}          # sources for the synthesized contextual variants below
     variant_sources = {"medialWa-myanmar", "medialHa-myanmar",
-                       "u-myanmar", "uu-myanmar", "medialYa-myanmar"}
+                       "u-myanmar", "uu-myanmar", "medialYa-myanmar",
+                       "kinzi-myanmar"}
     for name, data in project.get("glyphs", {}).items():
         if name == "virama-myanmar":
             # U+1039 is invisible in rendered Burmese — ignore any sketched
@@ -577,18 +616,31 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
                    or name in STACK_MARKS)
         if not is_mark and cp and name not in BASE_NAMES:
             is_mark = unicodedata.category(chr(cp)) == "Mn"
+        if name in SPACING_VOWELS:
+            is_mark = False          # a spacing form, see SPACING_VOWELS
 
         x_min, y_min, x_max, y_max = poly_bounds(polys)
         adv = data.get("advance")
+
+        # Now that the ink is measured: a "subjoined" form drawn at full
+        # body height is not a below-form at all. Padauk's ဈ stacks as a
+        # SPACING glyph beside its base (uni1008.med, ink −429…423) rather
+        # than under it, and hanging that 847-unit drawing from a below
+        # anchor buries it at −916. Decided by measurement, so a font that
+        # draws a small ဈ under the base still gets the below treatment.
+        if name in STACK_MARKS and y_max > 0:
+            is_mark = False
 
         # Spacing signs (Mc: aa, tall-aa, e-vowel, visarga, medial-ya and
         # the extension equivalents) are sketched beside the ◌ carrier,
         # which bakes the carrier's width into their coordinates. When the
         # advance is automatic, left-align the ink so the sign gets a normal
         # sidebearing instead of the carrier-sized gap.
-        is_spacing_sign = (not is_mark and cp is not None
-                           and unicodedata.category(chr(cp)) == "Mc"
-                           and name not in WRAP_SIGNS)
+        is_spacing_sign = (not is_mark and name not in WRAP_SIGNS
+                           and (name in SPACING_VOWELS
+                                or name in STACK_MARKS
+                                or (cp is not None
+                                    and unicodedata.category(chr(cp)) == "Mc")))
         auto_advance = not adv and not is_mark and name not in WRAP_SIGNS
         # …and the same normalisation rescues any spacing glyph whose ink
         # sits left of the origin (some source fonts park modifier letters
@@ -690,9 +742,14 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             # The −50 floor puts ours at −90…−441. Never substitute the
             # long stack-form .alt here (it is 868 units tall and belongs
             # under subjoined letters only). Stacks keep full ink depth.
-            anchor("top", mark_x, max(y_max, BODY) + 40)
+            anchor("top", mark_x, top_anchor_y(y_max))
             anchor("bottom", bottom_x, max(min(y_min, 0), -50) - 40)
-            anchor("stack", cx, min(y_min, 0) - 40)
+            # …and the subjoined letter hangs from the same clamped depth:
+            # Padauk lands every subjoined form in the −440…−80 band whatever
+            # the base does (uni1014.alt + uni1014.med, uni101B + uni101B.med),
+            # because following the leg all the way down puts န္န at −890 —
+            # 290 units past the descender, into the next line of text.
+            anchor("stack", cx, max(min(y_min, 0), STACK_FLOOR) - 40)
             if not is_base_variant:
                 # variants are GSUB-only stand-ins: they never follow a
                 # wrap and must not skew the wide-base measurement
@@ -707,7 +764,32 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             # intercepts the backwards base scan, so ကျိ would lose its
             # i-ring without one (Padauk anchors i over the ya curve too).
             anchor("side", x_max - 30, -40)
-            anchor("top", cx, max(y_max, BODY) + 40)
+            anchor("top", cx, top_anchor_y(y_max))
+        elif is_spacing_sign and name not in PRE_BASE_SIGNS:
+            # Post-base spacing signs (ာ ါ and the long stack vowels) are
+            # mark bases too: in ကော် the asat sits over the ာ, in ကာံ the
+            # anusvara does — Padauk pulls both back onto the sign. Without
+            # anchors here the mark keeps its drawn position at the pen and
+            # floats off the end of the cluster.
+            #
+            # The height does NOT follow the sign's ink: ါ is a 875-unit
+            # stem, and a mark above THAT lands at 1303 — past usWinAscent,
+            # clipped by Windows. Padauk's fused ော် glyph keeps the asat
+            # under the stem's own top (856), so the mark stays in the band
+            # every other above-mark uses and crosses the stem instead.
+            anchor("top", mark_x, BODY - 40)
+            anchor("bottom", bottom_x, max(min(y_min, 0), -50) - 40)
+        elif name == "kinzi-myanmar":
+            # A vowel after the kinzi lands BESIDE it, not on top of it:
+            # stacking a second above-mark on the kinzi sends သင်္ကြီ's ii to
+            # y 1345 — past usWinAscent, so Windows and browsers clip it.
+            # Padauk ships fused kinzi+vowel glyphs for exactly this, and
+            # they put the vowel to the RIGHT of the hook: its plain kinzi
+            # spans 1113…1301 in သင်္ခ, its fused kinzi+anusvara 1098…1466
+            # in သင်္ခံ — all of the added ink is on the right. This anchor
+            # reproduces that geometry without extra artwork.
+            anchor("_top", cx, y_min - 20)
+            anchor("top", x_max + KINZI_SIDE_GAP, y_min - 20)
         elif name in TOP_MARKS:
             anchor("_top", cx, y_min - 20)
             anchor("top", cx, y_max + 20)
@@ -722,8 +804,11 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             anchor("_side", x_min - 40, y_max + 20)
         elif name in STACK_MARKS:
             anchor("_stack", cx, y_max + 20)
-            # further marks (tall uu, below-vowels) chain BELOW the stack
-            anchor("bottom", cx, y_min - 20)
+            # A medial or tone mark after a stack chains BESIDE it, tops
+            # aligned — the same rule below-marks follow. Hanging it from
+            # the stack's own bottom put က္ကွိ's ွ at −814; Padauk keeps
+            # every part of the cluster inside the −610…0 band.
+            anchor("side", x_max, y_max + 20)
         elif is_mark:
             # extension-language mark: decide the attachment side from
             # where the ink was drawn relative to the letter body
@@ -810,6 +895,28 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         categories[vname] = "base"
         drawn.append(vname)
 
+    # kinzi.left: in base+kinzi+medial-ya clusters (အင်္ကျီ) the top vowel
+    # attaches to the YA — a base glyph, so the mark chain restarts and the
+    # vowel cannot chain beside the kinzi. Over a wide base the two marks
+    # then share the same airspace (kinzi at 0.75 of the base, the vowel
+    # over the ya curve) and collide by ~40 units. Padauk's fused
+    # kinzi+vowel glyphs put the kinzi PART well to the left (သင်္ချိုင်း:
+    # fused ink from 1019 under a base starting at 1024); this variant is
+    # the same ink pre-shifted left, substituted only when a ya follows.
+    if "kinzi-myanmar" in geo:
+        polys_m, ref_m, _ = geo["kinzi-myanmar"]
+        vname = "kinzi-myanmar.left"
+        g = font.newGlyph(vname)
+        draw_glyph(g, polys_m, ref_polys=ref_m)
+        g.width = 0
+        vx0, vy0, vx1, _ = poly_bounds(polys_m)
+        # same ink; the attaching anchor sits RIGHT of centre, so GPOS
+        # pulls the whole glyph left of the base's mark spot by the shift
+        add_anchor(g, "_top", (vx0 + vx1) / 2 + KINZI_MEDIAL_SHIFT, vy0 - 20)
+        add_anchor(g, "top", vx1 + KINZI_SIDE_GAP, vy0 - 20)
+        categories[vname] = "mark"
+        drawn.append(vname)
+
     font.lib["public.openTypeCategories"] = categories
 
     # Optional kerning carried straight through to the UFO, so ufo2ft's
@@ -837,13 +944,13 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
     # time from this mapping (uniXXXX / uXXXXX, suffixes preserved).
     ps_names = {}
     for gname in drawn:
-        if gname == "kinzi-myanmar":
-            ps_names[gname] = "uni1004103A1039"  # AGL ligature form
-            continue
-        if gname == "iAnusvara-myanmar":
-            ps_names[gname] = "uni102D1036"      # AGL ligature form
-            continue
         base, dot, suffix = gname.partition(".")
+        if base == "kinzi-myanmar":
+            ps_names[gname] = "uni1004103A1039" + dot + suffix  # AGL ligature
+            continue
+        if base == "iAnusvara-myanmar":
+            ps_names[gname] = "uni102D1036" + dot + suffix      # AGL ligature
+            continue
         cp = name_to_codepoint(base if dot else gname)
         if cp:
             ps = f"uni{cp:04X}" if cp <= 0xFFFF else f"u{cp:04X}"
@@ -1016,12 +1123,18 @@ def generate_features(drawn, wide_bases=None, bases=None):
     # stays plain). The filtering set holds ONLY the trigger marks, so the
     # swap still fires across an intervening top mark (နို့) or asat
     # (ကျွန်ုပ် — Padauk swaps there too).
+    # A subjoined letter is a below-form too: န + ္ + န stacks the second
+    # န under the first, and with the leg still there the stack is pushed
+    # to −890. Padauk swaps the same side form in (uni1014.alt +
+    # uni1014.med) — but leaves ရ alone (ရ္ရ keeps the plain letter), so
+    # the trigger lists stay per-base, measured rather than assumed.
+    stack_trigs = tuple(f"{n}-myanmar.sub" for _, n in CONSONANTS)
     side_specs = (
         ("na-myanmar", ("u-myanmar", "uu-myanmar", "medialWa-myanmar",
                         "medialHa-myanmar", "medialYa-myanmar",
-                        "medialYa-myanmar.beforewa")),
+                        "medialYa-myanmar.beforewa") + stack_trigs),
         ("nnya-myanmar", ("u-myanmar", "uu-myanmar", "medialWa-myanmar",
-                          "medialHa-myanmar")),
+                          "medialHa-myanmar") + stack_trigs),
         ("ra-myanmar", ("u-myanmar", "uu-myanmar")),
     )
     side_rules = []
@@ -1052,10 +1165,22 @@ def generate_features(drawn, wide_bases=None, bases=None):
         lines.append("")
 
     # abvs: i + anusvara fuse into the drawn ligature (ကိံ → uni102D1036),
-    # the dot tucked beside the ring instead of stacked tall above it
+    # the dot tucked beside the ring instead of stacked tall above it —
+    # and the kinzi slides left when a medial ya follows (အင်္ကျီ), since
+    # the vowel then belongs to the ya and would overlap the kinzi's spot.
+    abvs_rules = []
     if {"iAnusvara-myanmar", "i-myanmar", "anusvara-myanmar"} <= drawn:
+        abvs_rules.append(
+            "  sub i-myanmar anusvara-myanmar by iAnusvara-myanmar;")
+    kinzi_ya = [n for n in ("medialYa-myanmar", "medialYa-myanmar.beforewa")
+                if n in drawn]
+    if "kinzi-myanmar.left" in drawn and kinzi_ya:
+        abvs_rules.append(
+            f"  sub kinzi-myanmar' [{' '.join(kinzi_ya)}] "
+            "by kinzi-myanmar.left;")
+    if abvs_rules:
         lines.append("feature abvs {")
-        lines.append("  sub i-myanmar anusvara-myanmar by iAnusvara-myanmar;")
+        lines.extend(abvs_rules)
         lines.append("} abvs;")
         lines.append("")
 

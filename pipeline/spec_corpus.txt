@@ -1,0 +1,1535 @@
+# Myanmar shaping spec corpus — Blocks A–O.
+# Extracted verbatim from the Burmese Glyph Studio shaping
+# specification (2026-08-16). Format: block<TAB>label<TAB>text.
+# Blank lines and lines starting with # are ignored.
+#
+# Block A: Basic Consonant-Vowel Combinations
+# Block B: Descender Class + Side-Form Vowels
+# Block C: Medial Ya + Vowel Positioning (Vowel Under Leg)
+# Block D: Medial Ra Wrap Variants (Narrow vs Wide)
+# Block E: Stacked Consonants - All Types
+# Block F: Kinzi (င်္) - All Combinations
+# Block G: Anusvara + Dot Below + Vowel Stacking
+# Block H: Left-Side Vowels (ေ, ဲ) with Other Marks
+# Block I: Tall-AA Rule (ါ replaces ာ)
+# Block J: Complex Multi-Mark Clusters
+# Block K: Language-Specific Overrides
+# Block L: Ultimate Torture Text (All Rules Combined)
+# Block M: All Possible Consonant-Vowel Combinations (Complete Matrix)
+# Block N: Complete Medial Combinations (ျ, ြ, ွ, ှ)
+# Block O: Asat (်) on All Stack Types
+#
+
+# --- Block A: Basic Consonant-Vowel Combinations
+A		က
+A		ခ
+A		ဂ
+A		ဃ
+A		င
+A		စ
+A		ဆ
+A		ဇ
+A		ဈ
+A		ဉ
+A		ဋ
+A		ဌ
+A		ဍ
+A		ဎ
+A		ဏ
+A		တ
+A		ထ
+A		ဒ
+A		ဓ
+A		န
+A		ပ
+A		ဖ
+A		ဗ
+A		ဘ
+A		မ
+A		ယ
+A		ရ
+A		လ
+A		ဝ
+A		သ
+A		ဟ
+A		ဠ
+A		အ
+A		ကိ
+A		ခီ
+A		ဂု
+A		ဃူ
+A		ငေ
+A		စဲ
+A		ဆော
+A		ဇျ
+A		ဈွ
+A		ဉှ
+A		ဋြ
+A		ဌွ
+A		ဍျ
+A		ဎှ
+A		ဏြ
+A		တော
+A		ထွ
+A		ဒျ
+A		ဓှ
+A		နွ
+A		ပြ
+A		ဖျ
+A		ဗွ
+A		ဘှ
+A		မြ
+A		ယော
+A		ရွ
+A		လှ
+A		ဝြ
+A		သျှ
+A		ဟွ
+A		ဠော
+A		အြ
+
+# --- Block B: Descender Class + Side-Form Vowels
+B		ကနု
+B		ခဏု
+B		ဂနု
+B		ဃဏု
+B		ငနု
+B		စနု
+B		ဆဏု
+B		ဇနု
+B		ဈဏု
+B		ဉနု
+B		ဋနု
+B		ဌဏု
+B		ဍနု
+B		ဎဏု
+B		ဏနု
+B		တနု
+B		ထဏု
+B		ဒနု
+B		ဓဏု
+B		နနု
+B		ပနု
+B		ဖဏု
+B		ဗနု
+B		ဘဏု
+B		မနု
+B		ယနု
+B		ရနု
+B		လနု
+B		ဝနု
+B		သနု
+B		ဟနု
+B		ဠနု
+B		အနု
+B		ကရု
+B		ခရု
+B		ဂရု
+B		ဃရု
+B		ငရု
+B		စရု
+B		ဆရု
+B		ဇရု
+B		ဈရု
+B		ဉရု
+B		ဋရု
+B		ဌရု
+B		ဍရု
+B		ဎရု
+B		ဏရု
+B		တရု
+B		ထရု
+B		ဒရု
+B		ဓရု
+B		နရု
+B		ပရု
+B		ဖရု
+B		ဗရု
+B		ဘရု
+B		မရု
+B		ယရု
+B		ရရု
+B		လရု
+B		ဝရု
+B		သရု
+B		ဟရု
+B		ဠရု
+B		အရု
+
+# --- Block C: Medial Ya + Vowel Positioning (Vowel Under Leg)
+C		ကျု
+C		ချု
+C		ဂျု
+C		ဃျု
+C		ငျု
+C		စျု
+C		ဆျု
+C		ဇျု
+C		ဈျု
+C		ဉျု
+C		ဋျု
+C		ဌျု
+C		ဍျု
+C		ဎျု
+C		ဏျု
+C		တျု
+C		ထျု
+C		ဒျု
+C		ဓျု
+C		နျု
+C		ပျု
+C		ဖျု
+C		ဗျု
+C		ဘျု
+C		မျု
+C		ယျု
+C		ရျု
+C		လျု
+C		ဝျု
+C		သျု
+C		ဟျု
+C		ဠျု
+C		အျု
+C		ကျူ
+C		ချူ
+C		ဂျူ
+C		ဃျူ
+C		ငျူ
+C		စျူ
+C		ဆျူ
+C		ဇျူ
+C		ဈျူ
+C		ဉျူ
+C		ဋျူ
+C		ဌျူ
+C		ဍျူ
+C		ဎျူ
+C		ဏျူ
+C		တျူ
+C		ထျူ
+C		ဒျူ
+C		ဓျူ
+C		နျူ
+C		ပျူ
+C		ဖျူ
+C		ဗျူ
+C		ဘျူ
+C		မျူ
+C		ယျူ
+C		ရျူ
+C		လျူ
+C		ဝျူ
+C		သျူ
+C		ဟျူ
+C		ဠျူ
+C		အျူ
+
+# --- Block D: Medial Ra Wrap Variants (Narrow vs Wide)
+D	Narrow Wrap	ကြို
+D	Narrow Wrap	ခြို
+D	Narrow Wrap	ငြို
+D	Narrow Wrap	ဒြို
+D	Narrow Wrap	ပြို
+D	Narrow Wrap	မွို
+D	Narrow Wrap	ဝွို
+D	Wide Wrap	ဃွို
+D	Wide Wrap	ဆွို
+D	Wide Wrap	တွို
+D	Wide Wrap	ထွို
+D	Wide Wrap	ဘွို
+D	Wide Wrap	ယွို
+D	Wide Wrap	လွို
+D	Wide Wrap	သွို
+D	Wide Wrap	ဟွို
+D	Wide Wrap	အွို
+D	Tall Variants (with ိ/ီ)	ကြီ
+D	Tall Variants (with ိ/ီ)	ခြီ
+D	Tall Variants (with ိ/ီ)	ငြီ
+D	Tall Variants (with ိ/ီ)	ဒြီ
+D	Tall Variants (with ိ/ီ)	ပြီ
+D	Tall Variants (with ိ/ီ)	မွီ
+D	Tall Variants (with ိ/ီ)	ဝွီ
+D	With Medial Wa + Vowel	ကြွ
+D	With Medial Wa + Vowel	ခြွ
+D	With Medial Wa + Vowel	ဂြွ
+D	With Medial Wa + Vowel	ဃြွ
+D	With Medial Wa + Vowel	ငြွ
+D	With Medial Wa + Vowel	စြွ
+D	With Medial Wa + Vowel	ဆြွ
+D	With Medial Wa + Vowel	ဇြွ
+D	With Medial Wa + Vowel	ဈြွ
+D	With Medial Wa + Vowel	ဉြွ
+
+# --- Block E: Stacked Consonants - All Types
+E	Homogeneous	က္က
+E	Homogeneous	စ္စ
+E	Homogeneous	တ္တ
+E	Homogeneous	ပ္ပ
+E	Homogeneous	ဗ္ဗ
+E	Homogeneous	မ္မ
+E	Homogeneous	ယ္ယ
+E	Homogeneous	ရ္ရ
+E	Homogeneous	လ္လ
+E	Homogeneous	ဝ္ဝ
+E	Homogeneous	သ္သ
+E	Homogeneous	ဟ္ဟ
+E	Homogeneous	ဠ္ဠ
+E	Heterogeneous	က္ခ
+E	Heterogeneous	ဂ္ဂ
+E	Heterogeneous	ဂ္ဃ
+E	Heterogeneous	စ္ဆ
+E	Heterogeneous	ဇ္ဇ
+E	Heterogeneous	ဇ္ဈ
+E	Heterogeneous	ဋ္ဋ
+E	Heterogeneous	ဋ္ဌ
+E	Heterogeneous	ဍ္ဍ
+E	Heterogeneous	ဍ္ဎ
+E	Heterogeneous	တ္ထ
+E	Heterogeneous	ဒ္ဒ
+E	Heterogeneous	ဒ္ဓ
+E	Heterogeneous	န္န
+E	Heterogeneous	န္ထ
+E	Heterogeneous	န္ဓ
+E	Heterogeneous	ပ္ဖ
+E	Heterogeneous	ဗ္ဘ
+E	Special Lower Forms	ဗုဒ္ဓ
+E	Special Lower Forms	အဓိဋ္ဌာန်
+E	With Vowels	က္ကိ
+E	With Vowels	က္ကု
+E	With Vowels	က္ကေ
+E	With Vowels	က္ကော
+E	With Vowels	က္ကိံ
+E	With Vowels	က္ကုံ့
+E	With Medials	က္ကွိ
+E	With Medials	က္ချိ
+E	With Medials	ဂ္ဂြိ
+E	With Medials	ဃ္ဃော
+
+# --- Block F: Kinzi (င်္) - All Combinations
+F	Basic Kinzi	သင်္ဘော
+F	Basic Kinzi	သင်္ကြီ
+F	Basic Kinzi	သင်္ခါ
+F	Basic Kinzi	သင်္ဂဟ
+F	Basic Kinzi	သင်္ဃာ
+F	Basic Kinzi	သင်္ကန်း
+F	With Upper Vowels	သင်္ခီ
+F	With Upper Vowels	သင်္ဂီ
+F	With Upper Vowels	သင်္ဃီ
+F	With Upper Vowels	သင်္စီ
+F	With Lower Vowels	သင်္ဘု
+F	With Lower Vowels	သင်္ခူ
+F	With Lower Vowels	သင်္ဂု
+F	With Lower Vowels	သင်္ဃူ
+F	With Anusvara	သင်္ခါံ
+F	With Anusvara	သင်္ဂံ
+F	With Anusvara	သင်္ဃံ
+F	With Medials	သင်္ကြိုး
+F	With Medials	သင်္ခြွေ
+F	With Medials	သင်္ဂြီ
+F	With Medials	သင်္ဃြော
+F	Complex	သင်္ကြိုးကြီး
+F	Complex	သင်္ခြွေရံ
+F	Complex	သင်္ဂြီချို
+
+# --- Block G: Anusvara + Dot Below + Vowel Stacking
+G	Anusvara Only	ကံ
+G	Anusvara Only	ခံ
+G	Anusvara Only	ဂံ
+G	Anusvara Only	ဃံ
+G	Anusvara Only	ငံ
+G	Anusvara Only	စံ
+G	Anusvara Only	ဆံ
+G	Anusvara Only	ဇံ
+G	Anusvara Only	ဈံ
+G	Anusvara Only	ဉံ
+G	Anusvara Only	ဋံ
+G	Anusvara Only	ဌံ
+G	Anusvara Only	ဍံ
+G	Anusvara Only	ဎံ
+G	Anusvara Only	ဏံ
+G	Anusvara Only	တံ
+G	Anusvara Only	ထံ
+G	Anusvara Only	ဒံ
+G	Anusvara Only	ဓံ
+G	Anusvara Only	နံ
+G	Anusvara Only	ပံ
+G	Anusvara Only	ဖံ
+G	Anusvara Only	ဗံ
+G	Anusvara Only	ဘံ
+G	Anusvara Only	မံ
+G	Anusvara Only	ယံ
+G	Anusvara Only	ရံ
+G	Anusvara Only	လံ
+G	Anusvara Only	ဝံ
+G	Anusvara Only	သံ
+G	Anusvara Only	ဟံ
+G	Anusvara Only	ဠံ
+G	Anusvara Only	အံ
+G	Dot Below Only	က့
+G	Dot Below Only	ခ့
+G	Dot Below Only	ဂ့
+G	Dot Below Only	ဃ့
+G	Dot Below Only	င့
+G	Dot Below Only	စ့
+G	Dot Below Only	ဆ့
+G	Dot Below Only	ဇ့
+G	Dot Below Only	ဈ့
+G	Dot Below Only	ဉ့
+G	Dot Below Only	ဋ့
+G	Dot Below Only	ဌ့
+G	Dot Below Only	ဍ့
+G	Dot Below Only	ဎ့
+G	Dot Below Only	ဏ့
+G	Dot Below Only	တ့
+G	Dot Below Only	ထ့
+G	Dot Below Only	ဒ့
+G	Dot Below Only	ဓ့
+G	Dot Below Only	န့
+G	Dot Below Only	ပ့
+G	Dot Below Only	ဖ့
+G	Dot Below Only	ဗ့
+G	Dot Below Only	ဘ့
+G	Dot Below Only	မ့
+G	Dot Below Only	ယ့
+G	Dot Below Only	ရ့
+G	Dot Below Only	လ့
+G	Dot Below Only	ဝ့
+G	Dot Below Only	သ့
+G	Dot Below Only	ဟ့
+G	Dot Below Only	ဠ့
+G	Dot Below Only	အ့
+G	Upper + Anusvara (ကိံ)	ကိံ
+G	Upper + Anusvara (ကိံ)	ခိံ
+G	Upper + Anusvara (ကိံ)	ဂိံ
+G	Upper + Anusvara (ကိံ)	ဃိံ
+G	Upper + Anusvara (ကိံ)	ငိံ
+G	Upper + Anusvara (ကိံ)	စိံ
+G	Upper + Anusvara (ကိံ)	ဆိံ
+G	Upper + Anusvara (ကိံ)	ဇိံ
+G	Upper + Anusvara (ကိံ)	ဈိံ
+G	Upper + Anusvara (ကိံ)	ဉိံ
+G	Upper + Anusvara (ကိံ)	ဋိံ
+G	Upper + Anusvara (ကိံ)	ဌိံ
+G	Upper + Anusvara (ကိံ)	ဍိံ
+G	Upper + Anusvara (ကိံ)	ဎိံ
+G	Upper + Anusvara (ကိံ)	ဏိံ
+G	Upper + Anusvara (ကိံ)	တိံ
+G	Upper + Anusvara (ကိံ)	ထိံ
+G	Upper + Anusvara (ကိံ)	ဒိံ
+G	Upper + Anusvara (ကိံ)	ဓိံ
+G	Upper + Anusvara (ကိံ)	နိံ
+G	Upper + Anusvara (ကိံ)	ပိံ
+G	Upper + Anusvara (ကိံ)	ဖိံ
+G	Upper + Anusvara (ကိံ)	ဗိံ
+G	Upper + Anusvara (ကိံ)	ဘိံ
+G	Upper + Anusvara (ကိံ)	မိံ
+G	Upper + Anusvara (ကိံ)	ယိံ
+G	Upper + Anusvara (ကိံ)	ရိံ
+G	Upper + Anusvara (ကိံ)	လိံ
+G	Upper + Anusvara (ကိံ)	ဝိံ
+G	Upper + Anusvara (ကိံ)	သိံ
+G	Upper + Anusvara (ကိံ)	ဟိံ
+G	Upper + Anusvara (ကိံ)	ဠိံ
+G	Upper + Anusvara (ကိံ)	အိံ
+G	Lower + Dot Below (ကုံ့)	ကုံ့
+G	Lower + Dot Below (ကုံ့)	ခုံ့
+G	Lower + Dot Below (ကုံ့)	ဂုံ့
+G	Lower + Dot Below (ကုံ့)	ဃုံ့
+G	Lower + Dot Below (ကုံ့)	ငုံ့
+G	Lower + Dot Below (ကုံ့)	စုံ့
+G	Lower + Dot Below (ကုံ့)	ဆုံ့
+G	Lower + Dot Below (ကုံ့)	ဇုံ့
+G	Lower + Dot Below (ကုံ့)	ဈုံ့
+G	Lower + Dot Below (ကုံ့)	ဉုံ့
+G	Lower + Dot Below (ကုံ့)	ဋုံ့
+G	Lower + Dot Below (ကုံ့)	ဌုံ့
+G	Lower + Dot Below (ကုံ့)	ဍုံ့
+G	Lower + Dot Below (ကုံ့)	ဎုံ့
+G	Lower + Dot Below (ကုံ့)	ဏုံ့
+G	Lower + Dot Below (ကုံ့)	တုံ့
+G	Lower + Dot Below (ကုံ့)	ထုံ့
+G	Lower + Dot Below (ကုံ့)	ဒုံ့
+G	Lower + Dot Below (ကုံ့)	ဓုံ့
+G	Lower + Dot Below (ကုံ့)	နုံ့
+G	Lower + Dot Below (ကုံ့)	ပုံ့
+G	Lower + Dot Below (ကုံ့)	ဖုံ့
+G	Lower + Dot Below (ကုံ့)	ဗုံ့
+G	Lower + Dot Below (ကုံ့)	ဘုံ့
+G	Lower + Dot Below (ကုံ့)	မုံ့
+G	Lower + Dot Below (ကုံ့)	ယုံ့
+G	Lower + Dot Below (ကုံ့)	ရုံ့
+G	Lower + Dot Below (ကုံ့)	လုံ့
+G	Lower + Dot Below (ကုံ့)	ဝုံ့
+G	Lower + Dot Below (ကုံ့)	သုံ့
+G	Lower + Dot Below (ကုံ့)	ဟုံ့
+G	Lower + Dot Below (ကုံ့)	ဠုံ့
+G	Lower + Dot Below (ကုံ့)	အံု
+
+# --- Block H: Left-Side Vowels (ေ, ဲ) with Other Marks
+H	Left Vowel Only	ေက
+H	Left Vowel Only	ေခ
+H	Left Vowel Only	ေဂ
+H	Left Vowel Only	ေဃ
+H	Left Vowel Only	ေင
+H	Left Vowel Only	ေစ
+H	Left Vowel Only	ေဆ
+H	Left Vowel Only	ေဇ
+H	Left Vowel Only	ေဈ
+H	Left Vowel Only	ေဉ
+H	Left Vowel Only	ေဋ
+H	Left Vowel Only	ေဌ
+H	Left Vowel Only	ေဍ
+H	Left Vowel Only	ေဎ
+H	Left Vowel Only	ေဏ
+H	Left Vowel Only	ေတ
+H	Left Vowel Only	ေထ
+H	Left Vowel Only	ေဒ
+H	Left Vowel Only	ေဓ
+H	Left Vowel Only	ေန
+H	Left Vowel Only	ေပ
+H	Left Vowel Only	ေဖ
+H	Left Vowel Only	ေဗ
+H	Left Vowel Only	ေဘ
+H	Left Vowel Only	ေမ
+H	Left Vowel Only	ေယ
+H	Left Vowel Only	ေရ
+H	Left Vowel Only	ေလ
+H	Left Vowel Only	ေဝ
+H	Left Vowel Only	ေသ
+H	Left Vowel Only	ေဟ
+H	Left Vowel Only	ေဠ
+H	Left Vowel Only	ေအ
+H	Left + Upper	ေကိ
+H	Left + Upper	ေခီ
+H	Left + Upper	ေဂိ
+H	Left + Upper	ေဃီ
+H	Left + Upper	ေငိ
+H	Left + Upper	ေစီ
+H	Left + Upper	ေဆိ
+H	Left + Upper	ေဇီ
+H	Left + Upper	ေဈိ
+H	Left + Upper	ေဉီ
+H	Left + Upper	ေဋိ
+H	Left + Upper	ေဌီ
+H	Left + Upper	ေဍိ
+H	Left + Upper	ေဎီ
+H	Left + Upper	ေဏိ
+H	Left + Upper	ေတီ
+H	Left + Upper	ေထိ
+H	Left + Upper	ေဒီ
+H	Left + Upper	ေဓိ
+H	Left + Upper	ေနီ
+H	Left + Upper	ေပီ
+H	Left + Upper	ေဖိ
+H	Left + Upper	ေဗီ
+H	Left + Upper	ေဘိ
+H	Left + Upper	ေမီ
+H	Left + Upper	ေယိ
+H	Left + Upper	ေရီ
+H	Left + Upper	ေလိ
+H	Left + Upper	ေဝီ
+H	Left + Upper	ေသိ
+H	Left + Upper	ေသီ
+H	Left + Upper	ေဟီ
+H	Left + Upper	ေဠိ
+H	Left + Upper	ေအိ
+H	Left + Lower	ေကု
+H	Left + Lower	ေခူ
+H	Left + Lower	ေဂု
+H	Left + Lower	ေဃူ
+H	Left + Lower	ေငု
+H	Left + Lower	ေစူ
+H	Left + Lower	ေဆု
+H	Left + Lower	ေဇူ
+H	Left + Lower	ေဈု
+H	Left + Lower	ေဉူ
+H	Left + Lower	ေဋု
+H	Left + Lower	ေဌူ
+H	Left + Lower	ေဍု
+H	Left + Lower	ေဎူ
+H	Left + Lower	ေဏု
+H	Left + Lower	ေတူ
+H	Left + Lower	ေထု
+H	Left + Lower	ေဒူ
+H	Left + Lower	ေဓု
+H	Left + Lower	ေနူ
+H	Left + Lower	ေပူ
+H	Left + Lower	ေဖု
+H	Left + Lower	ေဗူ
+H	Left + Lower	ေဘု
+H	Left + Lower	ေမူ
+H	Left + Lower	ေယု
+H	Left + Lower	ေရူ
+H	Left + Lower	ေလု
+H	Left + Lower	ေဝူ
+H	Left + Lower	ေသု
+H	Left + Lower	ေသူ
+H	Left + Lower	ေဟု
+H	Left + Lower	ေဠူ
+H	Left + Lower	ေအု
+H	Left + Anusvara	ေကာ
+H	Left + Anusvara	ေခါ
+H	Left + Anusvara	ေဂါ
+H	Left + Anusvara	ေဃါ
+H	Left + Anusvara	ေငါ
+H	Left + Anusvara	ေစါ
+H	Left + Anusvara	ေဆါ
+H	Left + Anusvara	ေဇါ
+H	Left + Anusvara	ေဈါ
+H	Left + Anusvara	ေဉါ
+H	Left + Anusvara	ေဋါ
+H	Left + Anusvara	ေဌါ
+H	Left + Anusvara	ေဍါ
+H	Left + Anusvara	ေဎါ
+H	Left + Anusvara	ေဏါ
+H	Left + Anusvara	ေတါ
+H	Left + Anusvara	ေထါ
+H	Left + Anusvara	ေဒါ
+H	Left + Anusvara	ေဓါ
+H	Left + Anusvara	ေနါ
+H	Left + Anusvara	ေပါ
+H	Left + Anusvara	ေဖါ
+H	Left + Anusvara	ေဗါ
+H	Left + Anusvara	ေဘါ
+H	Left + Anusvara	ေမၪ
+H	Left + Anusvara	ေယါ
+H	Left + Anusvara	ေရါ
+H	Left + Anusvara	ေလါ
+H	Left + Anusvara	ေဝါ
+H	Left + Anusvara	ေသါ
+H	Left + Anusvara	ေဟါ
+H	Left + Anusvara	ေဠါ
+H	Left + Anusvara	ေအါ
+
+# --- Block I: Tall-AA Rule (ါ replaces ာ)
+I	Standard AA (ာ)	ကာ
+I	Standard AA (ာ)	ဃာ
+I	Standard AA (ာ)	ဆာ
+I	Standard AA (ာ)	တာ
+I	Standard AA (ာ)	ထာ
+I	Standard AA (ာ)	ဘာ
+I	Standard AA (ာ)	ယာ
+I	Standard AA (ာ)	လာ
+I	Standard AA (ာ)	သာ
+I	Standard AA (ာ)	ဟာ
+I	Standard AA (ာ)	အာ
+I	Tall-AA (ါ)	ခါ
+I	Tall-AA (ါ)	ဂါ
+I	Tall-AA (ါ)	ငါ
+I	Tall-AA (ါ)	ဒါ
+I	Tall-AA (ါ)	ပါ
+I	Tall-AA (ါ)	မာ
+I	Tall-AA (ါ)	ဝါ
+I	With Vowels	ခါး
+I	With Vowels	ဂါး
+I	With Vowels	ငါး
+I	With Vowels	ဒါး
+I	With Vowels	ပါး
+I	With Vowels	မား
+I	With Vowels	ဝါး
+I	With Medials	ကျာ
+I	With Medials	ချာ
+I	With Medials	ဂျာ
+I	With Medials	ငျာ
+I	With Medials	စျာ
+I	With Medials	ဆျာ
+I	With Stacking	က္ခါ
+I	With Stacking	ဂ္ဂါ
+I	With Stacking	င္ငါ
+I	With Stacking	ဒ္ဒါ
+I	With Stacking	ပ္ပါ
+I	With Stacking	မ္မာ
+I	With Stacking	ဝ္ဝါ
+
+# --- Block J: Complex Multi-Mark Clusters
+J	medial ra + ု + tone	ကြိုး
+J	medial ya + kinzi + vowel	ကျွန်ုပ်
+J	medial ra + medial wa + vowel	မြွှေ
+J	medial ra + medial wa + medial ha + vowel + tone	ညွှန်း
+J	stack + special form + vowel + asat	အဓိဋ္ဌာန်
+J	stack + vowel + asat	ဗုဒ္ဓ
+J	kinzi + stack + vowel + medial ra + vowel	သမ္ဗုဒ္ဓေါ
+J	kinzi + stack + medial ra + vowel	ဣန္ဒြေ
+J	kinzi + stack + kinzi + base	ပဉ္စင်္ဂ
+
+# --- Block K: Language-Specific Overrides
+K	Mon	င်္က
+K	Mon	င်္ဂ
+K	Mon	င်္စ
+K	Mon	င်္ဇ
+K	Mon	င်္ဋ
+K	Mon	င်္ဌ
+K	Mon	င်္ဍ
+K	Mon	င်္ဎ
+K	Mon	င်္တ
+K	Mon	င်္ထ
+K	Mon	င်္ဒ
+K	Mon	င်္ဓ
+K	Mon	င်္န
+K	Mon	င်္ပ
+K	Mon	င်္ဗ
+K	Mon	င်္ဘ
+K	Mon	င်္မ
+K	Mon	င်္ယ
+K	Mon	င်္ရ
+K	Mon	င်္လ
+K	Mon	င်္ဝ
+K	Mon	င်္သ
+K	Mon	င်္ဟ
+K	Mon	င်္ဠ
+K	Mon	င်္အ
+K	Shan	ၸို
+K	Shan	ၸူ
+K	Shan	ၸူး
+K	Shan	ၸွ
+K	Shan	ၸွး
+K	Shan	ၸိူဝ်း
+K	Shan	ၸိုၺ်
+K	Shan	ၸွင်
+K	Shan	ၸိုင်
+K	Shan	ၸိုၽ
+K	Shan	ၸိူၽ
+K	Shan	ၸွၽ
+K	Shan	ၸွင်ၽ
+K	S'gaw Karen	ကꤰ
+K	S'gaw Karen	ကꤱ
+K	S'gaw Karen	ကꤲ
+K	S'gaw Karen	ကꤳ
+K	S'gaw Karen	ကꤴ
+K	S'gaw Karen	ကꤵ
+K	S'gaw Karen	ကꤶ
+K	S'gaw Karen	ကꤷ
+K	S'gaw Karen	ကꤸ
+K	S'gaw Karen	က္က
+
+# --- Block L: Ultimate Torture Text (All Rules Combined)
+L		သီဟိုဠ်မှ ဉာဏ်ကြီးရှင်သည် အာယုဝဍ္ဎနဆေးညွှန်းစာကို ဇလွန်ဈေးဘေး ဗာဒံပင် အဓိဋ္ဌာန်လျက် ဂဃနဏဖတ်ခဲ့သည်။
+L		မဟာဝံသ၊ ဒီဃနိကာယ၊ သံယုတ္တနိကာယ၊ အံဂုတ္တရနိကာယ၊ ခုဒ္ဒကနိကာယတို့၏ အနှစ်သာရကို ရဟန္တာများ ဒေသနာတော်ခဲ့ကြသည်။
+L		ဗုဒ္ဓဘာသာ၏ အဆုံးအမတော်များမှာ မဂ္ဂင် ၈-ပါး၊ ပဋိစ္စသမုပ္ပါဒ်၊ သစ္စာ ၄-ပါးတို့ ဖြစ်ကြသည်။
+L		ဧကန်မုချ၊ ဣန္ဒြေရင့်သန်သူ၊ ဝိပဿနာတရားအားထုတ်သူတို့သည် နိဗ္ဗာန်သို့ ရောက်နိုင်ကြသည်။
+L		ဣစ္ဆာ၊ ဒေါသ၊ မောဟ၊ လောဘ၊ ဒိဋ္ဌိ၊ ဝိစိကိစ္ဆာ၊ ထိနမိဒ္ဓ၊ အနောတ္တပ္ပ၊ ဥဒ္ဓစ္စ၊ အဟိရိကတို့သည် ကိလေသာတရားများဖြစ်သည်။
+L		ကျွန်ုပ်၏ သင်္ဘောကြီးသည် သင်္ကြန်ပွဲတော်သို့ သွားရောက်ခဲ့သည်။
+L		သင်္ခါရ၊ သင်္ဂဟ၊ သင်္ဃာ၊ သင်္ကန်း၊ သင်္ဘော၊ သင်္ကြီ၊ သင်္ကြန်၊ သင်္ခါ၊ သင်္ဂါ၊ သင်္ဃား၊ သင်္ဏ၊ သင်္ဋ၊ သင်္ဌာန်၊ သင်္ဍ၊ သင်္ဎ၊ သင်္ဓ၊ သင်္ဏ၊ သင်္ပ၊ သင်္ဗ၊ သင်္ဘ၊ သင်္မ၊ သင်္ယ၊ သင်္ရ၊ သင်္လ၊ သင်္ဝ၊ သင်္သ၊ သင်္ဟ၊ သင်္ဠ၊ သင်္အ။
+
+# --- Block M: All Possible Consonant-Vowel Combinations (Complete Matrix)
+M		က
+M		ကိ
+M		ကီ
+M		ကု
+M		ကူ
+M		ကေ
+M		ကဲ
+M		ကော
+M		ကော်
+M		ကို
+M		ကူး
+M		ကုံ
+M		ကို့
+M		ခ
+M		ခိ
+M		ခီ
+M		ခု
+M		ခူ
+M		ခေ
+M		ခဲ
+M		ခေါ
+M		ခေါ်
+M		ခို
+M		ခူး
+M		ခုံ
+M		ခို့
+M		ဂ
+M		ဂိ
+M		ဂီ
+M		ဂု
+M		ဂူ
+M		ဂေ
+M		ဂဲ
+M		ဂေါ
+M		ဂေါ်
+M		ဂို
+M		ဂူး
+M		ဂုံ
+M		ဂို့
+M		ဃ
+M		ဃိ
+M		ဃီ
+M		ဃု
+M		ဃူ
+M		ဃေ
+M		ဃဲ
+M		ဃေါ
+M		ဃေါ်
+M		ဃို
+M		ဃူး
+M		ဃုံ
+M		ဃို့
+M		င
+M		ငိ
+M		ငီ
+M		ငု
+M		ငူ
+M		ငေ
+M		ငဲ
+M		ငေါ
+M		ငေါ်
+M		ငို
+M		ငူး
+M		ငုံ
+M		ငို့
+M		စ
+M		စိ
+M		စီ
+M		စု
+M		စူ
+M		စေ
+M		စဲ
+M		စေါ
+M		စေါ်
+M		စို
+M		စူး
+M		စုံ
+M		စို့
+M		ဆ
+M		ဆိ
+M		ဆီ
+M		ဆု
+M		ဆူ
+M		ဆေ
+M		ဆဲ
+M		ဆေါ
+M		ဆေါ်
+M		ဆို
+M		ဆူး
+M		ဆုံ
+M		ဆို့
+M		ဇ
+M		ဇိ
+M		ဇီ
+M		ဇု
+M		ဇူ
+M		ဇေ
+M		ဇဲ
+M		ဇေါ
+M		ဇေါ်
+M		ဇို
+M		ဇူး
+M		ဇုံ
+M		ဇို့
+M		ဈ
+M		ဈိ
+M		ဈီ
+M		ဈု
+M		ဈူ
+M		ဈေ
+M		ဈဲ
+M		ဈေါ
+M		ဈေါ်
+M		ဈို
+M		ဈူး
+M		ဈုံ
+M		ဈို့
+M		ဉ
+M		ဉိ
+M		ဉီ
+M		ဉု
+M		ဉူ
+M		ဉေ
+M		ဉဲ
+M		ဉေါ
+M		ဉေါ်
+M		ဉို
+M		ဉူး
+M		ဉုံ
+M		ဉို့
+M		ဋ
+M		ဋိ
+M		ဋီ
+M		ဋု
+M		ဋူ
+M		ဋေ
+M		ဋဲ
+M		ဋေါ
+M		ဋေါ်
+M		ဋို
+M		ဋူး
+M		ဋုံ
+M		ဋို့
+M		ဌ
+M		ဌိ
+M		ဌီ
+M		ဌု
+M		ဌူ
+M		ဌေ
+M		ဌဲ
+M		ဌေါ
+M		ဌေါ်
+M		ဌို
+M		ဌူး
+M		ဌုံ
+M		ဌို့
+M		ဍ
+M		ဍိ
+M		ဍီ
+M		ဍု
+M		ဍူ
+M		ဍေ
+M		ဍဲ
+M		ဍေါ
+M		ဍေါ်
+M		ဍို
+M		ဍူး
+M		ဍုံ
+M		ဍို့
+M		ဎ
+M		ဎိ
+M		ဎီ
+M		ဎု
+M		ဎူ
+M		ဎေ
+M		ဎဲ
+M		ဎေါ
+M		ဎေါ်
+M		ဎို
+M		ဎူး
+M		ဎုံ
+M		ဎို့
+M		ဏ
+M		ဏိ
+M		ဏီ
+M		ဏု
+M		ဏူ
+M		ဏေ
+M		ဏဲ
+M		ဏေါ
+M		ဏေါ်
+M		ဏို
+M		ဏူး
+M		ဏုံ
+M		ဏို့
+M		တ
+M		တိ
+M		တီ
+M		တု
+M		တူ
+M		တေ
+M		တဲ
+M		တေါ
+M		တေါ်
+M		တို
+M		တူး
+M		တုံ
+M		တို့
+M		ထ
+M		ထိ
+M		ထီ
+M		ထု
+M		ထူ
+M		ထေ
+M		ထဲ
+M		ထေါ
+M		ထေါ်
+M		ထို
+M		ထူး
+M		ထုံ
+M		ထို့
+M		ဒ
+M		ဒိ
+M		ဒီ
+M		ဒု
+M		ဒူ
+M		ဒေ
+M		ဒဲ
+M		ဒေါ
+M		ဒေါ်
+M		ဒို
+M		ဒူး
+M		ဒုံ
+M		ဒို့
+M		ဓ
+M		ဓိ
+M		ဓီ
+M		ဓု
+M		ဓူ
+M		ဓေ
+M		ဓဲ
+M		ဓေါ
+M		ဓေါ်
+M		ဓို
+M		ဓူး
+M		ဓုံ
+M		ဓို့
+M		န
+M		နိ
+M		နီ
+M		နု
+M		နူ
+M		နေ
+M		နဲ
+M		နေါ
+M		နေါ်
+M		နို
+M		နူး
+M		နုံ
+M		နို့
+M		ပ
+M		ပိ
+M		ပီ
+M		ပု
+M		ပူ
+M		ပေ
+M		ပဲ
+M		ပေါ
+M		ပေါ်
+M		ပို
+M		ပူး
+M		ပုံ
+M		ပို့
+M		ဖ
+M		ဖိ
+M		ဖီ
+M		ဖု
+M		ဖူ
+M		ဖေ
+M		ဖဲ
+M		ဖေါ
+M		ဖေါ်
+M		ဖို
+M		ဖူး
+M		ဖုံ
+M		ဖို့
+M		ဗ
+M		ဗိ
+M		ဗီ
+M		ဗု
+M		ဗူ
+M		ဗေ
+M		ဗဲ
+M		ဗေါ
+M		ဗေါ်
+M		ဗို
+M		ဗူး
+M		ဗုံ
+M		ဗို့
+M		ဘ
+M		ဘိ
+M		ဘီ
+M		ဘု
+M		ဘူ
+M		ဘေ
+M		ဘဲ
+M		ဘေါ
+M		ဘေါ်
+M		ဘို
+M		ဘူး
+M		ဘုံ
+M		ဘို့
+M		မ
+M		မိ
+M		မီ
+M		မု
+M		မူ
+M		မေ
+M		မဲ
+M		မေါ
+M		မေါ်
+M		မို
+M		မူး
+M		မုံ
+M		မို့
+M		ယ
+M		ယိ
+M		ယီ
+M		ယု
+M		ယူ
+M		ယေ
+M		ယဲ
+M		ယေါ
+M		ယေါ်
+M		ယို
+M		ယူး
+M		ယုံ
+M		ယို့
+M		ရ
+M		ရိ
+M		ရီ
+M		ရု
+M		ရူ
+M		ရေ
+M		ရဲ
+M		ရေါ
+M		ရေါ်
+M		ရို
+M		ရူး
+M		ရုံ
+M		ရို့
+M		လ
+M		လိ
+M		လီ
+M		လု
+M		လူ
+M		လေ
+M		လဲ
+M		လေါ
+M		လေါ်
+M		လို
+M		လူး
+M		လုံ
+M		လို့
+M		ဝ
+M		ဝိ
+M		ဝီ
+M		ဝု
+M		ဝူ
+M		ဝေ
+M		ဝဲ
+M		ဝေါ
+M		ဝေါ်
+M		ဝို
+M		ဝူး
+M		ဝုံ
+M		ဝို့
+M		သ
+M		သိ
+M		သီ
+M		သု
+M		သူ
+M		သေ
+M		သဲ
+M		သေါ
+M		သေါ်
+M		သို
+M		သူး
+M		သုံ
+M		သို့
+M		ဟ
+M		ဟိ
+M		ဟီ
+M		ဟု
+M		ဟူ
+M		ဟေ
+M		ဟဲ
+M		ဟေါ
+M		ဟေါ်
+M		ဟို
+M		ဟူး
+M		ဟုံ
+M		ဟို့
+M		ဠ
+M		ဠိ
+M		ဠီ
+M		ဠု
+M		ဠူ
+M		ဠေ
+M		ဠဲ
+M		ဠေါ
+M		ဠေါ်
+M		ဠို
+M		ဠူး
+M		ဠုံ
+M		ဠို့
+M		အ
+M		အိ
+M		အီ
+M		အု
+M		အူ
+M		အေ
+M		အဲ
+M		အေါ
+M		အေါ်
+M		အို
+M		အူး
+M		အံု
+M		အို့
+
+# --- Block N: Complete Medial Combinations (ျ, ြ, ွ, ှ)
+N		ကျ
+N		ချ
+N		ဂျ
+N		ဃျ
+N		ငျ
+N		စျ
+N		ဆျ
+N		ဇျ
+N		ဈျ
+N		ဉျ
+N		ဋျ
+N		ဌျ
+N		ဍျ
+N		ဎျ
+N		ဏျ
+N		တျ
+N		ထျ
+N		ဒျ
+N		ဓျ
+N		နျ
+N		ပျ
+N		ဖျ
+N		ဗျ
+N		ဘျ
+N		မျ
+N		ယျ
+N		ရျ
+N		လျ
+N		ဝျ
+N		သျ
+N		ဟျ
+N		ဠျ
+N		အျ
+N		ကြ
+N		ခြ
+N		ဂြ
+N		ဃြ
+N		ငြ
+N		စြ
+N		ဆြ
+N		ဇြ
+N		ဈြ
+N		ဉြ
+N		ဋြ
+N		ဌြ
+N		ဍြ
+N		ဎြ
+N		ဏြ
+N		တြ
+N		ထြ
+N		ဒြ
+N		ဓြ
+N		နြ
+N		ပြ
+N		ဖြ
+N		ဗြ
+N		ဘြ
+N		မြ
+N		ယြ
+N		ရြ
+N		လြ
+N		ဝြ
+N		သြ
+N		ဟြ
+N		ဠြ
+N		အြ
+N		ကွ
+N		ခွ
+N		ဂွ
+N		ဃွ
+N		ငွ
+N		စွ
+N		ဆွ
+N		ဇွ
+N		ဈွ
+N		ဉွ
+N		ဋွ
+N		ဌွ
+N		ဍွ
+N		ဎွ
+N		ဏွ
+N		တွ
+N		ထွ
+N		ဒွ
+N		ဓွ
+N		နွ
+N		ပွ
+N		ဖွ
+N		ဗွ
+N		ဘွ
+N		မွ
+N		ယွ
+N		ရွ
+N		လွ
+N		ဝွ
+N		သြွ
+N		ဟွ
+N		ဠွ
+N		အြွ
+N		ကှ
+N		ခှ
+N		ဂှ
+N		ဃှ
+N		ငှ
+N		စှ
+N		ဆှ
+N		ဇှ
+N		ဈှ
+N		ဉှ
+N		ဋှ
+N		ဌှ
+N		ဍှ
+N		ဎှ
+N		ဏှ
+N		တှ
+N		ထှ
+N		ဒှ
+N		ဓှ
+N		နှ
+N		ပျှ
+N		ဖှ
+N		ဗှ
+N		ဘှ
+N		မျှ
+N		ယှ
+N		ရှ
+N		လှ
+N		ဝှ
+N		သျှ
+N		ဟှ
+N		ဠှ
+N		အျှ
+N		ကျွ
+N		ချွ
+N		ဂျွ
+N		ဃျွ
+N		ငျွ
+N		စျွ
+N		ဆျွ
+N		ဇျွ
+N		ဈျွ
+N		ဉျွ
+N		ဋျွ
+N		ဌျွ
+N		ဍျွ
+N		ဎျွ
+N		ဏျွ
+N		တျွ
+N		ထျွ
+N		ဒျွ
+N		ဓျွ
+N		နျွ
+N		ပျွ
+N		ဖျွ
+N		ဗျွ
+N		ဘျွ
+N		မျွ
+N		ယျွ
+N		ရျွ
+N		လျွ
+N		ဝျွ
+N		သျွ
+N		ဟျွ
+N		ဠျွ
+N		အျွ
+N		ကျှ
+N		ချှ
+N		ဂျှ
+N		ဃျှ
+N		ငျှ
+N		စျှ
+N		ဆျှ
+N		ဇျှ
+N		ဈျှ
+N		ဉျှ
+N		ဋျှ
+N		ဌျှ
+N		ဍျှ
+N		ဎျှ
+N		ဏျှ
+N		တျှ
+N		ထျှ
+N		ဒျှ
+N		ဓျှ
+N		နျှ
+N		ဖျှ
+N		ဗျှ
+N		ဘျှ
+N		ယျှ
+N		ရျှ
+N		လျှ
+N		ဝျှ
+N		ဟျှ
+N		ဠျှ
+N		ကြွ
+N		ခြွ
+N		ဂြွ
+N		ဃြွ
+N		ငြွ
+N		စြွ
+N		ဆြွ
+N		ဇြွ
+N		ဈြွ
+N		ဉြွ
+N		ဋြွ
+N		ဌြွ
+N		ဍြွ
+N		ဎြွ
+N		ဏြွ
+N		တြွ
+N		ထြွ
+N		ဒြွ
+N		ဓြွ
+N		နြွ
+N		ပြွ
+N		ဖြွ
+N		ဗြွ
+N		ဘြွ
+N		မြွ
+N		ယြွ
+N		ရြွ
+N		လြွ
+N		ဝြွ
+N		ဟြွ
+N		ဠြွ
+N		ကြှ
+N		ခြှ
+N		ဂြှ
+N		ဃြှ
+N		ငြှ
+N		စြှ
+N		ဆြှ
+N		ဇြှ
+N		ဈြှ
+N		ဉြှ
+N		ဋြှ
+N		ဌြှ
+N		ဍြှ
+N		ဎြှ
+N		ဏြှ
+N		တြှ
+N		ထြှ
+N		ဒြှ
+N		ဓြှ
+N		နြှ
+N		ပြှ
+N		ဖြှ
+N		ဗြှ
+N		ဘြှ
+N		မြှ
+N		ယြှ
+N		ရြှ
+N		လြှ
+N		ဝြှ
+N		သြှ
+N		ဟြှ
+N		ဠြှ
+N		အြှ
+
+# --- Block O: Asat (်) on All Stack Types
+O	Single Consonant + Asat	ကက်
+O	Single Consonant + Asat	ခခ်
+O	Single Consonant + Asat	ဂဂ်
+O	Single Consonant + Asat	ဃဃ်
+O	Single Consonant + Asat	ငင်
+O	Single Consonant + Asat	စစ်
+O	Single Consonant + Asat	ဆဆ်
+O	Single Consonant + Asat	ဇဇ်
+O	Single Consonant + Asat	ဈဈ်
+O	Single Consonant + Asat	ဉဉ်
+O	Single Consonant + Asat	ဋဋ်
+O	Single Consonant + Asat	ဌဌ်
+O	Single Consonant + Asat	ဍဍ်
+O	Single Consonant + Asat	ဎဎ်
+O	Single Consonant + Asat	ဏဏ်
+O	Single Consonant + Asat	တတ်
+O	Single Consonant + Asat	ထထ်
+O	Single Consonant + Asat	ဒဒ်
+O	Single Consonant + Asat	ဓဓ်
+O	Single Consonant + Asat	နန်
+O	Single Consonant + Asat	ပပ်
+O	Single Consonant + Asat	ဖဖ်
+O	Single Consonant + Asat	ဗဗ်
+O	Single Consonant + Asat	ဘဘ်
+O	Single Consonant + Asat	မမ်
+O	Single Consonant + Asat	ယယ်
+O	Single Consonant + Asat	ရရ်
+O	Single Consonant + Asat	လလ်
+O	Single Consonant + Asat	ဝဝ်
+O	Single Consonant + Asat	သသ်
+O	Single Consonant + Asat	ဟဟ်
+O	Single Consonant + Asat	ဠဠ်
+O	Single Consonant + Asat	အက်
+O	Stacked + Asat	က္က်
+O	Stacked + Asat	က္ခ်
+O	Stacked + Asat	ဂ္ဂ်
+O	Stacked + Asat	ဂ္ဃ်
+O	Stacked + Asat	စ္စ်
+O	Stacked + Asat	စ္ဆ်
+O	Stacked + Asat	ဇ္ဇ်
+O	Stacked + Asat	ဇ္ဈ်
+O	Stacked + Asat	ဋ္ဋ်
+O	Stacked + Asat	ဋ္ဌ်
+O	Stacked + Asat	ဍ္ဍ်
+O	Stacked + Asat	ဍ္ဎ်
+O	Stacked + Asat	တ္တ်
+O	Stacked + Asat	တ္ထ်
+O	Stacked + Asat	ဒ္ဒ်
+O	Stacked + Asat	ဒ္ဓ်
+O	Stacked + Asat	န္န်
+O	Stacked + Asat	န္ထ်
+O	Stacked + Asat	န္ဓ်
+O	Stacked + Asat	ပ္ပ်
+O	Stacked + Asat	ပ္ဖ်
+O	Stacked + Asat	ဗ္ဗ်
+O	Stacked + Asat	ဗ္ဘ်
+O	Stacked + Asat	မ္မ်
+O	Stacked + Asat	ယ္ယ်
+O	Stacked + Asat	ရ္ရ်
+O	Stacked + Asat	လ္လ်
+O	Stacked + Asat	ဝ္ဝ်
+O	Stacked + Asat	သ္သ်
+O	Stacked + Asat	ဟ္ဟ်
+O	Stacked + Asat	ဠ္ဠ်
+O	Medial + Asat	ကျက်
+O	Medial + Asat	ချက်
+O	Medial + Asat	ဂျက်
+O	Medial + Asat	ဃျက်
+O	Medial + Asat	ငျက်
+O	Medial + Asat	စျက်
+O	Medial + Asat	ဆျက်
+O	Medial + Asat	ဇျက်
+O	Medial + Asat	ဈျက်
+O	Medial + Asat	ဉျက်
+O	Medial + Asat	ဋျက်
+O	Medial + Asat	ဌျက်
+O	Medial + Asat	ဍျက်
+O	Medial + Asat	ဎျက်
+O	Medial + Asat	ဏျက်
+O	Medial + Asat	တျက်
+O	Medial + Asat	ထျက်
+O	Medial + Asat	ဒျက်
+O	Medial + Asat	ဓျက်
+O	Medial + Asat	နျက်
+O	Medial + Asat	ပျက်
+O	Medial + Asat	ဖျက်
+O	Medial + Asat	ဗျက်
+O	Medial + Asat	ဘျက်
+O	Medial + Asat	မျက်
+O	Medial + Asat	ယျက်
+O	Medial + Asat	ရျက်
+O	Medial + Asat	လျက်
+O	Medial + Asat	ဝျက်
+O	Medial + Asat	သျက်
+O	Medial + Asat	ဟျက်
+O	Medial + Asat	ဠျက်
+O	Medial + Asat	အျက်
+O	Medial Ra + Asat	ကြက်
+O	Medial Ra + Asat	ခြက်
+O	Medial Ra + Asat	ဂြက်
+O	Medial Ra + Asat	ဃြက်
+O	Medial Ra + Asat	ငြက်
+O	Medial Ra + Asat	စြက်
+O	Medial Ra + Asat	ဆြက်
+O	Medial Ra + Asat	ဇြက်
+O	Medial Ra + Asat	ဈြက်
+O	Medial Ra + Asat	ဉြက်
+O	Medial Ra + Asat	ဋြက်
+O	Medial Ra + Asat	ဌြက်
+O	Medial Ra + Asat	ဍြက်
+O	Medial Ra + Asat	ဎြက်
+O	Medial Ra + Asat	ဏြက်
+O	Medial Ra + Asat	တြက်
+O	Medial Ra + Asat	ထြက်
+O	Medial Ra + Asat	ဒြက်
+O	Medial Ra + Asat	ဓြက်
+O	Medial Ra + Asat	နြက်
+O	Medial Ra + Asat	ပြက်
+O	Medial Ra + Asat	ဖြက်
+O	Medial Ra + Asat	ဗြက်
+O	Medial Ra + Asat	ဘြက်
+O	Medial Ra + Asat	မြက်
+O	Medial Ra + Asat	ယြက်
+O	Medial Ra + Asat	ရြက်
+O	Medial Ra + Asat	လြက်
+O	Medial Ra + Asat	ဝြက်
+O	Medial Ra + Asat	သြက်
+O	Medial Ra + Asat	ဟြက်
+O	Medial Ra + Asat	ဠြက်
+O	Medial Ra + Asat	အြက်

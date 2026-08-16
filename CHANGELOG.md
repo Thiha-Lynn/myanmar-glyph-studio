@@ -8,6 +8,47 @@ versions are git tags with installable font zips on the
 ## [Unreleased]
 
 ### Added
+- **Shaping specification + validation harness**: the full shaping model
+  is now written down ([docs/SHAPING_SPEC.md](docs/SHAPING_SPEC.md)) and
+  machine-checked — `pipeline/validate_spec.py` shapes a 1,484-cluster
+  corpus (`pipeline/spec_corpus.txt`, Blocks A–O: every consonant × vowel
+  × medial combination, stacks, kinzi, tall-aa, torture sentences,
+  Mon/Shan/Karen) with HarfBuzz and *measures* every cluster: coverage,
+  virama consumption, kinzi fusion, e-vowel reordering, wrap geometry,
+  mark attachment, Windows clipping limits, and pairwise mark collision
+  (50-unit protocol). Findings are graded FAIL / WARN / GAP / SPEC so a
+  malformed test string can never mask a real bug. Wired into pytest and
+  CI; results in [docs/VALIDATION.md](docs/VALIDATION.md), triage tables
+  in [docs/DEBUGGING.md](docs/DEBUGGING.md).
+- **Real-vocabulary corpus** (`pipeline/word_corpus.txt`): 711 genuine
+  Burmese words covering all 1,213 syllable clusters of the 12,451-word
+  Myanmar Wiktionary vocabulary (via the CC-BY DatarrX Myanmar Word
+  Glyphs dataset), validated alongside the spec corpus in CI. The
+  harness was also run over the fonts the big platforms use — Padauk,
+  Noto Sans Myanmar, Microsoft's Myanmar Text — and the shipped fonts
+  are the only ones clearing both corpora with zero FAIL findings; a
+  browser-engine (HarfBuzz+Skia) side-by-side against Padauk confirmed
+  identical cluster structure end to end.
+
+### Fixed
+- **Seven anchor-engine defects found by the new corpora** (0 FAIL findings
+  after; the same harness reports 7 in Padauk itself): stacks under
+  descender bases sank into the next line (န္န at −890 — now clamped to
+  the −50 floor, side-form swap extended to fire before subjoined forms);
+  the long stack-vowels hung as marks (စက္ကူ's ူ at −1341 — now spacing
+  glyphs beside the cluster, like Padauk's); full-height subjoined forms
+  buried (ဇ္ဈ — now a spacing side-form, decided by measurement); marks
+  after ာ/ါ floated off the cluster or past usWinAscent (ကော် ခေါ် ကာံ —
+  spacing signs are now mark bases with a fixed-height top); vowels
+  stacked ON the kinzi were clipped on Windows (သင်္ကြီ at 1345 — the
+  kinzi now chains the next mark beside its hook like Padauk's fused
+  glyphs); medials hung under stacks (က္ကွိ at −814 — stack marks now
+  chain sideways); and — caught only by the real-vocabulary corpus — the
+  kinzi collided with the vowel in kinzi+ya words (အင်္ကျီ: the vowel
+  belongs to the ya, restarting the mark chain, so a synthesized
+  `kinzi.left` variant substituted in abvs moves the kinzi clear, the
+  way Padauk's fused glyphs do). Studio anchor preview mirrors the
+  anchor changes; both shipped families rebuilt.
 - **Padauk-parity shaping variants** ([#19]): six new drawable glyphs and
   the contextual rules that drive them — tall medial-ra wraps
   (`medialRa.tall` / `.tall.wide`, picked when ိ/ီ/ဲ sits over the

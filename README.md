@@ -187,7 +187,8 @@ pipeline/   project JSON → UFO → fontmake build, feature generation,
             make_sample.py (sample generator), proof.py (visual proof sheets),
             test_corpus.txt (shaping test sentences)
 projects/   community font projects — one folder per family
-docs/       design notes and the font testing guide
+docs/       design notes, the shaping spec + validation report, testing
+            and debugging guides
 ```
 
 The studio can be hosted for free on GitHub Pages

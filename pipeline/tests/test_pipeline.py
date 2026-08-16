@@ -82,10 +82,31 @@ def test_marks_are_zero_width_even_if_the_project_says_otherwise(tmp_path):
     font, _ = build(tmp_path, {
         "u-myanmar": {"advance": 420,
                       "strokes": [stroke([[250, -150], [350, -150]], 40)]},
-        "ka-myanmar.sub": {"advance": 500, "strokes": [BOX]},
+        "ka-myanmar.sub": {"advance": 500,
+                           "strokes": [stroke([[200, -180], [400, -180]])]},
     })
     assert font["u-myanmar"].width == 0
     assert font["ka-myanmar.sub"].width == 0
+
+
+def test_subjoined_drawn_at_body_height_is_a_spacing_side_form(tmp_path):
+    """ဇ္ဈ: Padauk stacks ဈ by putting a full-height spacing ဈ BESIDE the
+    base, not a small one under it. A subjoined drawing whose ink rises
+    above the baseline is that kind of form — treating it as a below-mark
+    hangs an 847-unit glyph off the base and buries it at −916."""
+    font, _ = build(tmp_path, {
+        "jha-myanmar": {"advance": None, "strokes": [BOX]},
+        # ink from −420 up to +430: a side form, not a below form
+        "jha-myanmar.sub": {"advance": None,
+                            "strokes": [stroke([[200, -420], [200, 430]])]},
+        "ka-myanmar.sub": {"advance": None,
+                           "strokes": [stroke([[200, -180], [400, -180]])]},
+    })
+    assert font["jha-myanmar.sub"].width > 0          # it advances the pen
+    assert font["ka-myanmar.sub"].width == 0          # a real below-form
+    cats = font.lib["public.openTypeCategories"]
+    assert cats["jha-myanmar.sub"] == "base"
+    assert cats["ka-myanmar.sub"] == "mark"
 
 
 def test_spacing_sign_ink_left_aligned_when_auto(tmp_path):
@@ -96,7 +117,31 @@ def test_spacing_sign_ink_left_aligned_when_auto(tmp_path):
     })
     assert ink_x_min(font, "aa-myanmar") == pytest.approx(60, abs=2)
     assert font["aa-myanmar"].width < 300
-    assert anchors_of(font, "aa-myanmar") == {}
+    # …and it is a mark base as well: in ကော် the asat sits on the ာ, in
+    # ကာံ the anusvara does. Without these the mark keeps its drawn
+    # position at the pen and floats off the end of the cluster.
+    assert set(anchors_of(font, "aa-myanmar")) == {"top", "bottom"}
+
+
+def test_tall_spacing_sign_keeps_its_mark_in_the_normal_band(tmp_path):
+    """ခေါ်: ါ is a 875-unit stem. An above-mark that followed the sign's
+    own ink would land at 1303 — past usWinAscent, so Windows clips it.
+    Padauk's fused ော် glyph tops out under the stem (856)."""
+    font, _ = build(tmp_path, {
+        "tallAa-myanmar": {"advance": None,
+                           "strokes": [stroke([[600, 0], [600, 880]])]},
+    })
+    assert anchors_of(font, "tallAa-myanmar")["top"][1] == json_to_ufo.BODY - 40
+
+
+def test_pre_base_vowel_carries_no_anchors(tmp_path):
+    # ေ renders in FRONT of its consonant, so nothing in the cluster
+    # attaches to it — the marks belong to the base the shaper moved past
+    font, _ = build(tmp_path, {
+        "e-myanmar": {"advance": None,
+                      "strokes": [stroke([[600, 100], [600, 500]])]},
+    })
+    assert anchors_of(font, "e-myanmar") == {}
 
 
 def test_spacing_sign_untouched_when_advance_explicit(tmp_path):
@@ -415,7 +460,60 @@ def test_descender_base_keeps_plain_vowel_at_side_anchor(tmp_path):
     assert "ta-myanmar.sub" in desc_class          # stacks take the long form
     a = anchors_of(font, "na-myanmar")
     assert a["bottom"][1] == -90                   # clamped, not -400
-    assert a["stack"][1] == -430                   # stacks keep full depth
+    # The subjoined letter is clamped to the same floor: following the leg
+    # all the way down puts န္န's stack at −890, in the next line of text.
+    # Padauk lands every subjoined form in the −440…−80 band whatever the
+    # base does (uni1014.alt + uni1014.med).
+    assert a["stack"][1] == -90
+
+
+def test_long_alt_vowels_are_spacing_glyphs_beside_the_stack(tmp_path):
+    """စက္ကူ: the long ူ drawn for stacked clusters is a body-height glyph
+    that stands to the RIGHT of the stack — Padauk's spacing uni1030, 288
+    units of advance. Hung from the stack's bottom anchor as a mark it
+    reached −1341, 741 units past the descender."""
+    font, _ = build(tmp_path, {
+        "uu-myanmar": {"advance": None,
+                       "strokes": [stroke([[250, -150], [350, -150]], 40)]},
+        "uu-myanmar.alt": {"advance": None,
+                           "strokes": [stroke([[250, -430], [250, 430]], 40)]},
+    })
+    assert font["uu-myanmar"].width == 0                  # a below-mark
+    assert font["uu-myanmar.alt"].width > 0               # a spacing form
+    cats = font.lib["public.openTypeCategories"]
+    assert cats["uu-myanmar.alt"] == "base"
+    assert set(anchors_of(font, "uu-myanmar.alt")) == {"top", "bottom"}
+
+
+def test_subjoined_form_swaps_in_the_side_base(tmp_path):
+    """န + ္ + န: Padauk drops the leg (uni1014.alt) before stacking, and
+    so must we — the leg and the subjoined letter share the same space."""
+    font, _ = build(tmp_path, {
+        "na-myanmar": {"advance": None,
+                       "strokes": [stroke([[250, 550], [250, -360]])]},
+        "na-myanmar.alt": {"advance": None,
+                           "strokes": [stroke([[250, 550], [250, -40]])]},
+        "na-myanmar.sub": {"advance": None,
+                           "strokes": [stroke([[200, -180], [400, -180]])]},
+        "virama-myanmar": {"advance": None,
+                           "strokes": [stroke([[100, -200], [300, -200]])]},
+    })
+    fea = font.features.text
+    side = fea.split("lookup side_bases {")[1].split("} side_bases;")[0]
+    assert "na-myanmar.sub" in side
+
+
+def test_kinzi_chains_the_next_mark_beside_it(tmp_path):
+    """သင်္ကြီ: a vowel stacked ON the kinzi lands at y 1345 and Windows
+    clips it. Padauk ships fused kinzi+vowel glyphs with the vowel to the
+    LEFT of the hook; the chain anchor reproduces that geometry."""
+    font, _ = build(tmp_path, {
+        "kinzi-myanmar": {"advance": None,
+                          "strokes": [stroke([[250, 700], [400, 700]], 30)]},
+    })
+    a = anchors_of(font, "kinzi-myanmar")
+    assert a["top"][0] > a["_top"][0]        # the next mark goes to the RIGHT
+    assert a["top"][1] == a["_top"][1]       # at the same height, not above
 
 
 # ---------------------------------------------------------------------------

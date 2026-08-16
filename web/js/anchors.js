@@ -23,9 +23,23 @@
   };
   var BOTTOM_MARKS = {
     "u-myanmar": 1, "uu-myanmar": 1, "dotBelow-myanmar": 1,
-    "medialWa-myanmar": 1, "medialHa-myanmar": 1,
-    "u-myanmar.alt": 1, "uu-myanmar.alt": 1
+    "medialWa-myanmar": 1, "medialHa-myanmar": 1
   };
+  // The long u/uu forms used under stacks (စက္ကူ) are body-height glyphs
+  // that stand BESIDE the cluster, the way Padauk's spacing uni1030 does —
+  // not below-marks. Hanging them off the stack put စက္ကူ's vowel at −1341.
+  var SPACING_VOWELS = { "u-myanmar.alt": 1, "uu-myanmar.alt": 1 };
+  // spacing signs rendered BEFORE the base: nothing attaches to them
+  var PRE_BASE_SIGNS = { "e-myanmar": 1, "uni1084": 1 };
+  // medial ra wraps its base and carries no anchors (the marks belong to
+  // the base inside the wrap) — mirrors WRAP_SIGNS in json_to_ufo.py
+  var WRAP_SIGNS = {
+    "medialRa-myanmar": 1, "medialRa-myanmar.wide": 1,
+    "medialRa-myanmar.tall": 1, "medialRa-myanmar.tall.wide": 1
+  };
+  var TOP_CLEARANCE = 60;   // ink-to-mark gap above a letter (Padauk: 76)
+  var STACK_FLOOR = -50;    // deepest a subjoined letter may hang from
+  var KINZI_SIDE_GAP = 210; // how far right of the kinzi the next mark sits
   // groups whose spacing glyphs don't carry mark anchors
   var NO_ANCHOR_GROUPS = { digits: 1, punctuation: 1 };
   var MYANMAR_RANGES = [
@@ -39,15 +53,24 @@
     return false;
   }
 
-  /* "base" | "top-mark" | "bottom-mark" | "stack-mark" | "ya-medial" |
-     "auto-mark" | null */
+  /* "base" | "spacing-sign" | "kinzi" | "top-mark" | "bottom-mark" |
+     "stack-mark" | "ya-medial" | "auto-mark" | null */
   function roleFor(meta) {
     if (!meta) return null;
+    if (WRAP_SIGNS[meta.name]) return null;
     if (meta.name === "medialYa-myanmar") return "ya-medial";
     if (meta.baseVariant) return "base";  // side-form bases (na-myanmar.alt …)
+    if (SPACING_VOWELS[meta.name]) return "spacing-sign";
+    if (meta.name === "kinzi-myanmar") return "kinzi";
     if (TOP_MARKS[meta.name]) return "top-mark";
     if (/\.sub$/.test(meta.name)) return "stack-mark";
     if (BOTTOM_MARKS[meta.name]) return "bottom-mark";
+    // post-base spacing signs (ာ ါ း): sketched against the ◌ carrier but
+    // not marks themselves, and marks DO attach to them — ကော် ကာံ
+    if (!meta.mark && meta.guide && meta.guide.charAt(0) === "◌" &&
+        !PRE_BASE_SIGNS[meta.name]) {
+      return "spacing-sign";
+    }
     if (meta.mark) return "auto-mark";
     if (meta.cp === 0x25CC || meta.name === "greatSa-myanmar") return "base";
     if (meta.cp && inMyanmarBlocks(meta.cp) &&
@@ -79,6 +102,13 @@
     return lowest;
   }
 
+  // Where an above-mark attaches on a glyph whose ink tops at yMax: it
+  // follows the ink so tall letters push their marks up, with BODY as the
+  // floor. Mirrors top_anchor_y() in json_to_ufo.py.
+  function topAnchorY(yMax) {
+    return Math.max(yMax + TOP_CLEARANCE, BODY - 40);
+  }
+
   function listFor(meta, data) {
     var role = roleFor(meta);
     if (!role) return [];
@@ -87,6 +117,12 @@
     if (!b) return [];
     var cx = (b.xMin + b.xMax) / 2;
     var cy = (b.yMin + b.yMax) / 2;
+
+    // A subjoined form drawn at full body height is a SIDE form, not a
+    // below form: Padauk stacks ဇ္ဈ by putting a spacing ဈ beside the
+    // base. Hanging that drawing from a below anchor buries it at −916.
+    // Measured, so a small subjoined ဈ still stacks underneath.
+    if (role === "stack-mark" && b.yMax > 0) role = "spacing-sign";
 
     // Marks carry the attaching _anchor plus a base anchor on their outer
     // side, so further marks can stack on them (GPOS mkmk).
@@ -115,18 +151,35 @@
         }
         if (best !== null) bx = best;
       }
-      defaults.top = [mx, Math.max(b.yMax, BODY) + 40];
+      defaults.top = [mx, topAnchorY(b.yMax)];
       // bottom marks stay near baseline depth even under deep legs (န ရ) —
       // the plain vowel beside the leg IS the side-form (Padauk zone
-      // −95…−450); only stacks follow the ink all the way down
+      // −95…−450); the subjoined letter is clamped to the same floor, or
+      // န္န's stack lands at −890, in the next line of text
       defaults.bottom = [bx, Math.max(Math.min(b.yMin, 0), -50) - 40];
-      defaults.stack = [cx, Math.min(b.yMin, 0) - 40];
+      defaults.stack = [cx, Math.max(Math.min(b.yMin, 0), STACK_FLOOR) - 40];
+    } else if (role === "spacing-sign") {
+      // ာ ါ and the long stack vowels are mark bases too: the asat of
+      // ကော် and the anusvara of ကာံ sit on the SIGN, not on the letter.
+      // The height stays in the normal above-mark band rather than
+      // following the ink — a mark stacked over ါ's 875-unit stem lands at
+      // 1303 and Windows clips it (Padauk's fused ော် tops out at 856).
+      var sw = Math.max(1, b.xMax - b.xMin);
+      var sx = b.xMin + sw * (sw > 700 ? 0.75 : 0.55);
+      defaults.top = [sx, BODY - 40];
+      defaults.bottom = [sx, Math.max(Math.min(b.yMin, 0), -50) - 40];
+    } else if (role === "kinzi") {
+      // a vowel after the kinzi lands BESIDE it (to the right, tops
+      // aligned, like Padauk's fused kinzi+vowel glyphs): stacking it on
+      // top sends သင်္ကြီ past the ascender and Windows clips it
+      defaults._top = [cx, b.yMin - 20];
+      defaults.top = [b.xMax + KINZI_SIDE_GAP, b.yMin - 20];
     } else if (role === "ya-medial") {
       // ကျု: the below-vowel sits BESIDE the ya-pinn's leg at normal depth
       // (side anchor); the top anchor keeps ကျိ working (ya intercepts the
       // mark's base scan)
       defaults.side = [b.xMax - 30, -40];
-      defaults.top = [cx, Math.max(b.yMax, BODY) + 40];
+      defaults.top = [cx, topAnchorY(b.yMax)];
     } else if (role === "top-mark") {
       defaults._top = [cx, b.yMin - 20];
       defaults.top = [cx, b.yMax + 20];
@@ -138,8 +191,11 @@
       defaults.side = [b.xMax, b.yMax + 20];
       defaults._side = [b.xMin - 40, b.yMax + 20];
     } else if (role === "stack-mark") {
+      // a medial or tone after a stack chains BESIDE it, tops aligned —
+      // the same rule below-marks follow; hanging it from the stack's own
+      // bottom put က္ကွိ's ွ at −814
       defaults._stack = [cx, b.yMax + 20];
-      defaults.bottom = [cx, b.yMin - 20];
+      defaults.side = [b.xMax, b.yMax + 20];
     } else if (role === "auto-mark") {
       if (cy >= BODY / 2) {
         defaults._top = [cx, b.yMin - 20];

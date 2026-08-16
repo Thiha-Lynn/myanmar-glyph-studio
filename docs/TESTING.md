@@ -20,6 +20,12 @@ python3 proof.py build/MyFont-Regular.ttf test_corpus.txt proof.png
 python3 proof.py build/MyFont-Regular.ttf "ကျွန်ုပ်တို့ မြန်မာစာ" quick.png --size 128
 ```
 
+For a graded, measured pass over the much larger specification corpus
+(1 484 clusters, collision detection included) run
+`python3 validate_spec.py build/MyFont-Regular.ttf` — checks and
+severities in [SHAPING_SPEC.md](SHAPING_SPEC.md) §6, symptom-by-symptom
+triage in [DEBUGGING.md](DEBUGGING.md).
+
 `test_corpus.txt` is the shared shaping corpus: the 33-consonant pangram,
 stacks, kinzi, all four medials singly and combined, every vowel position,
 digits, punctuation, and natural sentences — one row per line, with a
