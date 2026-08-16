@@ -257,6 +257,42 @@
     mark: true, group: "variants"
   });
 
+  // Fused wrap + wa forms (Padauk's uni103C103D set): the wa nests inside
+  // the wrap's sweep rather than sitting on its stroke.
+  [["", ch(0x1015), ""], [".wide", ch(0x1000), "+"],
+   [".tall", ch(0x1015), "^"], [".tall.wide", ch(0x1000), "+^"]]
+    .forEach(function (row) {
+      var tail = row[0].indexOf("tall") >= 0 ? ch(0x102e) : "";
+      glyphs.push({
+        name: "medialRa-myanmar.wa" + row[0], cp: null,
+        label: DOTTED + ch(0x103c) + ch(0x103d) + row[2],
+        guide: row[1] + ch(0x103c) + ch(0x103d) + tail,
+        hint: "RA wrap + WA fused — the wa nests inside the sweep; " +
+              "draw wrap and wa as one",
+        hintMy: "ရရစ် + ဝဆွဲ ပေါင်းစပ်ပုံစံ — အတူတကွ ဆွဲပါ",
+        mark: true, group: "variants"
+      });
+    });
+
+  // Fused below-medial pairs: wa+ha as one hook (+ its in-wrap copy) and
+  // ha+vowel (Padauk uni103D103E / uni103E102F / uni103E1030).
+  [["medialWa-myanmar.ha", ch(0x103d) + ch(0x103e), ch(0x1000), "ကွှ"],
+   ["medialWa-myanmar.ha.small", ch(0x103d) + ch(0x103e) + "-", ch(0x1019),
+    "မြွှ"],
+   ["medialHa-myanmar.u", ch(0x103e) + ch(0x102f), ch(0x101b), "ရှု"],
+   ["medialHa-myanmar.uu", ch(0x103e) + ch(0x1030), ch(0x101b), "ရှူ"],
+   ["medialYa-myanmar.waha", ch(0x103b) + ch(0x103d) + ch(0x103e),
+    ch(0x1000), "ကျွှ"]].forEach(function (row) {
+      glyphs.push({
+        name: row[0], cp: null, label: DOTTED + row[1],
+        guide: row[3],
+        hint: "Fused medial pair (" + row[3] + ") — Padauk draws these as " +
+              "one shape; draw the whole hook, not the parts",
+        hintMy: "ပေါင်းစပ် မီဒီယယ်ပုံစံ (" + row[3] + ") — တစ်ခုတည်းအဖြစ် ဆွဲပါ",
+        mark: true, group: "variants"
+      });
+    });
+
   glyphs.push({
     name: "na-myanmar.alt", cp: null, label: ch(0x1014), variant: "alt",
     baseVariant: true,

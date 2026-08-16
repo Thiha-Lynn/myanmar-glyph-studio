@@ -48,12 +48,12 @@ Karen, Ext-A/B) need no hand-kept tables.
 | :--- | :--- | :--- | :--- |
 | Bases | 33 consonants + ဿ + independent vowels + digits + `.alt` side-form bases | base | ink width + sidebearing |
 | Top marks | ိ ီ ဲ ံ ် kinzi ိံ-ligature | mark | 0 |
-| Bottom marks | ု ူ ့ ွ ှ (+ synthesized `.small` wa/ha copies and the in-wrap `u.wrapstroke` bar) | mark | 0 |
+| Bottom marks | ု ူ ့ ွ ှ, the traced fused pairs `ွ.ha` (+`.small`) `ှ.u` `ှ.uu` (Padauk uni103D103E / uni103E102F / uni103E1030 — one drawn hook where chaining showed two marks), plus synthesized `.small` copies and the in-wrap `u.wrapstroke` bar | mark | 0 |
 | Stack marks | all `.sub` subjoined forms **drawn below the baseline** | mark | 0 |
 | Side stacks | `.sub` forms drawn at body height (e.g. ဈ) | base | small positive |
 | Spacing signs | ာ ါ း ေ + the tall `u/uu-myanmar.alt` strokes | base | ink width |
-| Wrap signs | ြ narrow/wide/tall/tall.wide + their fused `+u` forms (Padauk's uni103C102F set: retracted sweep, u bar in the opening) | base | ~30 % of ink width |
-| Medial ya | ျ (+ `.beforewa` variant and the traced fused ligatures `.wa` ကျွ / `.ha` လျှ — one woven drawing where overlaying the parts crossed strokes) | base | small positive |
+| Wrap signs | ြ narrow/wide/tall/tall.wide plus their fused `+u` (uni103C102F: retracted sweep, u bar in the opening) and `+wa` (uni103C103D: the wa nested inside the sweep) sets | base | ~30 % of ink width |
+| Medial ya | ျ (+ `.beforewa` variant and the traced fused ligatures `.wa` ကျွ / `.ha` လျှ / `.waha` ကျွှ — one woven drawing where overlaying the parts crossed strokes) | base | small positive |
 
 Three classifications are load-bearing and easy to get wrong:
 
@@ -172,7 +172,9 @@ form is in any built font's GSUB.
 | pres | ra_wide | ြ → ြ.wide before @WIDE_BASES | wide set **measured**: base may overhang the narrow wrap's ink by ≤100 units (Padauk's split: narrow ≤73, wide ≥136) |
 | pres | ra_tall | ြ(.wide) → .tall(.wide) when ိ/ီ/ဲ follows the wrapped base | filtering set = the trigger vowels only, so ကြွီ goes tall across the ွ; **ံ is not a trigger** |
 | pres | ya_tuck | ျ → ျ.beforewa before ွ/ှ | `lookupflag 0;` — lookupflag is STICKY across named lookups in one feature block; without the reset this inherits ra_tall's filtering set and ကျွ silently stops tucking |
-| pres | ya_fuse | ျ.beforewa + ွ/ှ → the traced `.wa`/`.ha` ligature | adjacent-pair GSUB4; the ligature then serves as the medial context for the tall-vowel rule (ကျွု) and carries ya's anchors |
+| pres | wa_fuse | ွ + ှ → the traced `ွ.ha` hook | must run FIRST: it makes ကျွှ read as ja + one hook, and by consuming the ွ it keeps the wrap+wa fusion off ကြွှ — so မြွှေ stays plain-wrap + the small hook, as Padauk draws it |
+| pres | ya_fuse | ျ.beforewa + ွ/ှ/ွ.ha → the traced `.wa`/`.ha`/`.waha` ligature | adjacent-pair GSUB4; the ligature then serves as the medial context for the tall-vowel rule (ကျွု) and carries ya's anchors |
+| pres | ha_fuse | ှ + ု/ူ → the traced `ှ.u`/`ှ.uu` hook | must run LAST of the three: လျှု has to fuse ja+ha and keep its tall vowel (Padauk uni103B103E + uni102F), so the ja fusion consumes that ha first; only a ha with no ja before it pairs with the vowel (ရှု) |
 | blws | desc_vowels | ု/ူ → tall .alt after subjoined forms | filtering set includes the `.sub` glyphs (context must SEE them — dropping them breaks စက္ကူ) plus the vowels |
 | blws | medial_vowels | ု/ူ → tall .alt after ျ(.beforewa)/ွ | Padauk's ကျု မွု လျှု မွှူ: the vowel is the full-height straight stroke standing after the medial, never the curl. The rule fires straight through an intervening ha (ha is not in the filter); ရှု keeps the curl because there the ha follows a BASE, which is always visible and blocks the match |
 | blws | side_bases | န/ည → .alt before below-marks *and* subjoined forms | per-base trigger lists; filtering set = triggers only, so the swap fires across an intervening asat (ကျွန်ုပ်) or top mark (နို့) |

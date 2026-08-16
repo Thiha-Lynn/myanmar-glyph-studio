@@ -282,6 +282,56 @@ def build_inventory():
                                  for b in WIDE_RA_ALT_BASES],
                      differ_from="medialRa-myanmar.u.wide"))
 
+    # Wrap + wa fused forms (ကြွ ပြွ ကြွီ → Padauk's uni103C103D set):
+    # the wa nests inside the wrap's sweep as one drawing, where a
+    # separately-placed .small wa sits on top of the sweep's stroke.
+    WA = chr(0x103D)
+    inv.append(entry("medialRa-myanmar.wa", chr(0x1015) + RA + WA,
+                     "variants", exclude={0},
+                     alternates=[(b + RA + WA, {0})
+                                 for b in (chr(0x1019), chr(0x1001))],
+                     differ_from="medialRa-myanmar"))
+    inv.append(entry("medialRa-myanmar.wa.wide", chr(0x1000) + RA + WA,
+                     "variants", exclude={0},
+                     alternates=[(b + RA + WA, {0})
+                                 for b in WIDE_RA_ALT_BASES],
+                     differ_from="medialRa-myanmar.wa"))
+    inv.append(entry("medialRa-myanmar.wa.tall", chr(0x1015) + RA + WA + II,
+                     "variants", exclude={0, 3},
+                     alternates=[(b + RA + WA + II, {0, 3})
+                                 for b in (chr(0x1019), chr(0x1001))],
+                     differ_from="medialRa-myanmar.wa"))
+    inv.append(entry("medialRa-myanmar.wa.tall.wide",
+                     chr(0x1000) + RA + WA + II, "variants",
+                     exclude={0, 3},
+                     alternates=[(b + RA + WA + II, {0, 3})
+                                 for b in WIDE_RA_ALT_BASES],
+                     differ_from="medialRa-myanmar.wa.wide"))
+
+    # Below-medial fusions: wa+ha as one hook (ကွှ ရွှ → uni103D103E) with
+    # its in-wrap small copy (မြွှ → uni103D103E.small), and ha+vowel
+    # (ရှု ရှူ → uni103E102F / uni103E1030). Chained side by side these
+    # read as two marks; Padauk draws each pair as one shape.
+    HA = chr(0x103E)
+    inv.append(entry("medialWa-myanmar.ha", chr(0x1000) + WA + HA,
+                     "variants", exclude={0},
+                     alternates=[(b + WA + HA, {0})
+                                 for b in (chr(0x101C), chr(0x1019))],
+                     differ_from="medialWa-myanmar"))
+    inv.append(entry("medialWa-myanmar.ha.small",
+                     chr(0x1019) + RA + WA + HA, "variants",
+                     exclude={0, 1},
+                     alternates=[(b + RA + WA + HA, {0, 1})
+                                 for b in (chr(0x1000), chr(0x1015))],
+                     differ_from="medialWa-myanmar.ha"))
+    for mark_cp, sfx in ((0x102F, "u"), (0x1030, "uu")):
+        inv.append(entry(f"medialHa-myanmar.{sfx}",
+                         chr(0x101B) + HA + chr(mark_cp), "variants",
+                         exclude={0},
+                         alternates=[(b + HA + chr(mark_cp), {0})
+                                     for b in (chr(0x101C), chr(0x1000))],
+                         differ_from="medialHa-myanmar"))
+
     # ja + wa / ja + ha fused ligatures (ကျွ လျှ → Padauk's uni103B103D /
     # uni103B103E): the hook, leg and the tucked medial are one woven
     # drawing — overlaying the separate pieces crosses their strokes.
@@ -291,6 +341,11 @@ def build_inventory():
                      alternates=[(chr(0x1001) + chr(0x103B) + chr(0x103D),
                                   {0})],
                      differ_from="medialYa-myanmar"))
+    inv.append(entry("medialYa-myanmar.waha",
+                     chr(0x1000) + chr(0x103B) + WA + HA,
+                     "variants", exclude={0},
+                     alternates=[(chr(0x101C) + chr(0x103B) + WA + HA, {0})],
+                     differ_from="medialYa-myanmar.wa"))
     inv.append(entry("medialYa-myanmar.ha",
                      chr(0x101C) + chr(0x103B) + chr(0x103E),
                      "variants", exclude={0},
