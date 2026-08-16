@@ -36,9 +36,10 @@ versions are git tags with installable font zips on the
   standing after the medial (ကျု မွု — Padauk's spacing uni102F), inside
   wraps it is a straight bar hanging from the under-sweep (ကြု မြို —
   Padauk's fused uni103C102F, reproduced by one synthesized mark), and
-  ူ after a wrap stands tall after the cluster (ကြူ). Curl contexts stay
-  curls (ကု, နု ရု, ရှု — where ရ now also swaps to its side form across
-  the ha, matching Padauk). Narrow/wide wrap selection re-audited: 32/33
+  ူ after a wrap stands tall after the cluster (ကြူ). ja/wa clusters carrying a ha take the tall
+  stroke too (လျှု ကျှု မွှူ, as Padauk does), while true curl contexts
+  stay curls (ကု, နု ရု, ရှု — where ရ now also swaps to its side form
+  across the ha, matching Padauk). Narrow/wide wrap selection re-audited: 32/33
   agree with Padauk; ဠြ deliberately narrow (measured fit, and absent
   from the vocabulary).
 - **Zero-WARN geometry pass**: the residual design-band and clearance

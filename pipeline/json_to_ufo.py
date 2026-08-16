@@ -181,10 +181,13 @@ KINZI_SIDE_GAP = 225
 # beside the kinzi) — clears the vowel over the ya with ~200 units to spare
 # on the widest base while staying over the base's body.
 KINZI_MEDIAL_SHIFT = 250
-# How far right of the base's bottom anchor the in-wrap u stroke plants
-# (Padauk's fused uni103C102F puts the bar at the wrapped base's right
-# bowl: base_x_max − 75, which is mark_x + 128…141 for narrow/wide bases).
-WRAPSTROKE_DX = 135
+# How far right of the base's bottom anchor the in-wrap u stroke plants.
+# Unlike Padauk's shallow narrow frame (bar hanging in open space), our
+# wraps draw a deep under-sweep ending in a right tail at base_x_max−48;
+# the bar sits ON that tail and continues ~150 units below the sweep, so
+# it reads as the tail descending — the stroke-below-the-wrap convention
+# realised on this wrap design.
+WRAPSTROKE_DX = 183
 
 # the four styles that may share a legacy family name
 RIBBI_STYLES = {"Regular", "Bold", "Italic", "Bold Italic"}
@@ -972,8 +975,8 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
     if "medialRa-myanmar" in drawn and "u-myanmar" in drawn:
         vname = "u-myanmar.wrapstroke"
         g = font.newGlyph(vname)
-        path = {"width": 48, "points": [[0, -50], [0, -290], [5, -345],
-                                        [28, -385], [75, -400]]}
+        path = {"width": 48, "points": [[0, -250], [0, -470], [5, -515],
+                                        [28, -545], [70, -557]]}
         bar = [stroke_to_polygon(path, width_scale)]
         bar_ref = ([stroke_to_polygon(path, 1.0)]
                    if width_scale != 1.0 else bar)
@@ -1236,16 +1239,17 @@ def generate_features(drawn, wide_bases=None, bases=None):
                 side_filter.update(t for t in trigs
                                    if not t.startswith("medialYa"))
     # After the post-base medials ja and wa, ု/ူ take their TALL spacing
-    # forms — Padauk renders ကျု မွု with the full-height straight stroke
-    # (its default spacing uni102F/uni1030, ink −429…423) standing after
-    # the medial, never the curl beside it. ha is deliberately absent AND
-    # kept visible in the filtering set: ရှု keeps the short curl beside
-    # the hook (Padauk's uni103E102F ligature is curl-deep, −429…−91),
-    # and a visible ha blocks the wa-context match in မွှူ-type clusters.
+    # forms — Padauk renders ကျု မွု လျှု မွှူ with the full-height
+    # straight stroke (its default spacing uni102F/uni1030, ink −429…423)
+    # standing after the medial, never the curl beside it. ha is NOT in
+    # the filtering set, so the ja/wa context fires straight through an
+    # intervening ha (Padauk's လျှု is uni103B103E + the tall stroke).
+    # ရှု still keeps the short curl: there the ha follows a BASE, and
+    # bases are always visible to the context, so [ja|wa] cannot match.
     medial_ctx = [n for n in ("medialYa-myanmar", "medialYa-myanmar.beforewa",
                               "medialWa-myanmar") if n in drawn]
     medial_rules = []
-    medial_filter = {"medialWa-myanmar", "medialHa-myanmar"} & set(drawn)
+    medial_filter = {"medialWa-myanmar"} & set(drawn)
     for base_v, alt_v in (("u-myanmar", "u-myanmar.alt"),
                           ("uu-myanmar", "uu-myanmar.alt")):
         if base_v in drawn and alt_v in drawn and medial_ctx:

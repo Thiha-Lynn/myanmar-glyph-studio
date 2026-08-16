@@ -599,8 +599,10 @@ def test_vowels_take_tall_forms_after_ja_and_wa(tmp_path):
     lookup = fea.split("lookup medial_vowels")[1].split("} medial_vowels")[0]
     assert ("sub [medialYa-myanmar medialYa-myanmar.beforewa "
             "medialWa-myanmar] u-myanmar' by u-myanmar.alt;") in lookup
-    assert "medialHa-myanmar" in lookup      # visible blocker, not context
-    assert "medialHa-myanmar]" not in lookup.split("sub ")[1]
+    # ha is neither context nor filter: the rule fires straight through it
+    # (Padauk's လျှု takes the tall stroke), while ရှု stays safe because
+    # the base ra before the ha is always visible and blocks the match
+    assert "medialHa-myanmar" not in lookup
 
 
 def test_wrap_vowels_take_stroke_and_tall_forms(tmp_path):
@@ -621,7 +623,7 @@ def test_wrap_vowels_take_stroke_and_tall_forms(tmp_path):
     g = font["u-myanmar.wrapstroke"]
     assert g.width == 0                                   # a mark
     box = g.getBounds(font)
-    assert box.yMax < 0 and box.yMin < -380               # hangs below only
+    assert box.yMax < -200 and box.yMin < -520    # continues below the sweep
     a = anchors_of(font, "u-myanmar.wrapstroke")
     assert a["_bottom"][0] < box.xMin                     # plants ink RIGHT
     assert "side" in a                                    # dot chains beside

@@ -137,7 +137,8 @@ Padauk and matched (all regression-tested):
 | ကု ကူ | curl below the base | mark, unchanged |
 | နု ရု (side-form bases) | curl beside the leg | unchanged |
 | ကျု ကျူ / မွု (after ja, wa) | tall spacing stroke standing after the medial | `blws` medial_vowels → the `.alt` forms |
-| ရှု (after ha) | curl beside the hook, ra still swaps to ရ.alt across the ha | ra's own `side_bases_ra` lookup |
+| ရှု (ha directly after a base) | curl beside the hook, ra still swaps to ရ.alt across the ha | ra's own `side_bases_ra` lookup |
+| လျှု ကျှု မွှူ (ha inside a ja/wa cluster) | tall stroke — the medial context fires through the ha | ha absent from the medial_vowels filter |
 | ကြု မြို (u inside a wrap) | straight bar hanging from the wrap's under-sweep | synthesized `u.wrapstroke` mark in `psts` |
 | ကြူ (uu after a wrap) | tall spacing stroke after the cluster | `psts` → `uu.alt` |
 

@@ -107,7 +107,7 @@ every weight.
 | Bottom mark | `_bottom (cx, y_max+20)` · `side (x_max, y_max+20)` · `_side (x_min−55−pen_pad, y_max+20)` |
 | Stack mark | `_stack (cx, y_max+20)` · `side (x_max, y_max+20)` |
 | Spacing sign | `top (mark_x, 510)` · `bottom (mark_x, max(min(y_min,0),−50)−40)`; the tall u/uu strokes instead put `bottom` BESIDE the bar at `(x_max+110+pen_pad, −115)` — a tone dot under ink that runs to −438 would overlap it (Padauk's ကျို့ dot sits right of the stroke) |
-| u.wrapstroke | `_bottom (cx−135, −40)` — plants the bar 135 right of the base's bottom anchor, at the wrapped base's right bowl (Padauk's fused-stroke spot) · `side (x_max+55+pen_pad, −95)` for the tone dot of မြို့ |
+| u.wrapstroke | `_bottom (cx−183, −40)` — plants the bar on the wrap's under-sweep tail (base_x_max−48) with ink −236…−588, continuing ~150 units below the sweep so it reads as the tail descending (Padauk hangs its bar from a shallow frame; our wraps draw a deep sweep, so the bar extends it instead) · `side (x_max+55+pen_pad, −95)` for the tone dot of မြို့ |
 | Medial ya | `side (x_max−30, −40)` · `top (cx, top_anchor_y)` |
 
 `bottom_x` starts at `mark_x` and slides through candidate fractions
@@ -173,7 +173,7 @@ form is in any built font's GSUB.
 | pres | ra_tall | ြ(.wide) → .tall(.wide) when ိ/ီ/ဲ follows the wrapped base | filtering set = the trigger vowels only, so ကြွီ goes tall across the ွ; **ံ is not a trigger** |
 | pres | ya_tuck | ျ → ျ.beforewa before ွ/ှ | `lookupflag 0;` — lookupflag is STICKY across named lookups in one feature block; without the reset this inherits ra_tall's filtering set and ကျွ silently stops tucking |
 | blws | desc_vowels | ု/ူ → tall .alt after subjoined forms | filtering set includes the `.sub` glyphs (context must SEE them — dropping them breaks စက္ကူ) plus the vowels |
-| blws | medial_vowels | ု/ူ → tall .alt after ျ(.beforewa)/ွ | Padauk's ကျု မွု: the vowel is the full-height straight stroke standing after the medial, never the curl. **ha is absent AND visible in the filter**: ရှု keeps the curl (Padauk's ha+u ligature is curl-deep) and a visible ha blocks the wa-context match |
+| blws | medial_vowels | ု/ူ → tall .alt after ျ(.beforewa)/ွ | Padauk's ကျု မွု လျှု မွှူ: the vowel is the full-height straight stroke standing after the medial, never the curl. The rule fires straight through an intervening ha (ha is not in the filter); ရှု keeps the curl because there the ha follows a BASE, which is always visible and blocks the match |
 | blws | side_bases | န/ည → .alt before below-marks *and* subjoined forms | per-base trigger lists; filtering set = triggers only, so the swap fires across an intervening asat (ကျွန်ုပ်) or top mark (နို့) |
 | blws | side_bases_ra | ရ → .alt before ု/ူ | ra's own lookup filtering to u/uu only, so it fires ACROSS an intervening ha (ရှု = ra.alt in Padauk) — while ရွ ရှ themselves stay plain, Padauk's split; in the shared lookup the visible ha would block it |
 | abvs | — | ိ + ံ → ိံ ligature | — |
