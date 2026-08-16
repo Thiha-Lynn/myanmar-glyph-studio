@@ -109,3 +109,46 @@ jobs:
             dist/**/*.ttf
             dist/**/*.woff2
             dist/**/proof.png
+
+  # The job above shapes with HarfBuzz — Android, Chrome, Linux,
+  # LibreOffice. Windows shapes with DirectWrite, and issue #14 assumed
+  # that engine needed a volunteer with a Windows machine. It does not:
+  # this runner IS a Windows machine with the real engine and the compiler
+  # already installed, so the shipped fonts get diffed against HarfBuzz
+  # here on every pull request. See pipeline/directwrite/README.md.
+  directwrite:
+    name: DirectWrite vs HarfBuzz
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      # Only what the diff needs — fontmake and fontbakery build fonts,
+      # and this job tests the ones already committed in projects/.
+      - name: Install the shaping dependencies
+        run: pip install "fonttools>=4.63.0" "uharfbuzz>=0.56.0"
+
+      - name: Build the DirectWrite shaper
+        shell: cmd
+        run: |
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do call "%%i\VC\Auxiliary\Build\vcvars64.bat"
+          cd pipeline\directwrite
+          cl /nologo /EHsc /O2 /std:c++17 DirectWriteShape.cpp
+
+      - name: Windows must render every cluster as HarfBuzz does
+        shell: pwsh
+        run: |
+          $failed = 0
+          foreach ($font in Get-ChildItem projects/*/*.ttf) {
+            foreach ($corpus in "spec_corpus", "word_corpus") {
+              Write-Host "::group::$($font.BaseName) - $corpus"
+              python pipeline/directwrite_check.py $font.FullName `
+                --corpus pipeline/$corpus.txt
+              if ($LASTEXITCODE -ne 0) { $failed = 1 }
+              Write-Host "::endgroup::"
+            }
+          }
+          exit $failed

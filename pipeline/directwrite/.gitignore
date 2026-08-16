@@ -1,0 +1,5 @@
+# Build products of DirectWriteShape.cpp — built on demand, never committed
+DirectWriteShape.exe
+*.obj
+*.pdb
+*.ilk
