@@ -125,6 +125,29 @@ the real-vocabulary corpus caught. All now regression-tested
 Every fix was verified against Padauk's shaped geometry before/after,
 and the studio's anchor preview (`web/js/anchors.js`) mirrors them all.
 
+## Letterform parity: တစ်ချောင်းငင် by context
+
+A user report against the rendered output caught a *form* gap the
+geometry checks cannot see: after medials and inside wraps, Burmese
+writes ု as the tall **straight stroke**, not the curl. Measured across
+Padauk and matched (all regression-tested):
+
+| Context | Correct form | Mechanism |
+| :--- | :--- | :--- |
+| ကု ကူ | curl below the base | mark, unchanged |
+| နု ရု (side-form bases) | curl beside the leg | unchanged |
+| ကျု ကျူ / မွု (after ja, wa) | tall spacing stroke standing after the medial | `blws` medial_vowels → the `.alt` forms |
+| ရှု (after ha) | curl beside the hook, ra still swaps to ရ.alt across the ha | ra's own `side_bases_ra` lookup |
+| ကြု မြို (u inside a wrap) | straight bar hanging from the wrap's under-sweep | synthesized `u.wrapstroke` mark in `psts` |
+| ကြူ (uu after a wrap) | tall spacing stroke after the cluster | `psts` → `uu.alt` |
+
+The narrow/wide wrap selection was also re-audited letter by letter:
+our measured split agrees with Padauk's hand-curated one on 32 of 33
+consonants (ပြ ခြ မြ … narrow; ကြ တြ လြ ဘြ … wide). The one divergence,
+ဠြ, is deliberate: our ဠ measures 5 units *inside* the narrow wrap's
+reach (nothing to widen for), and the combination does not occur in the
+12,451-word vocabulary.
+
 ## Spec-file issues found (reported as SPEC, not failures)
 
 The test document itself contains malformed rows, which the harness

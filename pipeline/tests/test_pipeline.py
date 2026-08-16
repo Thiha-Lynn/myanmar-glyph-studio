@@ -581,6 +581,83 @@ def test_small_variants_synthesized_for_ra_context(tmp_path):
     assert "UseMarkFilteringSet" in fea.split("feature psts")[1]
 
 
+def test_vowels_take_tall_forms_after_ja_and_wa(tmp_path):
+    """ကျု မွု: after the post-base medials, တစ်ချောင်းငင် is the TALL
+    spacing stroke (Padauk's default uni102F, ink −429…423), never the
+    curl beside the leg. ha stays visible in the filter so ရှု keeps the
+    curl (Padauk's ha+u ligature is curl-deep)."""
+    font, drawn = build(tmp_path, {
+        "medialYa-myanmar": {"advance": 158, "strokes": [YA]},
+        "medialWa-myanmar": {"advance": None, "strokes": [WA]},
+        "medialHa-myanmar": {"advance": None, "strokes": [HA]},
+        "u-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, -150], [350, -150]], 40)]},
+        "u-myanmar.alt": {"advance": None,
+                          "strokes": [stroke([[250, -430], [250, 430]], 40)]},
+    })
+    fea = font.features.text
+    lookup = fea.split("lookup medial_vowels")[1].split("} medial_vowels")[0]
+    assert ("sub [medialYa-myanmar medialYa-myanmar.beforewa "
+            "medialWa-myanmar] u-myanmar' by u-myanmar.alt;") in lookup
+    assert "medialHa-myanmar" in lookup      # visible blocker, not context
+    assert "medialHa-myanmar]" not in lookup.split("sub ")[1]
+
+
+def test_wrap_vowels_take_stroke_and_tall_forms(tmp_path):
+    """ကြု: inside the wrap the u is the synthesized straight stroke
+    hanging from the under-sweep (Padauk's fused uni103C102F); ကြူ: the
+    uu stands AFTER the cluster as the tall spacing form (Padauk တြူ)."""
+    font, drawn = build(tmp_path, {
+        "ka-myanmar": {"advance": None, "strokes": [BOX]},
+        "medialRa-myanmar": RA_WRAP,
+        "u-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, -150], [350, -150]], 40)]},
+        "uu-myanmar": {"advance": None,
+                       "strokes": [stroke([[250, -150], [370, -150]], 40)]},
+        "uu-myanmar.alt": {"advance": None,
+                           "strokes": [stroke([[250, -430], [250, 430]], 40)]},
+    })
+    assert "u-myanmar.wrapstroke" in drawn
+    g = font["u-myanmar.wrapstroke"]
+    assert g.width == 0                                   # a mark
+    box = g.getBounds(font)
+    assert box.yMax < 0 and box.yMin < -380               # hangs below only
+    a = anchors_of(font, "u-myanmar.wrapstroke")
+    assert a["_bottom"][0] < box.xMin                     # plants ink RIGHT
+    assert "side" in a                                    # dot chains beside
+    fea = font.features.text
+    psts = fea.split("feature psts")[1]
+    assert ("sub @RA_WRAPS @RA_BASES u-myanmar' "
+            "by u-myanmar.wrapstroke;") in psts
+    assert ("sub @RA_WRAPS @RA_BASES uu-myanmar' "
+            "by uu-myanmar.alt;") in psts
+    assert "u-myanmar.small" not in fea                   # curls stay out
+
+
+def test_ra_side_lookup_sees_through_ha(tmp_path):
+    """ရှု: ra swaps to its side form ACROSS the ha (Padauk: ra.alt +
+    ha ligature) — its lookup filters to u/uu only, while the shared
+    lookup keeps ha visible because နှ swaps ON the ha."""
+    deep = stroke([[250, 550], [250, -360]])
+    font, _ = build(tmp_path, {
+        "ra-myanmar": {"advance": None, "strokes": [deep]},
+        "ra-myanmar.alt": {"advance": None,
+                           "strokes": [stroke([[250, 550], [250, -40]])]},
+        "na-myanmar": {"advance": None, "strokes": [deep]},
+        "na-myanmar.alt": {"advance": None,
+                           "strokes": [stroke([[250, 550], [250, -40]])]},
+        "medialHa-myanmar": {"advance": None, "strokes": [HA]},
+        "u-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, -150], [350, -150]], 40)]},
+    })
+    fea = font.features.text
+    ra_lookup = fea.split("lookup side_bases_ra")[1].split("} side_bases_ra")[0]
+    assert "sub ra-myanmar' [u-myanmar] by ra-myanmar.alt;" in ra_lookup
+    assert "medialHa-myanmar" not in ra_lookup        # sees through the ha
+    na_lookup = fea.split("lookup side_bases ")[1].split("} side_bases;")[0]
+    assert "medialHa-myanmar" in na_lookup            # ha stays visible here
+
+
 def test_no_small_variants_without_medial_ra(tmp_path):
     font, drawn = build(tmp_path, {
         "ka-myanmar": {"advance": None, "strokes": [BOX]},
