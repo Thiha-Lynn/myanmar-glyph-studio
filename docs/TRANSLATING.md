@@ -70,6 +70,22 @@ the best hint for how a term is used. A few that need care:
 | `eraserPartial`, `eraserStroke` | the two eraser modes |
 | `glyphCopy`, `glyphPaste` | sharing one glyph as a text snippet |
 
+## See exactly what is left
+
+Untranslated keys fall back to English silently, so it is easy to think a
+language is finished when a handful of strings are still English. The
+checker prints the gap — no dependencies, straight from a checkout:
+
+```bash
+python3 pipeline/i18n_check.py               # every language, at a glance
+python3 pipeline/i18n_check.py --lang mnw    # just yours
+python3 pipeline/i18n_check.py --todo mnw    # paste-ready stub of what's missing
+mgs-i18n-check --json                        # machine-readable, for CI
+```
+
+`--todo` prints each missing key with the English text beside it, ready to
+paste into your language file and fill in.
+
 Typography terms often have no settled translation in minority
 languages — choose what a reader of your language would actually
 understand, and note open questions in your PR or issue comment.

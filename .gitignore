@@ -25,3 +25,8 @@ venv/
 
 # scratch build dirs
 pipeline/build-*/
+
+# Python packaging build artifacts
+*.egg-info/
+dist/
+build/

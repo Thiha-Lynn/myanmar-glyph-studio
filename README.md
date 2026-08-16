@@ -191,6 +191,24 @@ docs/       design notes, the shaping spec + validation report, testing
             and debugging guides
 ```
 
+### Install the toolchain
+
+The studio needs nothing but a browser. The build pipeline is a normal
+Python package:
+
+```bash
+pip install myanmar-glyph-studio        # or: pip install -e ".[dev]" from a clone
+
+mgs-build MyFont.glyphstudio.json build/      # project file -> UFO + features
+mgs-variable MyFont.glyphstudio.json build/   # …plus weight masters and a VF
+mgs-proof build/MyFont-Regular.ttf "ကျွန်ုပ်" proof.png
+mgs-validate build/MyFont-Regular.ttf         # 1,484-cluster shaping audit
+mgs-i18n-check                                # what a translation is missing
+```
+
+Every command is also runnable straight from a checkout with no install
+(`python3 pipeline/json_to_ufo.py …`) — same code, same behaviour.
+
 The studio can be hosted for free on GitHub Pages
 (`.github/workflows/pages.yml` deploys `web/` — enable Pages → GitHub Actions
 in the repo settings), so contributors need nothing but a browser.
