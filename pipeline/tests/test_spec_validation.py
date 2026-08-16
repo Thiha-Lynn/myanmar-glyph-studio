@@ -83,6 +83,18 @@ def test_shaping_diff_ignores_engine_quirks_but_not_real_differences():
     assert sd.compare([ka, ("space", 500.0, 0.0)],
                       [ka, ("uni103C", 500.0, 0.0)], 12)
 
+    # A blank INSERTED where HarfBuzz inserted nothing: repairing a
+    # malformed cluster means a dotted circle, and a font without U+25CC
+    # gets a blank from DirectWrite and nothing from HarfBuzz. It draws
+    # nothing and, here, shifts nothing.
+    e = ("uni1031", 0.0, 0.0)
+    assert sd.compare([e, ("space", 562.0, 0.0), ("uni1000", 562.0, 0.0)],
+                      [e, ("uni1000", 562.0, 0.0)], 12) == []
+    # ...but a blank that pushes the rest of the cluster along really does
+    # change the spacing, and must not be waved through.
+    assert sd.compare([e, ("space", 562.0, 0.0), ("uni1000", 1000.0, 0.0)],
+                      [e, ("uni1000", 562.0, 0.0)], 12)
+
     # Marks reordered by one engine but landing in the same place: the
     # picture is identical, so it is not a difference.
     assert sd.compare([ka, ("dot", 100.0, 50.0), ("asat", 100.0, 800.0)],

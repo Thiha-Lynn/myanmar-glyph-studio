@@ -36,13 +36,10 @@ import sys
 
 FALLBACK_PREFIX = "<fallback:"
 
-# What an engine draws for a character the font does not cover. HarfBuzz,
-# having no fallback of its own, emits `.notdef` — the missing-glyph box.
-# DirectWrite's analyzer emits the font's BLANK instead: at that layer it
-# assumes the layout above it has already picked a font that has the
-# character, so it does not draw a box. (CoreText takes a third route and
-# substitutes another font outright; that is FALLBACK_PREFIX above.)
-BLANK_NAMES = frozenset({".notdef", "space", "uni0020", "nbspace", "uni00A0"})
+# Glyphs that draw nothing. Deliberately NOT including `.notdef`, which in
+# most fonts draws a visible missing-glyph box — it is handled separately
+# below, where what matters is that the font declares no coverage.
+BLANK_NAMES = frozenset({"space", "uni0020", "nbspace", "uni00A0"})
 
 
 def use_utf8_stdout():
@@ -127,6 +124,20 @@ def compare(engine_run, hb_run, tolerance, engine="the platform engine"):
                             sorted({f[len(FALLBACK_PREFIX):-1]
                                     for f in fallbacks})))
         return problems
+
+    # An engine may also INSERT a blank. Repairing a malformed cluster
+    # normally means showing a dotted circle; when the font has no U+25CC
+    # glyph HarfBuzz omits it altogether while DirectWrite substitutes the
+    # blank. A glyph that draws nothing cannot change the picture — but it
+    # could still change the SPACING, so drop the blanks and hand what is
+    # left to the ordinary position comparison, which judges exactly that.
+    if eng_names != hb_names:
+        bare_engine = [g for g in engine_run if g[0] not in BLANK_NAMES]
+        bare_hb = [g for g in hb_run if g[0] not in BLANK_NAMES]
+        if ([n for n, _, _ in bare_engine] == [n for n, _, _ in bare_hb]):
+            engine_run, hb_run = bare_engine, bare_hb
+            eng_names = [n for n, _, _ in engine_run]
+            hb_names = [n for n, _, _ in hb_run]
 
     if eng_names != hb_names:
         # Blank against .notdef, position for position, is the two engines
