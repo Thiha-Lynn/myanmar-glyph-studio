@@ -7,6 +7,8 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-08-16
+
 ### Added
 - **Shaping specification + validation harness**: the full shaping model
   is now written down ([docs/SHAPING_SPEC.md](docs/SHAPING_SPEC.md)) and
@@ -20,6 +22,22 @@ versions are git tags with installable font zips on the
   malformed test string can never mask a real bug. Wired into pytest and
   CI; results in [docs/VALIDATION.md](docs/VALIDATION.md), triage tables
   in [docs/DEBUGGING.md](docs/DEBUGGING.md).
+- **The pipeline is an installable package**: `pip install
+  myanmar-glyph-studio` gives nine console tools — `mgs-build`,
+  `mgs-variable`, `mgs-proof`, `mgs-validate`, `mgs-sample`,
+  `mgs-gallery`, `mgs-inventory`, `mgs-postbuild`, `mgs-i18n-check`.
+  Full PEP 621 metadata with an SPDX license expression; both shaping
+  corpora ship inside the wheel, so `mgs-validate <font>` works from any
+  directory with no checkout. The modules stay in `pipeline/`, so every
+  documented clone-and-run invocation keeps working unchanged.
+- **Device shaping test page** (`web/devicetest.html`): renders the 25
+  clusters this project has ever got wrong, says what correct looks like
+  for each, and writes a paste-ready bug report — the DirectWrite and
+  CoreText check CI can never do ([#14]). Works offline; phone-friendly.
+- **Translation checker** (`mgs-i18n-check`): untranslated keys fall back
+  to English silently, so a half-finished language looks complete; this
+  prints the gap per language and `--todo <lang>` emits a paste-ready
+  stub of what is missing ([#13]).
 - **Real-vocabulary corpus** (`pipeline/word_corpus.txt`): 711 genuine
   Burmese words covering all 1,213 syllable clusters of the 12,451-word
   Myanmar Wiktionary vocabulary (via the CC-BY DatarrX Myanmar Word
@@ -31,6 +49,10 @@ versions are git tags with installable font zips on the
   identical cluster structure end to end.
 
 ### Changed
+- CI: the required `build` check now runs on every pull request. It was
+  filtered to `projects/**` and `pipeline/**`, so a web- or docs-only PR
+  never produced the check branch protection required — and a required
+  check that never runs blocks the merge forever.
 - **The Padauk medial fusion set is complete**: nine more traced fused
   glyphs finish the job the previous six started — the wrap+wa set
   (ကြွ ပြွ ကြွီ, `uni103C103D`, the wa nested inside the sweep instead of
@@ -112,6 +134,8 @@ versions are git tags with installable font zips on the
 - Test-drive preset chips for the tricky medial clusters (studio and
   gallery), so a font's shaping rules can be exercised in one tap.
 
+[#13]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues/13
+[#14]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues/14
 [#19]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues/19
 - **Contribute without Git**: ⚙ → *Copy glyph* turns the current glyph
   into a text snippet you can paste into an issue or chat; *Paste glyph*
