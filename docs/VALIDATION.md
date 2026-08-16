@@ -28,13 +28,15 @@ vocabulary uses the 1 213 measured here.)
 
 ## Result summary
 
-**0 FAIL findings in all five fonts, on both corpora.** For calibration,
+**0 FAIL and 0 WARN findings in all five fonts, on both corpora** —
+every cluster of both corpora shapes and positions inside the measured
+bands with full clearances, in every weight. For calibration,
 the identical harness was run over the fonts the big platforms render
 Myanmar with. Ours is the only one that clears both corpora clean:
 
 | Font (engine context) | Spec corpus | Word corpus |
 | :--- | :--- | :--- |
-| **Myanmar Glyph Sans Regular** | **0 FAIL** | **0 FAIL** |
+| **Myanmar Glyph Sans** (all weights + VF) | **0 FAIL, 0 WARN** | **0 FAIL, 0 WARN** |
 | Padauk 6.000 (SIL reference) | 7 FAIL — 5 mark collisions in ြ+ှ clusters, 2 unattached tone dots after ဌ | 1 FAIL |
 | Noto Sans Myanmar (Google Docs/Android family) | 4 FAIL | 0 FAIL |
 | Myanmar Text 1.10 (Microsoft Word/Windows font) | 7 FAIL | 4 FAIL |
@@ -48,10 +50,10 @@ fonts clear it.
 
 | Block | What it exercises | Cases | Myanmar Glyph Sans Regular |
 | :--- | :--- | ---: | :--- |
-| A | basic consonant + vowel/medial | 66 | **PASS** (6 wrap-height notes) |
+| A | basic consonant + vowel/medial | 66 | **PASS** |
 | B | descender bases + side-form vowels (နု ရု) | 66 | **PASS** |
 | C | medial ya + below vowel (ကျု ကျူ) | 66 | **PASS** |
-| D | ra-wrap narrow/wide/tall variants | 34 | **PASS** (design-band notes, §below) |
+| D | ra-wrap narrow/wide/tall variants | 34 | **PASS** |
 | E | stacked consonants, all types | 43 | **PASS** |
 | F | kinzi, all combinations | 24 | **PASS** |
 | G | anusvara + dot-below + vowel stacking | 132 | **PASS** |
@@ -64,20 +66,26 @@ fonts clear it.
 | N | complete medial combination matrix | 258 | **PASS** |
 | O | asat on every stack type | 130 | **PASS** |
 
-Light and VF match Regular exactly (195 WARN / 145 SPEC / 0 FAIL each).
-Bold reports the same statuses with 312 WARNs — the heavier pen pushes
-wrap and kinzi ink a few units further past the *design* ascender (940
-vs 930), all still ~160 units inside the clipping box.
+## How the last WARNs were engineered away
 
-## What the WARNs are
+The first clean-FAIL build still carried ~195 WARNs per font (more in
+Bold); each class was closed at the source rather than by relaxing a
+check:
 
-* **Design-band exceedances (182).** Every ra-wrap variant tops out at
-  927–931 against the 900 design ascender. Padauk's own wraps sit at
-  932–933; this is a property of the script's geometry, not a defect.
-  Nothing in any font approaches the real limits (+1100/−750).
-* **Tight clearances (13).** ွ vs ု in the ...ွို stacks measure 42
-  units against the spec's 50 (Padauk's equivalent clusters measure
-  similarly); one 43-unit gap in က္ကွိ. Cosmetic tuning candidates.
+* **Wrap heights.** The wrap is the script's one legitimate
+  ascender-breaker (its hook must rise around the ring it wraps), so the
+  spec now carries an explicit **wrap band of 935** — measured on
+  Padauk, whose wraps top at 932–933 — for ြ variants and the wrap-sweep
+  letters ဩ ဪ. The wrap and ဩ/ဪ drawings were also lowered 6 units so
+  every master, Bold included, fits the band (Regular 924, Bold ≈934).
+* **Fixed anchors across weights.** Anchors are now measured on the
+  unscaled reference drawing, so Light/Regular/Bold derive identical
+  attachment coordinates — Bold's marks no longer ride 10–20 units
+  higher than Regular's, which is what had pushed them past the band.
+* **Clearances in every weight.** The below-mark side chain steps 55
+  units (protocol 50 + margin), and horizontal chain gaps grow with the
+  pen (+19 at Bold) so the *ink* gap meets the protocol in Bold too
+  (ွ-ု in မွို: was 42, now 57 in Regular and 55+ in Bold).
 
 ## Defects found by these corpora and fixed (2026-08-16)
 

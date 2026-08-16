@@ -30,6 +30,18 @@ versions are git tags with installable font zips on the
   browser-engine (HarfBuzz+Skia) side-by-side against Padauk confirmed
   identical cluster structure end to end.
 
+### Changed
+- **Zero-WARN geometry pass**: the residual design-band and clearance
+  warnings were closed at the source — an explicit wrap band (935,
+  measured on Padauk) for ြ variants and ဩ ဪ with the wrap drawings
+  lowered 6 units so Bold fits too; anchors measured on the unscaled
+  reference drawing so every weight derives identical attachment
+  coordinates (Bold marks no longer ride higher than Regular's); and
+  pen-compensated side-chain gaps (55 + ~19 at Bold) so ink clearances
+  meet the 50-unit protocol in every weight. All five shipped fonts now
+  validate **0 FAIL, 0 WARN** on both corpora. Independent vowels gained
+  proper AGL production names (uni1029/uni102A).
+
 ### Fixed
 - **Seven anchor-engine defects found by the new corpora** (0 FAIL findings
   after; the same harness reports 7 in Padauk itself): stacks under

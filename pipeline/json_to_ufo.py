@@ -175,7 +175,7 @@ STACK_FLOOR = -50
 # How far right of the kinzi's ink the next above-mark's centre is planted
 # (half a vowel ring plus a gap): Padauk's fused kinzi+anusvara puts the
 # added ink to the right of the hook (သင်္ခံ: 1098…1466 vs bare 1113…1301).
-KINZI_SIDE_GAP = 210
+KINZI_SIDE_GAP = 225
 # How far the kinzi.left variant's ink is pre-shifted when a medial ya
 # follows in the cluster (the vowel then belongs to the ya and cannot chain
 # beside the kinzi) — clears the vowel over the ya with ~200 units to spare
@@ -589,6 +589,11 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
     ink_right = {}    # glyph -> right edge of its ink, for the pres measurement
     advances = {}     # glyph -> advance width
     base_glyphs = []  # glyphs that carry top/bottom anchors
+    # Side-chain clearances are optical: a heavier master's strokes bulge
+    # toward each other by half the extra pen on each facing edge, so the
+    # anchor-level gap grows with the pen to keep the INK gap at the
+    # designed 55 units in every weight (46 ≈ the typical stroke width).
+    pen_pad = max(0, round(46 * (width_scale - 1.0)))
     geo = {}          # sources for the synthesized contextual variants below
     variant_sources = {"medialWa-myanmar", "medialHa-myanmar",
                        "u-myanmar", "uu-myanmar", "medialYa-myanmar",
@@ -646,12 +651,35 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         # sits left of the origin (some source fonts park modifier letters
         # in negative space to overprint the previous letter), which would
         # otherwise yield a negative — so clamped to zero — advance.
-        if auto_advance and (is_spacing_sign and x_min > SIGN_LSB
-                             or x_min < 0):
+        realigned = (auto_advance and (is_spacing_sign and x_min > SIGN_LSB
+                                       or x_min < 0))
+        if realigned:
             dx = SIGN_LSB - x_min
             polys = [[[p[0] + dx, p[1]] for p in poly] for poly in polys]
             x_min += dx
             x_max += dx
+
+        # Anchors are measured on the UNSCALED reference drawing (under the
+        # same left-alignment), not on this master's pen-scaled ink: every
+        # weight master then derives the IDENTICAL anchor coordinates, so
+        # attachment heights stay at the design position in every weight —
+        # the Bold pen no longer pushes its marks 10–20 units higher — and
+        # the masters interpolate cleanly. The ink bulges ±half the extra
+        # pen around those fixed spots, which is exactly how a fixed-anchor
+        # family behaves.
+        if ref_polys is polys or width_scale == 1.0:
+            ax_min, ay_min, ax_max, ay_max = x_min, y_min, x_max, y_max
+            anchor_polys = polys
+        else:
+            ax_min, ay_min, ax_max, ay_max = poly_bounds(ref_polys)
+            if realigned:
+                adx = SIGN_LSB - ax_min
+                anchor_polys = [[[p[0] + adx, p[1]] for p in poly]
+                                for poly in ref_polys]
+                ax_min += adx
+                ax_max += adx
+            else:
+                anchor_polys = ref_polys
 
         g = font.newGlyph(name)
         draw_glyph(g, polys, ref_polys=ref_polys)
@@ -684,15 +712,15 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             add_anchor(_g, anchor_name, ax, ay)
             _placed.add(anchor_name)
 
-        cx = (x_min + x_max) / 2
-        cy = (y_min + y_max) / 2
+        cx = (ax_min + ax_max) / 2
+        cy = (ay_min + ay_max) / 2
         # Vowel marks sit over the letter's right bowl on wide two-bowl
         # letters and just right of centre on narrow ones — calibrated
         # against Padauk on the traced sample: ကီ lands at 0.73 and ကု at
         # 0.78 of the ink width, ခု at 0.56. Stacked consonants stay at
         # dead centre (0.50) via their own stack anchor.
-        ink_w = max(1, x_max - x_min)
-        mark_x = x_min + ink_w * (0.75 if ink_w > 700 else 0.55)
+        ink_w = max(1, ax_max - ax_min)
+        mark_x = ax_min + ink_w * (0.75 if ink_w > 700 else 0.55)
         # Leg avoidance (BELOW-marks only — top marks never meet the leg):
         # when the letter's own ink descends through the anchor spot (ည's
         # tail sweeps under its right bowl), slide the bottom anchor to the
@@ -703,12 +731,12 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         # handles those.
         bottom_x = mark_x
         if not is_mark:
-            band = column_depth(polys, mark_x - 50, mark_x + 50)
+            band = column_depth(anchor_polys, mark_x - 50, mark_x + 50)
             if band is not None and band < -160:
                 best = None
                 for i in range(19):                    # 0.40 … 0.85
-                    cand = x_min + ink_w * (0.40 + i * 0.025)
-                    d = column_depth(polys, cand - 50, cand + 50)
+                    cand = ax_min + ink_w * (0.40 + i * 0.025)
+                    d = column_depth(anchor_polys, cand - 50, cand + 50)
                     if (d is None or d >= -160) and (
                             best is None
                             or abs(cand - mark_x) < abs(best - mark_x)):
@@ -742,14 +770,14 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             # The −50 floor puts ours at −90…−441. Never substitute the
             # long stack-form .alt here (it is 868 units tall and belongs
             # under subjoined letters only). Stacks keep full ink depth.
-            anchor("top", mark_x, top_anchor_y(y_max))
-            anchor("bottom", bottom_x, max(min(y_min, 0), -50) - 40)
+            anchor("top", mark_x, top_anchor_y(ay_max))
+            anchor("bottom", bottom_x, max(min(ay_min, 0), -50) - 40)
             # …and the subjoined letter hangs from the same clamped depth:
             # Padauk lands every subjoined form in the −440…−80 band whatever
             # the base does (uni1014.alt + uni1014.med, uni101B + uni101B.med),
             # because following the leg all the way down puts န္န at −890 —
             # 290 units past the descender, into the next line of text.
-            anchor("stack", cx, max(min(y_min, 0), STACK_FLOOR) - 40)
+            anchor("stack", cx, max(min(ay_min, 0), STACK_FLOOR) - 40)
             if not is_base_variant:
                 # variants are GSUB-only stand-ins: they never follow a
                 # wrap and must not skew the wide-base measurement
@@ -763,8 +791,8 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             # A top anchor must come with it: once ya is a mark base, it
             # intercepts the backwards base scan, so ကျိ would lose its
             # i-ring without one (Padauk anchors i over the ya curve too).
-            anchor("side", x_max - 30, -40)
-            anchor("top", cx, top_anchor_y(y_max))
+            anchor("side", ax_max - 30, -40)
+            anchor("top", cx, top_anchor_y(ay_max))
         elif is_spacing_sign and name not in PRE_BASE_SIGNS:
             # Post-base spacing signs (ာ ါ and the long stack vowels) are
             # mark bases too: in ကော် the asat sits over the ာ, in ကာံ the
@@ -778,7 +806,8 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             # under the stem's own top (856), so the mark stays in the band
             # every other above-mark uses and crosses the stem instead.
             anchor("top", mark_x, BODY - 40)
-            anchor("bottom", bottom_x, max(min(y_min, 0), -50) - 40)
+            anchor("bottom", bottom_x + pen_pad,
+                   max(min(ay_min, 0), -50) - 40)
         elif name == "kinzi-myanmar":
             # A vowel after the kinzi lands BESIDE it, not on top of it:
             # stacking a second above-mark on the kinzi sends သင်္ကြီ's ii to
@@ -788,36 +817,37 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             # spans 1113…1301 in သင်္ခ, its fused kinzi+anusvara 1098…1466
             # in သင်္ခံ — all of the added ink is on the right. This anchor
             # reproduces that geometry without extra artwork.
-            anchor("_top", cx, y_min - 20)
-            anchor("top", x_max + KINZI_SIDE_GAP, y_min - 20)
+            anchor("_top", cx, ay_min - 20)
+            anchor("top", ax_max + KINZI_SIDE_GAP + pen_pad, ay_min - 20)
         elif name in TOP_MARKS:
-            anchor("_top", cx, y_min - 20)
-            anchor("top", cx, y_max + 20)
+            anchor("_top", cx, ay_min - 20)
+            anchor("top", cx, ay_max + 20)
         elif name in BOTTOM_MARKS:
             # No plain "bottom" chain here: hanging the next mark UNDER a
             # below-mark is how ရွှံ့ ended up 748 units deep. Marks that
             # follow a below-mark chain BESIDE it instead (side/_side):
-            # tops aligned, next ink starting 40 units right — which is the
+            # tops aligned, next ink starting 55 units right (the spec's
+            # 50-unit clearance protocol plus a margin) — which is the
             # geometry of Padauk's uni103D103E / uni103E102F ligatures.
-            anchor("_bottom", cx, y_max + 20)
-            anchor("side", x_max, y_max + 20)
-            anchor("_side", x_min - 40, y_max + 20)
+            anchor("_bottom", cx, ay_max + 20)
+            anchor("side", ax_max, ay_max + 20)
+            anchor("_side", ax_min - 55 - pen_pad, ay_max + 20)
         elif name in STACK_MARKS:
-            anchor("_stack", cx, y_max + 20)
+            anchor("_stack", cx, ay_max + 20)
             # A medial or tone mark after a stack chains BESIDE it, tops
             # aligned — the same rule below-marks follow. Hanging it from
             # the stack's own bottom put က္ကွိ's ွ at −814; Padauk keeps
             # every part of the cluster inside the −610…0 band.
-            anchor("side", x_max, y_max + 20)
+            anchor("side", ax_max, ay_max + 20)
         elif is_mark:
             # extension-language mark: decide the attachment side from
             # where the ink was drawn relative to the letter body
             if cy >= BODY / 2:
-                anchor("_top", cx, y_min - 20)
-                anchor("top", cx, y_max + 20)
+                anchor("_top", cx, ay_min - 20)
+                anchor("top", cx, ay_max + 20)
             else:
-                anchor("_bottom", cx, y_max + 20)
-                anchor("bottom", cx, y_min - 20)
+                anchor("_bottom", cx, ay_max + 20)
+                anchor("bottom", cx, ay_min - 20)
 
         # honor hand-placed anchors the heuristics would not have emitted
         for anchor_name in sorted(set(manual) & (KNOWN_ANCHORS - placed)):
@@ -870,10 +900,12 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             tr = tp if ref_m is polys_m else scale_about_top(ref_m, SMALL_SCALE)
             draw_glyph(g, tp, ref_polys=tr)
             g.width = 0
-            vx0, _, vx1, vy1 = poly_bounds(tp)
+            # anchors from the reference-scaled geometry: every master
+            # derives identical coordinates (see the a-bounds convention)
+            vx0, _, vx1, vy1 = poly_bounds(tr)
             add_anchor(g, "_bottom", (vx0 + vx1) / 2, vy1 - 30)
             add_anchor(g, "side", vx1, vy1 + 20)
-            add_anchor(g, "_side", vx0 - 40, vy1 + 20)
+            add_anchor(g, "_side", vx0 - 55 - pen_pad, vy1 + 20)
             categories[vname] = "mark"
             drawn.append(vname)
 
@@ -889,8 +921,8 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         g = font.newGlyph(vname)
         draw_glyph(g, polys_m, ref_polys=ref_m)
         g.width = max(0, ya_adv)
-        vx0, _, vx1, vy1 = poly_bounds(polys_m)
-        add_anchor(g, "top", (vx0 + vx1) / 2, max(vy1, BODY) + 40)
+        vx0, _, vx1, vy1 = poly_bounds(ref_m)   # reference geometry
+        add_anchor(g, "top", (vx0 + vx1) / 2, top_anchor_y(vy1))
         add_anchor(g, "side", vx0 - 225, -40)
         categories[vname] = "base"
         drawn.append(vname)
@@ -909,11 +941,11 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         g = font.newGlyph(vname)
         draw_glyph(g, polys_m, ref_polys=ref_m)
         g.width = 0
-        vx0, vy0, vx1, _ = poly_bounds(polys_m)
+        vx0, vy0, vx1, _ = poly_bounds(ref_m)   # reference geometry
         # same ink; the attaching anchor sits RIGHT of centre, so GPOS
         # pulls the whole glyph left of the base's mark spot by the shift
         add_anchor(g, "_top", (vx0 + vx1) / 2 + KINZI_MEDIAL_SHIFT, vy0 - 20)
-        add_anchor(g, "top", vx1 + KINZI_SIDE_GAP, vy0 - 20)
+        add_anchor(g, "top", vx1 + KINZI_SIDE_GAP + pen_pad, vy0 - 20)
         categories[vname] = "mark"
         drawn.append(vname)
 
@@ -951,10 +983,18 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         if base == "iAnusvara-myanmar":
             ps_names[gname] = "uni102D1036" + dot + suffix      # AGL ligature
             continue
-        cp = name_to_codepoint(base if dot else gname)
+        # whole name first: the independent-vowel names contain a dot of
+        # their own (o.indep-myanmar → U+1029), and splitting at it would
+        # orphan them from their codepoint
+        cp = name_to_codepoint(gname)
         if cp:
             ps = f"uni{cp:04X}" if cp <= 0xFFFF else f"u{cp:04X}"
-            ps_names[gname] = ps + (dot + suffix if dot else "")
+            ps_names[gname] = ps
+            continue
+        cp = name_to_codepoint(base) if dot else None
+        if cp:
+            ps = f"uni{cp:04X}" if cp <= 0xFFFF else f"u{cp:04X}"
+            ps_names[gname] = ps + dot + suffix
     ps_names["nbspace"] = "uni00A0"
     font.lib["public.postscriptNames"] = ps_names
 

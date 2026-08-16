@@ -39,7 +39,9 @@
   };
   var TOP_CLEARANCE = 60;   // ink-to-mark gap above a letter (Padauk: 76)
   var STACK_FLOOR = -50;    // deepest a subjoined letter may hang from
-  var KINZI_SIDE_GAP = 210; // how far right of the kinzi the next mark sits
+  var KINZI_SIDE_GAP = 225; // how far right of the kinzi the next mark sits
+  var SIDE_GAP = 55;        // below-mark side chain: next ink starts this
+                            // far right (50-unit clearance protocol + margin)
   // groups whose spacing glyphs don't carry mark anchors
   var NO_ANCHOR_GROUPS = { digits: 1, punctuation: 1 };
   var MYANMAR_RANGES = [
@@ -189,7 +191,7 @@
       // tone dot beside a deep hook in ရွှံ့ — mirrors json_to_ufo.py
       defaults._bottom = [cx, b.yMax + 20];
       defaults.side = [b.xMax, b.yMax + 20];
-      defaults._side = [b.xMin - 40, b.yMax + 20];
+      defaults._side = [b.xMin - SIDE_GAP, b.yMax + 20];
     } else if (role === "stack-mark") {
       // a medial or tone after a stack chains BESIDE it, tops aligned —
       // the same rule below-marks follow; hanging it from the stack's own

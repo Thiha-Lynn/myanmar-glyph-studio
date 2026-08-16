@@ -57,6 +57,10 @@ except ImportError as exc:                                  # pragma: no cover
 # --- engine parameters (docs/SHAPING_SPEC.md §1) ---------------------------
 UPM = 1000
 ASCENDER = 900
+# The medial-ra wrap is the script's one legitimate ascender-breaker: its
+# hook must rise around the vowel ring it wraps. Padauk's wraps top out at
+# 932–933 (normalized); 935 is the measured band for the wrap class only.
+WRAP_ASCENDER = 935
 DESCENDER = -600
 MIN_MARK_CLEARANCE = 50      # spec: minimum 50-unit separation between marks
 CURVE_SEGMENTS = 8           # flattening resolution for the collision test
@@ -548,16 +552,22 @@ def check_case(font, case, glyphs, total_advance):
                 "WARN", "bounds",
                 f"{g.name} sinks to y={box[1]:.0f}, past the design "
                 f"descender ({DESCENDER})"))
+        # ဩ/ဪ carry the same wrap sweep as part of their own letterform
+        # (Padauk's top at 932, exactly its wrap height)
+        is_wrap = ("medialRa" in g.name or g.name.startswith("uni103C")
+                   or g.name in ("o.indep-myanmar", "au.indep-myanmar",
+                                 "uni1029", "uni102A"))
+        top_limit = WRAP_ASCENDER if is_wrap else ASCENDER
         if box[3] > font.win_ascent + 2:
             findings.append(Finding(
                 "FAIL", "clipped",
                 f"{g.name} rises to y={box[3]:.0f}, past usWinAscent "
                 f"({font.win_ascent}) — clipped on Windows"))
-        elif box[3] > ASCENDER + 1:
+        elif box[3] > top_limit + 1:
             findings.append(Finding(
                 "WARN", "bounds",
                 f"{g.name} rises to y={box[3]:.0f}, past the design "
-                f"ascender ({ASCENDER})"))
+                f"{'wrap band' if is_wrap else 'ascender'} ({top_limit})"))
 
     # every mark must have been moved by GPOS and land near its cluster
     if base_boxes:
@@ -569,14 +579,19 @@ def check_case(font, case, glyphs, total_advance):
                     "the mark/mkmk anchor pair may be missing"))
             span = [b for _, b in base_boxes if b[0] <= box[2] and b[2] >= box[0]]
             if not span:
+                # Chained marks legitimately sit right of every base: in
+                # ကျို့ the tone dot chains beside the ု, which itself sits
+                # beside the ya leg — Padauk renders the dot at the same
+                # spot. Stray means far from EVERY other ink in the cluster.
+                others = [b for og, b in base_boxes + mark_boxes if og is not g]
                 nearest = min(
-                    (min(abs(box[0] - b[2]), abs(b[0] - box[2])), b)
-                    for _, b in base_boxes)
-                if nearest[0] > MARK_STRAY_TOLERANCE:
+                    (max(b[0] - box[2], box[0] - b[2], 0) for b in others),
+                    default=0)
+                if nearest > MARK_STRAY_TOLERANCE:
                     findings.append(Finding(
                         "FAIL", "attachment",
-                        f"{g.name} sits {nearest[0]:.0f} units clear of every "
-                        "base in the cluster — it is not attached"))
+                        f"{g.name} sits {nearest:.0f} units clear of every "
+                        "other glyph in the cluster — it is not attached"))
 
     # marks must not collide with one another
     for i in range(len(mark_boxes)):
