@@ -1,3 +1,45 @@
+Metadata-Version: 2.4
+Name: myanmar-glyph-studio
+Version: 0.4.0
+Summary: Draw Myanmar fonts in the browser; build them into shaping-capable OpenType with generated mym2 GSUB/GPOS.
+Author: Myanmar Glyph Studio contributors
+Maintainer: SHINN THANT
+License-Expression: MIT
+Project-URL: Homepage, https://thiha-lynn.github.io/myanmar-glyph-studio/
+Project-URL: Studio, https://thiha-lynn.github.io/myanmar-glyph-studio/
+Project-URL: Gallery, https://thiha-lynn.github.io/myanmar-glyph-studio/gallery.html
+Project-URL: Repository, https://github.com/Thiha-Lynn/myanmar-glyph-studio
+Project-URL: Issues, https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues
+Project-URL: Changelog, https://github.com/Thiha-Lynn/myanmar-glyph-studio/blob/main/CHANGELOG.md
+Project-URL: Documentation, https://github.com/Thiha-Lynn/myanmar-glyph-studio/tree/main/docs
+Keywords: myanmar,burmese,font,opentype,harfbuzz,shaping,mym2,complex-script,typography,ufo,fontmake
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: Natural Language :: Burmese
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Topic :: Text Processing :: Fonts
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: NOTICE.md
+Requires-Dist: ufoLib2>=0.18.1
+Requires-Dist: fonttools>=4.63.0
+Requires-Dist: fontmake>=3.12.1
+Requires-Dist: skia-pathops>=0.9.2
+Requires-Dist: uharfbuzz>=0.56.0
+Requires-Dist: brotli>=1.2.0
+Provides-Extra: proof
+Requires-Dist: pillow>=12.3.0; extra == "proof"
+Provides-Extra: dev
+Requires-Dist: pillow>=12.3.0; extra == "dev"
+Requires-Dist: fontbakery>=1.1.0; extra == "dev"
+Requires-Dist: pytest>=9.1.1; extra == "dev"
+Dynamic: license-file
+
 # Myanmar Glyph Studio · မြန်မာဖောင့် ရေးဆွဲကိရိယာ
 
 [![Build fonts](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/build.yml/badge.svg)](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/build.yml)
@@ -191,6 +233,24 @@ docs/       design notes, the shaping spec + validation report, testing
             and debugging guides
 ```
 
+### Install the toolchain
+
+The studio needs nothing but a browser. The build pipeline is a normal
+Python package:
+
+```bash
+pip install myanmar-glyph-studio        # or: pip install -e ".[dev]" from a clone
+
+mgs-build MyFont.glyphstudio.json build/      # project file -> UFO + features
+mgs-variable MyFont.glyphstudio.json build/   # …plus weight masters and a VF
+mgs-proof build/MyFont-Regular.ttf "ကျွန်ုပ်" proof.png
+mgs-validate build/MyFont-Regular.ttf         # 1,484-cluster shaping audit
+mgs-i18n-check                                # what a translation is missing
+```
+
+Every command is also runnable straight from a checkout with no install
+(`python3 pipeline/json_to_ufo.py …`) — same code, same behaviour.
+
 The studio can be hosted for free on GitHub Pages
 (`.github/workflows/pages.yml` deploys `web/` — enable Pages → GitHub Actions
 in the repo settings), so contributors need nothing but a browser.
@@ -203,10 +263,6 @@ testing, translation), [projects/README.md](projects/README.md) for the
 font-family folder layout, and [docs/LAUNCH.md](docs/LAUNCH.md) for the
 maintainer playbook. New here? Pick a
 [good first issue](https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
-Testing a font on a real phone or Windows box is the easiest one: open the
-[device shaping test](https://thiha-lynn.github.io/myanmar-glyph-studio/devicetest.html)
-there and it renders every tricky cluster, tells you what correct looks
-like, and writes the bug report for you.
 Questions and ideas go to
 [Discussions](https://github.com/Thiha-Lynn/myanmar-glyph-studio/discussions)
 or [SUPPORT.md](SUPPORT.md) — Burmese welcome. We follow the

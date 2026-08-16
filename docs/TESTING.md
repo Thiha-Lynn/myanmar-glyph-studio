@@ -150,6 +150,14 @@ Linux use. **Windows (DirectWrite) and Apple (CoreText) can disagree**,
 and only real devices reveal it. This is a five-minute contribution that
 needs no coding at all:
 
+**Open <https://thiha-lynn.github.io/myanmar-glyph-studio/devicetest.html>
+on the device you want to test.** It renders every cluster this project
+has ever got wrong, says what correct looks like for each, and writes the
+report for you — tap ✓ or ✗ per row, then *Copy report*. Works offline
+once the studio is installed.
+
+Doing it by hand instead:
+
 1. Download a font zip from the
    [latest release](https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/latest)
    and install the TTF (Windows: right-click → Install · macOS:
