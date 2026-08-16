@@ -143,6 +143,24 @@ Then look at the extremes: `hb-view MyFont-VF.ttf --variations=wght=700`
 should be visibly heavier with the same letterforms, no collapsed counters
 and no crossed outlines.
 
+## Apple's engine, checked automatically (macOS)
+
+CoreText is one of the two engines CI cannot reach. On a Mac it can be
+diffed against HarfBuzz over the whole corpus — build the Swift shaper
+once, then run the checker (details:
+[pipeline/coretext/README.md](../pipeline/coretext/README.md)):
+
+```bash
+cd pipeline/coretext && swiftc -O CoreTextShape.swift -o coretext-shape
+python3 pipeline/coretext_check.py projects/*/MyanmarGlyphSans-Regular.ttf
+```
+
+Current result for the shipped family: **2,119 clusters compared across
+both corpora, zero rendering differences** in every weight. It also runs
+as part of `pytest` on macOS, so a Mac contributor covers Apple's engine
+without doing anything extra. That leaves **DirectWrite (Windows)** as
+the one engine still needing a human.
+
 ## Test on a real device (issue #14 — anyone can do this)
 
 Our CI verifies shaping with HarfBuzz — the engine Android, Chrome and
