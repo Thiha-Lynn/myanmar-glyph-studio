@@ -61,3 +61,27 @@ def test_geometry_helpers():
     # one polygon fully inside another is an overlap, not a clearance
     inner = [[(40, 40), (60, 40), (60, 60), (40, 60)]]
     assert vs.ink_clearance(a, inner) == 0.0
+
+
+def test_coretext_agrees_with_harfbuzz_on_macos():
+    """CI shapes with HarfBuzz; Apple platforms shape with CoreText, and
+    the two can disagree — the gap issue #14 exists to cover. On macOS
+    with the Swift shaper built we can close half of it automatically."""
+    import platform
+    import subprocess
+    if platform.system() != "Darwin":
+        pytest.skip("CoreText is an Apple framework")
+    shaper = Path(__file__).resolve().parent.parent / "coretext" / "coretext-shape"
+    if not shaper.exists():
+        pytest.skip("coretext-shape not built (see pipeline/coretext/README.md)")
+    font = ROOT / "projects" / "myanmar-glyph-sans" / "MyanmarGlyphSans-Regular.ttf"
+    if not font.exists():
+        pytest.skip("shipped font not present")
+    check = Path(__file__).resolve().parent.parent / "coretext_check.py"
+    for corpus in (CORPUS, WORDS):
+        proc = subprocess.run(
+            [sys.executable, str(check), str(font), "--corpus", str(corpus)],
+            capture_output=True, text=True)
+        assert proc.returncode == 0, (
+            f"CoreText disagrees with HarfBuzz on {corpus.name}:\n"
+            + proc.stdout[-2000:])
