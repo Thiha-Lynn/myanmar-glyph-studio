@@ -219,6 +219,44 @@
     mark: true, group: "variants"
   });
 
+  // Fused wrap + u forms (Padauk's uni103C102F set): the sweep retracts
+  // and တစ်ချောင်းငင် stands as a straight bar in the opening.
+  [["", ch(0x1015), "", "narrow"], [".wide", ch(0x1000), "+", "wide"],
+   [".tall", ch(0x1019), "^", "tall narrow"],
+   [".tall.wide", ch(0x1000), "+^", "tall wide"]].forEach(function (row) {
+    var vowel = row[0].indexOf("tall") >= 0 ? ch(0x102d) + ch(0x102f)
+                                            : ch(0x102f);
+    glyphs.push({
+      name: "medialRa-myanmar.u" + row[0], cp: null,
+      label: DOTTED + ch(0x103c) + ch(0x102f) + row[2],
+      guide: row[1] + ch(0x103c) + vowel,
+      hint: "RA wrap + U fused (" + row[3] + ") — the sweep shortens and " +
+            "the u bar stands in the opening; draw wrap and bar together",
+      hintMy: "ရရစ် + တစ်ချောင်းငင် ပေါင်းစပ်ပုံစံ (" + row[3] + ") — " +
+              "ရရစ်နှင့် သရတိုင်ကို အတူဆွဲပါ",
+      mark: true, group: "variants"
+    });
+  });
+
+  // Fused ja ligatures (Padauk's uni103B103D / uni103B103E): hook, leg
+  // and the tucked medial woven as one drawing.
+  glyphs.push({
+    name: "medialYa-myanmar.wa", cp: null,
+    label: DOTTED + ch(0x103b) + ch(0x103d),
+    guide: ch(0x1000) + ch(0x103b) + ch(0x103d),
+    hint: "Medial YA + WA fused (ကျွ) — draw hook, leg and the wa as one",
+    hintMy: "ယပင့် + ဝဆွဲ ပေါင်းစပ်ပုံစံ (ကျွ) — တစ်ခုတည်းအဖြစ် ဆွဲပါ",
+    mark: true, group: "variants"
+  });
+  glyphs.push({
+    name: "medialYa-myanmar.ha", cp: null,
+    label: DOTTED + ch(0x103b) + ch(0x103e),
+    guide: ch(0x101c) + ch(0x103b) + ch(0x103e),
+    hint: "Medial YA + HA fused (လျှ) — draw hook, leg and the ha as one",
+    hintMy: "ယပင့် + ဟထိုး ပေါင်းစပ်ပုံစံ (လျှ) — တစ်ခုတည်းအဖြစ် ဆွဲပါ",
+    mark: true, group: "variants"
+  });
+
   glyphs.push({
     name: "na-myanmar.alt", cp: null, label: ch(0x1014), variant: "alt",
     baseVariant: true,

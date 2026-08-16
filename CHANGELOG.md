@@ -31,6 +31,15 @@ versions are git tags with installable font zips on the
   identical cluster structure end to end.
 
 ### Changed
+- **Six traced fused glyphs for the woven clusters** (user-reported
+  rendering quality): overlaying separately-drawn pieces crossed their
+  strokes, so the clusters Padauk hand-fuses are now traced as fused
+  drawings too — the four wrap+u forms (ပြု ကြု မြို ကြို: retracted
+  sweep with the u bar standing in the opening, substituted in two psts
+  steps with an invisible ghost consuming the ု) and the two ja
+  ligatures (ကျွ လျှ: hook, leg and medial as one woven drawing, fused
+  in pres). Editable in the studio like any variant; fonts without them
+  fall back to the previous synthesized forms.
 - **တစ်ချောင်းငင် takes its correct form in every context** (user-reported
   form gap): after ja/wa the vowel is now the tall straight stroke
   standing after the medial (ကျု မွု — Padauk's spacing uni102F), inside

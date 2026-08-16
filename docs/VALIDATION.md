@@ -139,7 +139,8 @@ Padauk and matched (all regression-tested):
 | ကျု ကျူ / မွု (after ja, wa) | tall spacing stroke standing after the medial | `blws` medial_vowels → the `.alt` forms |
 | ရှု (ha directly after a base) | curl beside the hook, ra still swaps to ရ.alt across the ha | ra's own `side_bases_ra` lookup |
 | လျှု ကျှု မွှူ (ha inside a ja/wa cluster) | tall stroke — the medial context fires through the ha | ha absent from the medial_vowels filter |
-| ကြု မြို (u inside a wrap) | straight bar hanging from the wrap's under-sweep | synthesized `u.wrapstroke` mark in `psts` |
+| ကြု မြို (u inside a wrap) | the traced fused wrap+u drawing — retracted sweep, bar in the opening | `psts` two-step fusion (+ invisible ghost); synthesized bar as fallback |
+| ကျွ လျှ | the traced woven ligatures (Padauk's uni103B103D/103E) | `pres` ya_fuse |
 | ကြူ (uu after a wrap) | tall spacing stroke after the cluster | `psts` → `uu.alt` |
 
 The narrow/wide wrap selection was also re-audited letter by letter:

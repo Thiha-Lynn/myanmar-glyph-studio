@@ -35,7 +35,9 @@
   // the base inside the wrap) — mirrors WRAP_SIGNS in json_to_ufo.py
   var WRAP_SIGNS = {
     "medialRa-myanmar": 1, "medialRa-myanmar.wide": 1,
-    "medialRa-myanmar.tall": 1, "medialRa-myanmar.tall.wide": 1
+    "medialRa-myanmar.tall": 1, "medialRa-myanmar.tall.wide": 1,
+    "medialRa-myanmar.u": 1, "medialRa-myanmar.u.wide": 1,
+    "medialRa-myanmar.u.tall": 1, "medialRa-myanmar.u.tall.wide": 1
   };
   var TOP_CLEARANCE = 60;   // ink-to-mark gap above a letter (Padauk: 76)
   var STACK_FLOOR = -50;    // deepest a subjoined letter may hang from
@@ -60,7 +62,9 @@
   function roleFor(meta) {
     if (!meta) return null;
     if (WRAP_SIGNS[meta.name]) return null;
-    if (meta.name === "medialYa-myanmar") return "ya-medial";
+    if (meta.name === "medialYa-myanmar" ||
+        meta.name === "medialYa-myanmar.wa" ||
+        meta.name === "medialYa-myanmar.ha") return "ya-medial";
     if (meta.baseVariant) return "base";  // side-form bases (na-myanmar.alt …)
     if (SPACING_VOWELS[meta.name]) return "spacing-sign";
     if (meta.name === "kinzi-myanmar") return "kinzi";

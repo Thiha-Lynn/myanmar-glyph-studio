@@ -636,6 +636,44 @@ def test_wrap_vowels_take_stroke_and_tall_forms(tmp_path):
     assert "u-myanmar.small" not in fea                   # curls stay out
 
 
+def test_traced_fused_forms_take_over_from_synthesis(tmp_path):
+    """When the traced fused glyphs exist (Padauk's uni103C102F and
+    uni103B103D sets), they replace the synthesized approximations: the
+    wrap+ု pair becomes the fused wrap plus an invisible ghost, and
+    beforewa+wa ligates — one woven drawing instead of crossed strokes."""
+    font, drawn = build(tmp_path, {
+        "ka-myanmar": {"advance": None, "strokes": [BOX]},
+        "medialRa-myanmar": RA_WRAP,
+        "medialRa-myanmar.u": {"advance": 168,
+                               "strokes": [stroke([[94, 850], [620, 850],
+                                                   [620, -380]], 50),
+                                           stroke([[500, -60], [500, -420]],
+                                                  50)]},
+        "medialYa-myanmar": {"advance": 158, "strokes": [YA]},
+        "medialYa-myanmar.wa": {"advance": 158,
+                                "strokes": [YA, WA]},
+        "medialWa-myanmar": {"advance": None, "strokes": [WA]},
+        "u-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, -150], [350, -150]], 40)]},
+    })
+    assert "u-myanmar.ghost" in drawn            # synthesized deletion target
+    assert "u-myanmar.wrapstroke" not in drawn   # fallback stands down
+    g = font["u-myanmar.ghost"]
+    assert g.width == 0 and len(g.contours) == 0
+    fea = font.features.text
+    psts = fea.split("feature psts")[1]
+    assert ("sub medialRa-myanmar' @RA_BASES u-myanmar "
+            "by medialRa-myanmar.u;") in psts
+    assert ("sub @RA_WRAPS_U @RA_BASES u-myanmar' "
+            "by u-myanmar.ghost;") in psts
+    assert ("sub medialYa-myanmar.beforewa medialWa-myanmar "
+            "by medialYa-myanmar.wa;") in fea.split("lookup ya_fuse")[1]
+    # the fused wrap keeps wrap-sign treatment: advance, no re-alignment
+    assert font["medialRa-myanmar.u"].width == 168
+    # …and the ligature carries the ya anchors for rings and chains
+    assert {"side", "top"} <= set(anchors_of(font, "medialYa-myanmar.wa"))
+
+
 def test_ra_side_lookup_sees_through_ha(tmp_path):
     """ရှု: ra swaps to its side form ACROSS the ha (Padauk: ra.alt +
     ha ligature) — its lookup filters to u/uu only, while the shared
