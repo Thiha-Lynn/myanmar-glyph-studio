@@ -38,6 +38,52 @@ Burmese-language hints, tutorials, and videos are as valuable as code —
 font-making education in Burmese barely exists. `web/data/glyphs.js`
 holds every hint string.
 
+## If you have write access
+
+Everything lands through a pull request — `main` is protected and the
+`build` check must pass, so pushing to it directly will be refused. The
+flow is the same as for anyone else, just without the fork:
+
+```bash
+git checkout -b my-change
+# …work…
+git push -u origin my-change
+gh pr create
+```
+
+Run the gates locally first; CI runs the same ones and takes ~2.5 minutes:
+
+```bash
+pip install -e ".[dev]"        # once
+python3 -m pytest pipeline/tests/ -q          # unit + corpus regressions
+mgs-validate projects/*/MyanmarGlyphSans-Regular.ttf   # 1,484-cluster audit
+mgs-validate <font> --corpus pipeline/word_corpus.txt  # 711 real words
+fontbakery check-universal --succinct -l FAIL <font>   # release QA
+```
+
+On a Mac you also get Apple's engine for free — `pytest` runs the
+CoreText/HarfBuzz diff automatically once the shaper is built
+(`pipeline/coretext/README.md`).
+
+**If you change anything in `pipeline/` or a project file, rebuild and
+commit the fonts.** The TTFs in `projects/` are checked in, and the
+corpus tests run against those files, not against a fresh build:
+
+```bash
+python3 pipeline/make_variable.py projects/<family>/<name>.glyphstudio.json build/
+python3 pipeline/postbuild.py build/*.ttf
+cp build/<Family>-{Regular,Light,Bold}.ttf projects/<family>/
+```
+
+Two conventions worth knowing before you touch the shaping code:
+
+* `pipeline/json_to_ufo.py` and `web/js/anchors.js` mirror each other —
+  the studio previews what the pipeline will build. Change both or
+  neither.
+* Calibration values are **measured against Padauk**, not chosen. If you
+  adjust one, say what you measured and how in the commit message; the
+  existing comments show the format.
+
 ## Style consistency: the lead-designer rule
 
 Free-form crowds don't converge on a style, so every font family in

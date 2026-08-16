@@ -1,0 +1,21 @@
+# Review routing. Anyone with write access can open a pull request; this
+# makes sure the maintainer is asked to look at it before it lands.
+#
+# GitHub requests a review from the owners listed here automatically. It
+# does not *require* one — that is a branch-protection setting ("Require
+# a pull request before merging" → "Require approvals"). With more than
+# one person able to push, turning it on is worth it.
+
+# Everything, by default
+*                       @Thiha-Lynn
+
+# The shaping engine and its QA: a wrong change here is invisible until
+# someone reads Burmese on a device, so these want a careful look
+/pipeline/              @Thiha-Lynn
+/projects/              @Thiha-Lynn
+/docs/SHAPING_SPEC.md   @Thiha-Lynn
+/docs/VALIDATION.md     @Thiha-Lynn
+
+# Release and CI plumbing
+/.github/workflows/     @Thiha-Lynn
+/pyproject.toml         @Thiha-Lynn
