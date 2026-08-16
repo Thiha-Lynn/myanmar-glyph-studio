@@ -69,10 +69,28 @@ application and toolchain, not a package on npm/PyPI.
 
 ## Engineering evidence (all public and linkable)
 
-* **Automated quality gates on every push and PR:** unit tests
-  (`pipeline/tests/`), a HarfBuzz shaping regression that fails the build
-  if the reference font drops any glyph, and fontbakery's universal
-  profile gated on FAIL. See the
+* **A written shaping specification, machine-checked.**
+  [`docs/SHAPING_SPEC.md`](SHAPING_SPEC.md) states the model — anchor
+  formulas with coordinates, glyph classes, GSUB order, a 50-unit
+  collision protocol — and `pipeline/validate_spec.py` *measures* a font
+  against it: two corpora, **1,484 synthetic clusters** (every consonant ×
+  vowel × medial, stacks, kinzi, tall-aa, torture text, Mon/Shan/Karen)
+  and **711 real Burmese words covering all 1,213 syllable clusters** in a
+  12,451-word Wiktionary vocabulary. Findings are graded so a malformed
+  test string can never mask a real defect. Results:
+  [`docs/VALIDATION.md`](VALIDATION.md).
+* **Verified on three shaping engines.** HarfBuzz in CI; Chromium/Skia
+  through the browser; and **CoreText automatically** — a Swift shaper
+  diffs Apple's engine against HarfBuzz over the whole corpus and runs as
+  a test on any Mac (`pipeline/coretext/`). Current result: **6,357
+  cluster comparisons, zero rendering differences.** DirectWrite is the
+  one engine left, and the repo ships a
+  [device-test page](https://thiha-lynn.github.io/myanmar-glyph-studio/devicetest.html)
+  that walks a Windows user through it and writes the report.
+* **Automated quality gates on every push and PR:** 62 tests
+  (`pipeline/tests/`), both shaping corpora, a HarfBuzz regression that
+  fails the build if the reference font drops any glyph, and fontbakery's
+  universal profile gated on FAIL. See the
   [Actions tab](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions).
 * **Real font engineering, not a wrapper:** stroke→outline expansion
   mirrored in JS and Python, generated `mym2` feature code, automatic
@@ -82,6 +100,17 @@ application and toolchain, not a package on npm/PyPI.
   skeletonizing Padauk through the same stroke pipeline a human uses —
   it proves stacks, kinzi, medial wraps and mark positioning end to end,
   with a committed proof sheet.
+* **Letterform parity with the reference implementation.** Fifteen fused
+  forms are traced from Padauk and driven by contextual rules, so the
+  clusters Myanmar actually writes as one shape are drawn as one shape —
+  wrap+vowel, wrap+wa, wa+ha, ha+vowel, the ja ligatures and the
+  ja+wa+ha triple. Sixteen reference clusters now match Padauk's shaped
+  structure glyph for glyph, verified by measurement rather than by eye.
+* **Benchmarked, not self-graded.** The same harness run over the fonts
+  the major platforms ship reports findings in each of them — Padauk 7,
+  Noto Sans Myanmar 4, Microsoft's Myanmar Text 7 — while the fonts here
+  clear both corpora at **0 FAIL, 0 WARN in every weight**. The corpus is
+  strict enough to catch real defects in professional fonts.
 * **Community-ready:** Code of Conduct, security policy with private
   reporting, Dependabot (grouped weekly updates), four issue templates
   (bug, shaping report, glyph claim, feature request), PR template,
@@ -89,6 +118,11 @@ application and toolchain, not a package on npm/PyPI.
   CHANGELOG.md, CITATION.cff, per-family OFL compliance, topical labels,
   and tagged releases with installable font zips — GitHub community
   profile at 100%.
+* **Installable software, not a folder of scripts:** `pip install
+  myanmar-glyph-studio` gives ten command-line tools (build, variable
+  build, proof, validate, CoreText diff, kerning, i18n check, …) with
+  PEP 621 metadata and an SPDX licence expression; both corpora ship
+  inside the wheel, so any font anywhere can be audited with one command.
 * **A real editor, not a toy:** the studio ships professional vector
   tools (Bézier pen with permanently editable paths, selection with
   transform handles, node editing, cross-glyph copy/paste, snapping,
@@ -98,8 +132,10 @@ application and toolchain, not a package on npm/PyPI.
 ## How Claude would be used
 
 * Extending shaping coverage to the remaining scripts and features that
-  need expert OpenType work: kerning, GDEF mark classes, Myanmar
-  Extended-C, and per-language shaping tests for Mon/Shan/Karen.
+  need expert OpenType work: GDEF mark classes, Myanmar Extended-C, and
+  per-language shaping tests for Mon/Shan/Karen. (Kerning is done —
+  measured from the drawn outlines, with tabular figures correctly
+  excluded.)
 * Reviewing community font submissions — reading proof sheets and
   fontbakery output to give contributors specific, kind feedback quickly
   (slow first-PR review is the main reason new contributors disappear).
@@ -116,13 +152,15 @@ application and toolchain, not a package on npm/PyPI.
 | Merged PRs from non-owners | `is:pr is:merged -author:Thiha-Lynn` | ‹…› |
 | Stars / forks / watchers | repo header | ‹…› |
 | Fonts published in the gallery | `projects/` | ‹…› |
+| Repository collaborators | Settings → Collaborators | ‹…› |
+| Cluster comparisons passing, 3 engines | `docs/VALIDATION.md` | 6,357 / 6,357 |
 | Release downloads | Releases page | ‹…› |
 | Your own merged PRs to other repos (12 mo) | `is:pr is:merged author:Thiha-Lynn` | ‹…› |
 
 ## Before you submit — strengthen the application
 
-1. ~~**Ship the first release**~~ ✅ Done — v0.1.0, v0.2.0 and v0.3.0 are
-   tagged with installable font zips.
+1. ~~**Ship the first release**~~ ✅ Done — v0.1.0 … v0.4.0 tagged with
+   installable font zips.
 2. **Get external contributors.** The single highest-value action: run a
    glyph drive (see [LAUNCH.md](LAUNCH.md) §5). Even 3–5 merged glyph PRs
    from strangers changes the story from "personal project" to
@@ -133,6 +171,23 @@ application and toolchain, not a package on npm/PyPI.
    real product/site using a font made with the tool, is worth more than
    any adjective in the pitch. (Myanmar Glyph Sans exists but is
    maintainer-made — a font by someone else is the proof.)
+
+   **Write the application from the engineering, not from the counters.**
+   The verifiable claims are the strong part: a written specification a
+   machine checks, two corpora totalling 2,195 clusters, three shaping
+   engines in agreement, parity with the reference implementation
+   measured cluster by cluster, and benchmark numbers that are better
+   than the fonts the major platforms ship. None of that depends on
+   star counts, and a reviewer can reproduce every one of them from a
+   clean checkout in about five minutes.
+
+   Do **not** pad the history to look busier — no synthetic commits, no
+   commits authored under other people's accounts, no issues closed
+   without the work behind them. A reviewer opens Insights first, and
+   manufactured activity is both easy to spot and fatal to the honest
+   case above. The repo's real weakness (young, one maintainer) is one
+   the program explicitly invites you to state plainly; a padded history
+   turns a candid application into a discredited one.
 4. **Be candid about stage.** Say plainly that the project is days old,
    that you built it to fill a gap you personally hit, and what you will
    do with the support. The program explicitly invites this case — the
