@@ -849,3 +849,34 @@ def test_leg_avoidance_moves_bottom_anchor_off_a_right_leg(tmp_path):
     # anchor slides to the nearest band that clears it (leg ink starts 720)
     assert a["bottom"][0] < 700
     assert a["bottom"][1] == -90              # depth clamp still applies
+
+
+def test_kerning_never_touches_tabular_digits(tmp_path):
+    """These fonts draw TABULAR figures — one advance for all ten, so
+    numbers line up in columns. Kerning any pair containing a digit
+    destroys that, and fontbakery fails the font for it. The generator
+    must not offer such a pair in the first place."""
+    import make_kerning
+    assert not any(0x30 <= cp <= 0x39 for cp in
+                   make_kerning.LATIN_UPPER + make_kerning.LATIN_LOWER
+                   + make_kerning.PUNCT)
+
+
+def test_kerning_survives_into_the_ufo(tmp_path):
+    # the project's kerning block is handed to ufo2ft's KernFeatureWriter
+    font, _ = build(tmp_path, {
+        "ka-myanmar": {"advance": None, "strokes": [BOX]},
+        "kha-myanmar": {"advance": None, "strokes": [BOX]},
+    })
+    assert font.kerning == {}          # nothing invented when none is given
+
+    project = {
+        "format": "mm-glyph-studio", "version": 1,
+        "meta": {"fontName": "Kern", "styleName": "Regular", "author": "CI"},
+        "glyphs": {"ka-myanmar": {"advance": None, "strokes": [BOX]},
+                   "kha-myanmar": {"advance": None, "strokes": [BOX]}},
+        "kerning": {"ka-myanmar kha-myanmar": -40},
+    }
+    ufo_path, _ = json_to_ufo.build_ufo(project, tmp_path / "kerned")
+    kerned = ufoLib2.Font.open(ufo_path)
+    assert kerned.kerning[("ka-myanmar", "kha-myanmar")] == -40

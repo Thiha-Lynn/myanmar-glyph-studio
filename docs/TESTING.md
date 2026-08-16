@@ -119,8 +119,7 @@ box, space + no-break space, valid production glyph names
 (`public.postscriptNames`), explicit GDEF classes
 (`public.openTypeCategories`), zero-width non-spacing marks, gasp records,
 and the smart-dropout `prep` program (`pipeline/postbuild.py`). The
-remaining WARNs are honest ones: no kerning pairs yet, and strokes that
-overlap by design (Myanmar letters are built from overlapping circles;
+remaining WARNs are honest ones: strokes that overlap by design (Myanmar letters are built from overlapping circles;
 TrueType's nonzero winding renders them correctly).
 
 CI also renders the proof sheet for every built font and fails if the

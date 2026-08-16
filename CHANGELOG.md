@@ -7,6 +7,22 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
+## [Unreleased]
+
+### Added
+- **Kerning, measured from the drawn outlines** (`mgs-kerning`): the fonts
+  carry full Latin next to Myanmar — Burmese runs with English words in
+  it constantly — and shipped with none, which fontbakery flagged
+  (`lacks-kern-info`). The generator walks both outlines band by band,
+  finds where two letters actually face each other, and compares that
+  with the air a flat-sided control pair (HH) leaves; open shapes get
+  pulled in by the difference. 101 pairs in Myanmar Glyph Sans. Two
+  guards learned the hard way: corrections are scaled by how much of the
+  taller glyph the two actually face (without it a period tucks under a
+  P's bowl), and **digits are excluded** because these figures are
+  tabular and kerning them breaks column alignment. Myanmar itself is
+  never kerned — fixed advances plus mark attachment.
+
 ## [0.4.0] — 2026-08-16
 
 ### Added
