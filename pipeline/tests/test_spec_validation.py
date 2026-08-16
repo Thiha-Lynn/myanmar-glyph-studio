@@ -63,6 +63,52 @@ def test_geometry_helpers():
     assert vs.ink_clearance(a, inner) == 0.0
 
 
+def test_shaping_diff_ignores_engine_quirks_but_not_real_differences():
+    """The cross-engine comparison's exclusions, checked on every platform.
+
+    These are pure functions, so the rules that let CoreText and
+    DirectWrite disagree *harmlessly* with HarfBuzz stay under test on the
+    Linux runner too — where neither engine exists.
+    """
+    import shaping_diff as sd
+
+    ka = ("uni1000", 0.0, 0.0)
+
+    # A blank against .notdef is the two engines saying "this font has no
+    # glyph here" differently. DirectWrite blanks it, HarfBuzz boxes it.
+    assert sd.compare([ka, ("space", 500.0, 0.0)],
+                      [ka, (".notdef", 500.0, 0.0)], 12) == []
+    # ...but a blank where HarfBuzz drew real ink means Windows would DROP
+    # ink this font draws. That has to stay reportable.
+    assert sd.compare([ka, ("space", 500.0, 0.0)],
+                      [ka, ("uni103C", 500.0, 0.0)], 12)
+
+    # Marks reordered by one engine but landing in the same place: the
+    # picture is identical, so it is not a difference.
+    assert sd.compare([ka, ("dot", 100.0, 50.0), ("asat", 100.0, 800.0)],
+                      [ka, ("asat", 100.0, 800.0), ("dot", 100.0, 50.0)],
+                      12) == []
+    # Reordered AND moved is a difference.
+    assert sd.compare([ka, ("dot", 100.0, 50.0), ("asat", 100.0, 800.0)],
+                      [ka, ("asat", 100.0, 800.0), ("dot", 100.0, -400.0)],
+                      12)
+
+    # Same glyphs, one of them displaced past the tolerance.
+    assert sd.compare([ka, ("dot", 100.0, 50.0)],
+                      [ka, ("dot", 100.0, -300.0)], 12)
+    # Within tolerance is agreement.
+    assert sd.compare([ka, ("dot", 100.0, 50.0)],
+                      [ka, ("dot", 100.0, 44.0)], 12) == []
+
+    # A dotted circle means both engines are repairing malformed input.
+    assert sd.compare([ka, ("uni25CC", 100.0, 0.0)],
+                      [("uni25CC", 0.0, 0.0), ka], 12) == []
+
+    # CoreText substituting another font for a gap the font declares.
+    assert sd.compare([ka, ("<fallback:Helvetica>", 500.0, 0.0)],
+                      [ka, (".notdef", 500.0, 0.0)], 12) == []
+
+
 def _cross_engine_check(engine, system, shaper, checker, hint):
     """Run one platform engine against HarfBuzz over both corpora.
 

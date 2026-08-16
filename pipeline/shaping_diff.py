@@ -36,6 +36,14 @@ import sys
 
 FALLBACK_PREFIX = "<fallback:"
 
+# What an engine draws for a character the font does not cover. HarfBuzz,
+# having no fallback of its own, emits `.notdef` — the missing-glyph box.
+# DirectWrite's analyzer emits the font's BLANK instead: at that layer it
+# assumes the layout above it has already picked a font that has the
+# character, so it does not draw a box. (CoreText takes a third route and
+# substitutes another font outright; that is FALLBACK_PREFIX above.)
+BLANK_NAMES = frozenset({".notdef", "space", "uni0020", "nbspace", "uni00A0"})
+
 
 def use_utf8_stdout():
     """Make it safe to print Myanmar text on any console.
@@ -121,6 +129,18 @@ def compare(engine_run, hb_run, tolerance, engine="the platform engine"):
         return problems
 
     if eng_names != hb_names:
+        # Blank against .notdef, position for position, is the two engines
+        # SAYING "no glyph here" differently — the font declares the gap
+        # and both honour it. Gated on HarfBuzz's `.notdef` on purpose: a
+        # blank where HarfBuzz found a real glyph would mean Windows drops
+        # ink this font draws, which is a bug and stays reportable.
+        if len(eng_names) == len(hb_names):
+            differing = [(e, h) for e, h in zip(eng_names, hb_names)
+                         if e != h]
+            if differing and all(h == ".notdef" and e in BLANK_NAMES
+                                 for e, h in differing):
+                return []
+
         # Same glyphs in a different ORDER is usually not a rendering
         # difference: HarfBuzz's Myanmar shaper reorders marks into its
         # canonical order (the tone dot before the asat), a platform engine
