@@ -674,6 +674,59 @@ def test_traced_fused_forms_take_over_from_synthesis(tmp_path):
     assert {"side", "top"} <= set(anchors_of(font, "medialYa-myanmar.wa"))
 
 
+def test_medial_fusion_cascade_order(tmp_path):
+    """The fusions must chain in one order or they land on the wrong
+    ligature: wa+ha first (so ကျွှ reads as ja + one hook, and ကြွှ keeps
+    the plain wrap Padauk uses), then the ja fusion, then ha+vowel — which
+    must come last so လျှု fuses ja+ha and keeps its tall vowel instead of
+    pairing the ha with the u (Padauk: uni103B103E + uni102F)."""
+    font, _ = build(tmp_path, {
+        "ka-myanmar": {"advance": None, "strokes": [BOX]},
+        "medialYa-myanmar": {"advance": 158, "strokes": [YA]},
+        "medialWa-myanmar": {"advance": None, "strokes": [WA]},
+        "medialHa-myanmar": {"advance": None, "strokes": [HA]},
+        "medialWa-myanmar.ha": {"advance": None, "strokes": [WA, HA]},
+        "medialYa-myanmar.wa": {"advance": 158, "strokes": [YA, WA]},
+        "medialYa-myanmar.waha": {"advance": 158, "strokes": [YA, WA, HA]},
+        "medialHa-myanmar.u": {"advance": None,
+                               "strokes": [HA, stroke([[250, -150],
+                                                       [350, -150]], 40)]},
+        "u-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, -150], [350, -150]], 40)]},
+    })
+    fea = font.features.text
+    order = [fea.index(f"lookup {n}") for n in ("wa_fuse", "ya_fuse", "ha_fuse")]
+    assert order == sorted(order), "fusion lookups out of cascade order"
+    assert ("sub medialWa-myanmar medialHa-myanmar by medialWa-myanmar.ha;"
+            in fea)
+    # the triple: ja + the already-fused hook
+    assert ("sub medialYa-myanmar.beforewa medialWa-myanmar.ha "
+            "by medialYa-myanmar.waha;") in fea
+    assert "sub medialHa-myanmar u-myanmar by medialHa-myanmar.u;" in fea
+
+
+def test_fused_hook_triggers_the_side_form_base(tmp_path):
+    """ရွှ ညွှန်း: Padauk swaps the leg-free base in front of the FUSED
+    wa+ha hook, though plain ရွ and ရှ stay as they are — the split is
+    per trigger, and the fused pair is a trigger of its own."""
+    deep = stroke([[250, 550], [250, -360]])
+    font, _ = build(tmp_path, {
+        "ra-myanmar": {"advance": None, "strokes": [deep]},
+        "ra-myanmar.alt": {"advance": None,
+                           "strokes": [stroke([[250, 550], [250, -40]])]},
+        "medialWa-myanmar": {"advance": None, "strokes": [WA]},
+        "medialHa-myanmar": {"advance": None, "strokes": [HA]},
+        "medialWa-myanmar.ha": {"advance": None, "strokes": [WA, HA]},
+        "u-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, -150], [350, -150]], 40)]},
+    })
+    ra = font.features.text.split("lookup side_bases_ra")[1]
+    ra = ra.split("} side_bases_ra")[0]
+    assert "medialWa-myanmar.ha" in ra      # ရွှ swaps
+    assert "medialWa-myanmar]" not in ra    # …but plain ရွ does not
+    assert "medialHa-myanmar]" not in ra    # …nor plain ရှ
+
+
 def test_ra_side_lookup_sees_through_ha(tmp_path):
     """ရှု: ra swaps to its side form ACROSS the ha (Padauk: ra.alt +
     ha ligature) — its lookup filters to u/uu only, while the shared

@@ -121,6 +121,10 @@ TOP_MARKS = {
 BOTTOM_MARKS = {
     "u-myanmar", "uu-myanmar", "dotBelow-myanmar",
     "medialWa-myanmar", "medialHa-myanmar",
+    # fused below-medial pairs (Padauk uni103D103E / uni103E102F /
+    # uni103E1030): one drawn hook where chaining showed two marks
+    "medialWa-myanmar.ha", "medialWa-myanmar.ha.small",
+    "medialHa-myanmar.u", "medialHa-myanmar.uu",
 }
 # The long u/uu forms drawn for stacked clusters (စက္ကူ) are not below-marks
 # at all: they are as tall as the letter body and belong BESIDE the cluster,
@@ -151,7 +155,11 @@ WRAP_SIGNS = {"medialRa-myanmar", "medialRa-myanmar.wide",
               # fused wrap+u forms (Padauk's uni103C102F set): the sweep
               # retracts and the u bar stands in the opening — one drawing
               "medialRa-myanmar.u", "medialRa-myanmar.u.wide",
-              "medialRa-myanmar.u.tall", "medialRa-myanmar.u.tall.wide"}
+              "medialRa-myanmar.u.tall", "medialRa-myanmar.u.tall.wide",
+              # …and the fused wrap+wa set (Padauk's uni103C103D): the wa
+              # nests inside the sweep instead of sitting on its stroke
+              "medialRa-myanmar.wa", "medialRa-myanmar.wa.wide",
+              "medialRa-myanmar.wa.tall", "medialRa-myanmar.wa.tall.wide"}
 # fraction of the wrap's ink width that sits left of the base — only used
 # when a project supplies no advance; reproduces Padauk's proportion
 WRAP_ADVANCE_RATIO = 0.30
@@ -977,22 +985,26 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
     # attachment anchor plants it WRAPSTROKE_DX right of the base's bottom
     # anchor — which lands it at the base's right bowl edge (Padauk's spot)
     # for narrow and wide bases alike.
-    fused_wraps = [n for n in ("medialRa-myanmar.u", "medialRa-myanmar.u.wide",
-                               "medialRa-myanmar.u.tall",
-                               "medialRa-myanmar.u.tall.wide") if n in drawn]
-    if fused_wraps and "u-myanmar" in drawn:
-        # The wrap+u fusion consumes the ု character: the wrap glyph is
-        # swapped for its fused form and the vowel becomes this invisible
-        # zero-width mark (same trick as the synthesized empty virama).
-        # It carries the chain anchors so မြို့'s tone dot still lands
-        # beside the fused bar instead of under the base.
-        g = font.newGlyph("u-myanmar.ghost")
-        g.width = 0
-        add_anchor(g, "_bottom", 0, -40)
-        add_anchor(g, "side", 220, -95)
-        categories["u-myanmar.ghost"] = "mark"
-        drawn.append("u-myanmar.ghost")
-    if (not fused_wraps and "medialRa-myanmar" in drawn
+    # A wrap fusion consumes its mark's character: the wrap glyph swaps to
+    # the fused drawing and the mark becomes an invisible zero-width glyph
+    # (the same trick as the synthesized empty virama). The ghost keeps the
+    # chain anchors, so မြို့'s tone dot still lands beside the fused bar
+    # instead of under the base.
+    fused_marks = {}          # mark name -> [fused wrap glyphs drawn]
+    for mark, suffix in (("u-myanmar", "u"), ("medialWa-myanmar", "wa")):
+        forms = [f"medialRa-myanmar.{suffix}{v}"
+                 for v in ("", ".wide", ".tall", ".tall.wide")]
+        present = [f for f in forms if f in drawn]
+        if present and mark in drawn:
+            fused_marks[mark] = present
+            ghost = f"{mark}.ghost"
+            g = font.newGlyph(ghost)
+            g.width = 0
+            add_anchor(g, "_bottom", 0, -40)
+            add_anchor(g, "side", 220, -95)
+            categories[ghost] = "mark"
+            drawn.append(ghost)
+    if ("u-myanmar" not in fused_marks and "medialRa-myanmar" in drawn
             and "u-myanmar" in drawn):
         vname = "u-myanmar.wrapstroke"
         g = font.newGlyph(vname)
@@ -1191,12 +1203,28 @@ def generate_features(drawn, wide_bases=None, bases=None):
             f"    sub medialYa-myanmar' [{' '.join(ya_targets)}] "
             "by medialYa-myanmar.beforewa;",
             "  } ya_tuck;"])
+    # Below-medial fusion runs BEFORE the ja fusion so the cascade lands on
+    # the right ligature: wa+ha becomes one hook, and ကျွှ then reads as
+    # ja + that hook (Padauk's triple uni103B103D103E). It also keeps the
+    # wrap+wa fusion from firing on ကြွှ — by then the wa is consumed, so
+    # မြွှေ stays plain-wrap + the small fused hook, exactly as Padauk
+    # draws it.
+    wa_ha = ("medialWa-myanmar.ha" in drawn and "medialWa-myanmar" in drawn
+             and "medialHa-myanmar" in drawn)
+    if wa_ha:
+        pres_lookups.append([
+            "  lookup wa_fuse {",
+            "    lookupflag 0;",
+            "    sub medialWa-myanmar medialHa-myanmar "
+            "by medialWa-myanmar.ha;",
+            "  } wa_fuse;"])
     # …then fuse the pair into the traced ligature where one is drawn:
     # the hook, leg and tucked medial are one woven drawing (Padauk's
     # uni103B103D / uni103B103E) — overlaying the separate pieces
     # crosses their strokes (ကျွ လျှ).
     ya_ligs = [(m, f"medialYa-myanmar.{s}")
-               for m, s in (("medialWa-myanmar", "wa"),
+               for m, s in (("medialWa-myanmar.ha", "waha"),
+                            ("medialWa-myanmar", "wa"),
                             ("medialHa-myanmar", "ha"))
                if f"medialYa-myanmar.{s}" in drawn and m in drawn]
     if "medialYa-myanmar.beforewa" in drawn and ya_ligs:
@@ -1205,6 +1233,15 @@ def generate_features(drawn, wide_bases=None, bases=None):
             block.append(
                 f"    sub medialYa-myanmar.beforewa {m} by {lig};")
         block.append("  } ya_fuse;")
+        pres_lookups.append(block)
+    ha_ligs = [(v, f"medialHa-myanmar.{s}")
+               for v, s in (("u-myanmar", "u"), ("uu-myanmar", "uu"))
+               if f"medialHa-myanmar.{s}" in drawn and v in drawn]
+    if "medialHa-myanmar" in drawn and ha_ligs:
+        block = ["  lookup ha_fuse {", "    lookupflag 0;"]
+        for vowel, lig in ha_ligs:
+            block.append(f"    sub medialHa-myanmar {vowel} by {lig};")
+        block.append("  } ha_fuse;")
         pres_lookups.append(block)
     if pres_lookups:
         lines.append("feature pres {")
@@ -1252,11 +1289,14 @@ def generate_features(drawn, wide_bases=None, bases=None):
     # visible (နှ swaps ON the ha itself), which would block ရှု.
     side_specs = (
         ("na-myanmar", ("u-myanmar", "uu-myanmar", "medialWa-myanmar",
-                        "medialHa-myanmar", "medialYa-myanmar",
-                        "medialYa-myanmar.beforewa") + stack_trigs, "na"),
+                        "medialHa-myanmar", "medialWa-myanmar.ha",
+                        "medialYa-myanmar", "medialYa-myanmar.beforewa")
+         + stack_trigs, "na"),
         ("nnya-myanmar", ("u-myanmar", "uu-myanmar", "medialWa-myanmar",
-                          "medialHa-myanmar") + stack_trigs, "na"),
-        ("ra-myanmar", ("u-myanmar", "uu-myanmar"), "ra"),
+                          "medialHa-myanmar", "medialWa-myanmar.ha")
+         + stack_trigs, "na"),
+        ("ra-myanmar", ("u-myanmar", "uu-myanmar", "medialWa-myanmar.ha",
+                        "medialHa-myanmar.u", "medialHa-myanmar.uu"), "ra"),
     )
     side_rules = []
     side_filter = set()
@@ -1354,32 +1394,45 @@ def generate_features(drawn, wide_bases=None, bases=None):
     # cluster (Padauk တြူ). The filtering set makes intervening other
     # marks (ကြို's i) invisible to the context while keeping the
     # below-marks themselves visible.
+    # A mark whose fused wrap form is drawn (wa) is folded into the wrap
+    # glyph below; only the ones still positioned on top of it (ha) need
+    # the in-wrap .small copy.
+    FUSED_WRAP_FORM = {"medialWa-myanmar": "medialRa-myanmar.wa",
+                       "u-myanmar": "medialRa-myanmar.u"}
     smalls = [(n, f"{n}.small")
-              for n in ("medialWa-myanmar", "medialHa-myanmar")
-              if f"{n}.small" in drawn and n in drawn]
+              for n in ("medialWa-myanmar.ha", "medialWa-myanmar",
+                        "medialHa-myanmar")
+              if f"{n}.small" in drawn and n in drawn
+              and FUSED_WRAP_FORM.get(n) not in drawn]
     ra_cls = [n for n in ("medialRa-myanmar", "medialRa-myanmar.wide",
                           "medialRa-myanmar.tall",
                           "medialRa-myanmar.tall.wide")
               if n in drawn]
-    # fused wrap+u pairs: (plain wrap, its traced fused form)
-    fused_pairs = [(w, f"medialRa-myanmar.u{sfx}") for w, sfx in
-                   (("medialRa-myanmar", ""),
-                    ("medialRa-myanmar.wide", ".wide"),
-                    ("medialRa-myanmar.tall", ".tall"),
-                    ("medialRa-myanmar.tall.wide", ".tall.wide"))
-                   if w in drawn and f"medialRa-myanmar.u{sfx}" in drawn]
-    wrap_fused = (fused_pairs and "u-myanmar.ghost" in drawn
-                  and "u-myanmar" in drawn)
-    wrap_u = (not wrap_fused and "u-myanmar.wrapstroke" in drawn
-              and "u-myanmar" in drawn)
+    # Fused wrap+mark sets: {mark: [(plain wrap, its traced fused form)]}.
+    # Each mark that has a full fused set is folded into the wrap glyph
+    # instead of being positioned on top of it.
+    fused_sets = {}
+    for mark, suffix in (("u-myanmar", "u"), ("medialWa-myanmar", "wa")):
+        pairs = [(w, f"medialRa-myanmar.{suffix}{sfx}") for w, sfx in
+                 (("medialRa-myanmar", ""),
+                  ("medialRa-myanmar.wide", ".wide"),
+                  ("medialRa-myanmar.tall", ".tall"),
+                  ("medialRa-myanmar.tall.wide", ".tall.wide"))
+                 if w in drawn and f"medialRa-myanmar.{suffix}{sfx}" in drawn]
+        if pairs and mark in drawn and f"{mark}.ghost" in drawn:
+            fused_sets[mark] = pairs
+    wrap_fused = bool(fused_sets)
+    wrap_u = ("u-myanmar" not in fused_sets
+              and "u-myanmar.wrapstroke" in drawn and "u-myanmar" in drawn)
     wrap_uu = ("uu-myanmar.alt" in drawn and "uu-myanmar" in drawn)
     if (smalls or wrap_fused or wrap_u or wrap_uu) and ra_cls and base_cls:
         lines.append(f"@RA_WRAPS = [{' '.join(ra_cls)}];")
         lines.append(f"@RA_BASES = [{' '.join(base_cls)}];")
         lines.append("feature psts {")
         filter_set = [n for n, _ in smalls] + [v for _, v in smalls]
-        if wrap_u or wrap_fused:
+        if wrap_u:
             filter_set.append("u-myanmar")
+        filter_set.extend(fused_sets)
         if wrap_uu:
             filter_set.append("uu-myanmar")
         lines.append(
@@ -1392,16 +1445,15 @@ def generate_features(drawn, wide_bases=None, bases=None):
             for n, v in smalls:
                 lines.append(
                     f"  sub @RA_WRAPS @RA_BASES @BELOW_SMALLS {n}' by {v};")
-        if wrap_fused:
-            # feaLib allows one marked run per rule, so the fusion is two
-            # steps: the wrap swaps to its fused form in front of the ု,
-            # then the ု behind an already-fused wrap becomes the ghost
-            lines.append(
-                f"@RA_WRAPS_U = [{' '.join(f for _, f in fused_pairs)}];")
-            for w, fused in fused_pairs:
-                lines.append(f"  sub {w}' @RA_BASES u-myanmar by {fused};")
-            lines.append("  sub @RA_WRAPS_U @RA_BASES u-myanmar' "
-                         "by u-myanmar.ghost;")
+        # feaLib allows one marked run per rule, so each fusion is two
+        # steps: the wrap swaps to its fused form in front of the mark,
+        # then the mark behind an already-fused wrap becomes the ghost.
+        for mark, pairs in fused_sets.items():
+            cls = f"@RA_WRAPS_{mark.split('-')[0].upper()}"
+            lines.append(f"{cls} = [{' '.join(f for _, f in pairs)}];")
+            for w, fused in pairs:
+                lines.append(f"  sub {w}' @RA_BASES {mark} by {fused};")
+            lines.append(f"  sub {cls} @RA_BASES {mark}' by {mark}.ghost;")
         if wrap_u:
             lines.append("  sub @RA_WRAPS @RA_BASES u-myanmar' "
                          "by u-myanmar.wrapstroke;")

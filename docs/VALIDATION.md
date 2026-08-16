@@ -140,7 +140,10 @@ Padauk and matched (all regression-tested):
 | ရှု (ha directly after a base) | curl beside the hook, ra still swaps to ရ.alt across the ha | ra's own `side_bases_ra` lookup |
 | လျှု ကျှု မွှူ (ha inside a ja/wa cluster) | tall stroke — the medial context fires through the ha | ha absent from the medial_vowels filter |
 | ကြု မြို (u inside a wrap) | the traced fused wrap+u drawing — retracted sweep, bar in the opening | `psts` two-step fusion (+ invisible ghost); synthesized bar as fallback |
-| ကျွ လျှ | the traced woven ligatures (Padauk's uni103B103D/103E) | `pres` ya_fuse |
+| ကျွ လျှ ကျွှ | the traced woven ligatures (Padauk's uni103B103D / 103E / 103D103E) | `pres` ya_fuse |
+| ကွှ ရွှ ရှု ရှူ | one fused hook per pair (uni103D103E, uni103E102F, uni103E1030) | `pres` wa_fuse / ha_fuse |
+| ကြွ ပြွ ကြွီ | the wa nested inside the wrap's sweep (uni103C103D set) | `psts` wrap fusion + ghost |
+| ကြွှ မြွှေ | plain wrap + the small fused hook — Padauk's own choice when both medials are present | the wa_fuse cascade keeps the wrap fusion off |
 | ကြူ (uu after a wrap) | tall spacing stroke after the cluster | `psts` → `uu.alt` |
 
 The narrow/wide wrap selection was also re-audited letter by letter:

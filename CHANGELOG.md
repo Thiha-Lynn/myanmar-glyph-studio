@@ -31,6 +31,17 @@ versions are git tags with installable font zips on the
   identical cluster structure end to end.
 
 ### Changed
+- **The Padauk medial fusion set is complete**: nine more traced fused
+  glyphs finish the job the previous six started — the wrap+wa set
+  (ကြွ ပြွ ကြွီ, `uni103C103D`, the wa nested inside the sweep instead of
+  drawn on top of it), the wa+ha hook and its in-wrap copy (ကွှ ရွှ လွှ
+  ညွှန်း ရွှံ့ / မြွှေ ကြွှ, `uni103D103E`), ha+vowel (ရှု ရှူ,
+  `uni103E102F` / `uni103E1030`) and the ja+wa+ha triple (ကျွှ,
+  `uni103B103D103E`). The three fusion lookups cascade in a fixed order —
+  wa+ha, then ja, then ha+vowel — which is what makes ကြွှ keep Padauk's
+  plain wrap and လျှု keep its tall vowel; the side-form base swap now
+  also fires in front of the fused hook (ရွှ ညွှန်း ရွှံ့). Sixteen
+  reference clusters now match Padauk's structure glyph for glyph.
 - **Six traced fused glyphs for the woven clusters** (user-reported
   rendering quality): overlaying separately-drawn pieces crossed their
   strokes, so the clusters Padauk hand-fuses are now traced as fused

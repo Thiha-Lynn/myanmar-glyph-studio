@@ -23,7 +23,10 @@
   };
   var BOTTOM_MARKS = {
     "u-myanmar": 1, "uu-myanmar": 1, "dotBelow-myanmar": 1,
-    "medialWa-myanmar": 1, "medialHa-myanmar": 1
+    "medialWa-myanmar": 1, "medialHa-myanmar": 1,
+    // fused below-medial pairs: one drawn hook, anchored like one mark
+    "medialWa-myanmar.ha": 1, "medialWa-myanmar.ha.small": 1,
+    "medialHa-myanmar.u": 1, "medialHa-myanmar.uu": 1
   };
   // The long u/uu forms used under stacks (စက္ကူ) are body-height glyphs
   // that stand BESIDE the cluster, the way Padauk's spacing uni1030 does —
@@ -37,7 +40,9 @@
     "medialRa-myanmar": 1, "medialRa-myanmar.wide": 1,
     "medialRa-myanmar.tall": 1, "medialRa-myanmar.tall.wide": 1,
     "medialRa-myanmar.u": 1, "medialRa-myanmar.u.wide": 1,
-    "medialRa-myanmar.u.tall": 1, "medialRa-myanmar.u.tall.wide": 1
+    "medialRa-myanmar.u.tall": 1, "medialRa-myanmar.u.tall.wide": 1,
+    "medialRa-myanmar.wa": 1, "medialRa-myanmar.wa.wide": 1,
+    "medialRa-myanmar.wa.tall": 1, "medialRa-myanmar.wa.tall.wide": 1
   };
   var TOP_CLEARANCE = 60;   // ink-to-mark gap above a letter (Padauk: 76)
   var STACK_FLOOR = -50;    // deepest a subjoined letter may hang from
@@ -64,7 +69,8 @@
     if (WRAP_SIGNS[meta.name]) return null;
     if (meta.name === "medialYa-myanmar" ||
         meta.name === "medialYa-myanmar.wa" ||
-        meta.name === "medialYa-myanmar.ha") return "ya-medial";
+        meta.name === "medialYa-myanmar.ha" ||
+        meta.name === "medialYa-myanmar.waha") return "ya-medial";
     if (meta.baseVariant) return "base";  // side-form bases (na-myanmar.alt …)
     if (SPACING_VOWELS[meta.name]) return "spacing-sign";
     if (meta.name === "kinzi-myanmar") return "kinzi";
