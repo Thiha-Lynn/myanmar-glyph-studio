@@ -1,0 +1,91 @@
+# Packaging for the Myanmar Glyph Studio font pipeline.
+#
+# The studio itself (web/) is a static site with no build step — open
+# index.html and draw. This package is the other half: the toolchain that
+# turns a saved project file into a shaping-capable OpenType font, plus
+# the QA tools that prove the shaping is right.
+#
+#   pip install myanmar-glyph-studio        # from PyPI
+#   pip install .                           # from a clone
+#   pip install -e ".[dev]"                 # for development
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "myanmar-glyph-studio"
+version = "0.4.0"
+description = "Draw Myanmar fonts in the browser; build them into shaping-capable OpenType with generated mym2 GSUB/GPOS."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE", "NOTICE.md"]
+keywords = [
+    "myanmar", "burmese", "font", "opentype", "harfbuzz", "shaping",
+    "mym2", "complex-script", "typography", "ufo", "fontmake",
+]
+authors = [{ name = "Myanmar Glyph Studio contributors" }]
+maintainers = [{ name = "SHINN THANT" }]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    # no License classifier: superseded by the SPDX expression above (PEP 639)
+    "Natural Language :: Burmese",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Text Processing :: Fonts",
+]
+dependencies = [
+    "ufoLib2>=0.18.1",
+    "fonttools>=4.63.0",
+    "fontmake>=3.12.1",
+    "skia-pathops>=0.9.2",
+    "uharfbuzz>=0.56.0",
+    "brotli>=1.2.0",
+]
+
+[project.optional-dependencies]
+# proof sheets and the sample-font tracer need a rasterizer
+proof = ["pillow>=12.3.0"]
+# everything CI runs
+dev = [
+    "pillow>=12.3.0",
+    "fontbakery>=1.1.0",
+    "pytest>=9.1.1",
+]
+
+[project.urls]
+Homepage = "https://thiha-lynn.github.io/myanmar-glyph-studio/"
+Studio = "https://thiha-lynn.github.io/myanmar-glyph-studio/"
+Gallery = "https://thiha-lynn.github.io/myanmar-glyph-studio/gallery.html"
+Repository = "https://github.com/Thiha-Lynn/myanmar-glyph-studio"
+Issues = "https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues"
+Changelog = "https://github.com/Thiha-Lynn/myanmar-glyph-studio/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/Thiha-Lynn/myanmar-glyph-studio/tree/main/docs"
+
+[project.scripts]
+mgs-build = "myanmar_glyph_studio.json_to_ufo:main"
+mgs-variable = "myanmar_glyph_studio.make_variable:main"
+mgs-proof = "myanmar_glyph_studio.proof:main"
+mgs-validate = "myanmar_glyph_studio.validate_spec:main"
+mgs-sample = "myanmar_glyph_studio.make_sample:main"
+mgs-gallery = "myanmar_glyph_studio.make_gallery:main"
+mgs-inventory = "myanmar_glyph_studio.gen_inventory:main"
+mgs-postbuild = "myanmar_glyph_studio.postbuild:main"
+mgs-i18n-check = "myanmar_glyph_studio.i18n_check:main"
+
+# The modules live in pipeline/ so that the documented, clone-and-run
+# workflow (python3 pipeline/json_to_ufo.py …) keeps working unchanged;
+# this maps that directory onto the installed package name.
+[tool.setuptools]
+package-dir = { myanmar_glyph_studio = "pipeline" }
+packages = ["myanmar_glyph_studio"]
+
+[tool.setuptools.package-data]
+myanmar_glyph_studio = ["*.txt"]
+
+[tool.pytest.ini_options]
+testpaths = ["pipeline/tests"]

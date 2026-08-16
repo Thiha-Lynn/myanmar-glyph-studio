@@ -33,8 +33,9 @@ try:
 except ImportError:
     sys.exit("fontTools is required:  pip install -r requirements.txt")
 
-import json_to_ufo
-from json_to_ufo import RIBBI_STYLES
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import json_to_ufo  # noqa: E402  (path shim above: see module docstring)
+from json_to_ufo import RIBBI_STYLES  # noqa: E402
 
 # weight class -> style name for the usual stops
 STYLE_NAMES = {
