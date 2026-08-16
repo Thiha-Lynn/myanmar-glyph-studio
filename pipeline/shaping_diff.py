@@ -32,7 +32,25 @@ What this deliberately does NOT report, because none of it is a font bug:
   `.notdef`. That is a coverage gap this font already declares.
 """
 
+import sys
+
 FALLBACK_PREFIX = "<fallback:"
+
+
+def use_utf8_stdout():
+    """Make it safe to print Myanmar text on any console.
+
+    A Windows console is cp1252 by default, so the first cluster this
+    report tries to print raises UnicodeEncodeError and the run dies
+    before saying what it found — which is exactly when the output
+    matters. Replace what a terminal genuinely cannot draw; never crash
+    on it.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):        # not a reconfigurable
+            pass                                    # text stream; leave it
 
 
 def harfbuzz_runs(font, texts):
@@ -140,6 +158,7 @@ def compare(engine_run, hb_run, tolerance, engine="the platform engine"):
 def report(engine, font, texts, engine_runs, hb_runs, tolerance,
            verbose=False):
     """Print every disagreement and the tally. Returns a process exit code."""
+    use_utf8_stdout()
     disagreements = 0
     checked = 0
     for text in texts:
