@@ -1,0 +1,10 @@
+[console_scripts]
+mgs-build = myanmar_glyph_studio.json_to_ufo:main
+mgs-gallery = myanmar_glyph_studio.make_gallery:main
+mgs-i18n-check = myanmar_glyph_studio.i18n_check:main
+mgs-inventory = myanmar_glyph_studio.gen_inventory:main
+mgs-postbuild = myanmar_glyph_studio.postbuild:main
+mgs-proof = myanmar_glyph_studio.proof:main
+mgs-sample = myanmar_glyph_studio.make_sample:main
+mgs-validate = myanmar_glyph_studio.validate_spec:main
+mgs-variable = myanmar_glyph_studio.make_variable:main

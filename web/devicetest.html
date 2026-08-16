@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Device shaping test · Myanmar Glyph Studio</title>
+<meta name="description" content="Check how a Myanmar font renders on your
+device: every tricky cluster, what correct looks like, and a ready-made
+report you can paste into an issue.">
+<link rel="icon" href="icons/icon.svg">
+<style>
+  :root {
+    --bg: #14100f; --panel: #1e1917; --ink: #f3ece8; --dim: #a9998f;
+    --line: #3a302c; --accent: #e0674f; --ok: #6fbf73; --bad: #e2564a;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#fbf7f4; --panel:#fff; --ink:#231b17; --dim:#6d5c53;
+            --line:#e3d8d1; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header, main, footer { max-width: 60rem; margin: 0 auto; padding: 1rem; }
+  h1 { font-size: 1.5rem; margin: .2rem 0; }
+  h2 { font-size: 1.1rem; margin: 2rem 0 .5rem; }
+  p.lede { color: var(--dim); margin-top: .3rem; }
+  .bar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center;
+         background: var(--panel); border: 1px solid var(--line);
+         border-radius: .6rem; padding: .7rem; margin: 1rem 0; }
+  label { color: var(--dim); font-size: .85rem; }
+  select, input[type=range], button, textarea {
+    font: inherit; color: var(--ink); background: var(--bg);
+    border: 1px solid var(--line); border-radius: .4rem; padding: .35rem .5rem;
+  }
+  button { cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent);
+                   color: #fff; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border-bottom: 1px solid var(--line); padding: .55rem .4rem;
+           text-align: left; vertical-align: middle; }
+  th { color: var(--dim); font-size: .78rem; text-transform: uppercase;
+       letter-spacing: .04em; font-weight: 600; }
+  .sample { font-size: var(--sample, 40px); line-height: 1.9;
+            font-family: var(--face, "Padauk"), "Myanmar Text", "Noto Sans Myanmar",
+                         "Myanmar MN", sans-serif; }
+  .look { color: var(--dim); font-size: .85rem; max-width: 22rem; }
+  .verdict { display: flex; gap: .25rem; }
+  .verdict button { padding: .25rem .5rem; font-size: .9rem; opacity: .55; }
+  .verdict button[aria-pressed=true] { opacity: 1; border-color: currentColor; }
+  .verdict .y { color: var(--ok); } .verdict .n { color: var(--bad); }
+  textarea { width: 100%; min-height: 12rem; font-family: ui-monospace,
+             SFMono-Regular, Menlo, monospace; font-size: .8rem; }
+  code { background: var(--panel); padding: .1rem .3rem; border-radius: .25rem; }
+  a { color: var(--accent); }
+
+  /* Phones are the point of this page — most testers are on one. Below
+     the table's natural width the rows become cards so the sample and
+     its ✓/✗ buttons stay reachable without sideways scrolling. */
+  @media (max-width: 46rem) {
+    thead { position: absolute; left: -9999px; }
+    tr { display: grid; grid-template-columns: 1fr auto; gap: .3rem .6rem;
+         align-items: center; background: var(--panel);
+         border: 1px solid var(--line); border-radius: .6rem;
+         padding: .7rem; margin-bottom: .7rem; }
+    td { border: 0; padding: 0; }
+    td:nth-child(1) { grid-column: 1; font-size: .8rem; }
+    td:nth-child(4) { grid-column: 2; grid-row: 1 / span 2; }
+    td.sample { grid-column: 1 / -1; }
+    td.look { grid-column: 1 / -1; max-width: none; }
+  }
+  .note { background: var(--panel); border-left: 3px solid var(--accent);
+          padding: .6rem .8rem; border-radius: 0 .4rem .4rem 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Device shaping test</h1>
+  <p class="lede">Our CI checks Myanmar shaping with HarfBuzz — the engine
+  Android, Chrome and Linux use. <strong>Windows (DirectWrite) and Apple
+  (CoreText) can disagree, and only real devices reveal it.</strong> This
+  page renders every cluster that has ever broken, tells you what correct
+  looks like, and writes the report for you.</p>
+</header>
+
+<main>
+  <div class="bar">
+    <label for="face">Font</label>
+    <select id="face">
+      <option value="">system default</option>
+      <option value="Padauk">Padauk</option>
+      <option value="Myanmar Glyph Sans">Myanmar Glyph Sans</option>
+      <option value="Glyph Studio Sample">Glyph Studio Sample</option>
+      <option value="Myanmar Text">Myanmar Text (Windows)</option>
+      <option value="Noto Sans Myanmar">Noto Sans Myanmar</option>
+      <option value="Myanmar MN">Myanmar MN (Apple)</option>
+      <option value="Pyidaungsu">Pyidaungsu</option>
+    </select>
+    <label for="size">Size</label>
+    <input id="size" type="range" min="20" max="90" value="40">
+    <button id="mark-all" type="button">Mark all correct</button>
+  </div>
+
+  <p class="note">Installed the font first? On Windows right-click →
+  Install; macOS double-click → Install Font; Android/iOS need a
+  font-install app. If the picked font is not installed the browser falls
+  back silently — check the letterforms actually change when you switch.</p>
+
+  <table id="rows">
+    <thead><tr><th>Cluster</th><th>Renders</th><th>What correct looks like</th>
+    <th>OK?</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Your report</h2>
+  <p class="lede">Paste this into
+  <a href="https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues/14">issue
+  #14</a> — a report that says “correct everywhere” is just as valuable as
+  one that finds a bug. Add a screenshot if anything looks wrong.</p>
+  <textarea id="report" readonly></textarea>
+  <p><button class="primary" id="copy" type="button">Copy report</button>
+     <button id="open-issue" type="button">Open issue #14</button></p>
+</main>
+
+<footer>
+  <p class="lede">Part of <a href="index.html">Myanmar Glyph Studio</a> ·
+  the same clusters are audited automatically by
+  <code>mgs-validate</code>.</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // Every cluster here is one this project has actually got wrong at some
+  // point, with the shape that proves it is right again.
+  var CASES = [
+    ["ကျွန်ုပ်", "medial ya + wa tucked under the base, then န with no leg"],
+    ["ကြီး", "the ring sits inside the taller wrap, not crowding its hook"],
+    ["မြို့", "wrap + i above + the u bar below, tone dot beside it"],
+    ["ကြု", "the u is a straight bar in the wrap's opening, not a curl"],
+    ["ကျု", "the u is a tall stroke after the ya leg, not a curl beneath"],
+    ["ရှု", "the u keeps its curl beside the ha hook; ရ loses its leg"],
+    ["ကွှ", "wa and ha read as one hook, not two marks on top of each other"],
+    ["ကျွှ", "ya + wa + ha as one woven shape"],
+    ["ကြွ", "the wa nests inside the wrap's sweep"],
+    ["စက္ကူ", "stacked က, and ူ standing to the RIGHT of the stack"],
+    ["ဗုဒ္ဓ", "ဒ္ဓ stacked, the vowel on ဗ"],
+    ["န္န", "the upper န drops its leg to make room for the stack"],
+    ["ဋ္ဌ", "both letters stacked and inside the line, not sunk below it"],
+    ["သင်္ဘော", "kinzi as a small mark ABOVE ဘ — no full-size င"],
+    ["သင်္ကြီ", "kinzi and the vowel side by side, neither clipped at the top"],
+    ["အင်္ကျီ", "kinzi clear of the vowel over the ya"],
+    ["ကော်", "the asat sits on the ာ, not floating past the end"],
+    ["ခေါ်", "the asat hooks at the top of the ါ stem, not above it"],
+    ["ကာံ", "the anusvara sits over the ာ"],
+    ["ကိံ", "the dot tucks beside the ring, not stacked high above it"],
+    ["ကေ မေ ကြေ မြေ", "ေ renders BEFORE its consonant every time"],
+    ["ခါ ဂါ ငါ ဒါ ပါ ဝါ", "tall ါ on these six letters"],
+    ["ရွှံ့", "the tone dot beside the hook, above the descender line"],
+    ["ညွှန်း", "ည keeps its tail clear of the fused hook"],
+    ["သီဟိုဠ်မှ ဉာဏ်ကြီးရှင်သည် ဂဃနဏဖတ်ခဲ့သည်။",
+     "the pangram: nothing overlapping, nothing clipped, no dotted circles"]
+  ];
+
+  var tbody = document.querySelector("#rows tbody");
+  var state = {};
+
+  CASES.forEach(function (row, i) {
+    var tr = document.createElement("tr");
+    var text = row[0], look = row[1];
+    tr.innerHTML =
+      '<td><code>' + text.replace(/</g, "&lt;") + '</code></td>' +
+      '<td class="sample">' + text + '</td>' +
+      '<td class="look">' + look + '</td>' +
+      '<td><span class="verdict">' +
+        '<button class="y" type="button" aria-pressed="false" ' +
+          'data-i="' + i + '" data-v="ok" title="renders correctly">✓</button>' +
+        '<button class="n" type="button" aria-pressed="false" ' +
+          'data-i="' + i + '" data-v="bad" title="looks wrong">✗</button>' +
+      '</span></td>';
+    tbody.appendChild(tr);
+  });
+
+  function setVerdict(i, v) {
+    state[i] = v;
+    tbody.querySelectorAll('button[data-i="' + i + '"]').forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.v === v));
+    });
+    writeReport();
+  }
+
+  tbody.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-i]");
+    if (b) setVerdict(Number(b.dataset.i), b.dataset.v);
+  });
+
+  document.getElementById("mark-all").addEventListener("click", function () {
+    CASES.forEach(function (_, i) { setVerdict(i, "ok"); });
+  });
+
+  var face = document.getElementById("face");
+  var size = document.getElementById("size");
+  function applyStyle() {
+    document.documentElement.style.setProperty(
+      "--face", face.value ? '"' + face.value + '"' : "sans-serif");
+    document.documentElement.style.setProperty("--sample", size.value + "px");
+    writeReport();
+  }
+  face.addEventListener("change", applyStyle);
+  size.addEventListener("input", applyStyle);
+
+  function writeReport() {
+    var bad = CASES.filter(function (_, i) { return state[i] === "bad"; });
+    var checked = Object.keys(state).length;
+    var lines = [
+      "### Device shaping report",
+      "",
+      "- Font: " + (face.value || "system default"),
+      "- OS / device: <!-- e.g. Windows 11 23H2, iPhone 15 iOS 18 -->",
+      "- App / browser: " + navigator.userAgent,
+      "- Checked: " + checked + " / " + CASES.length + " clusters",
+      ""
+    ];
+    if (!checked) {
+      lines.push("<!-- Tap ✓ or ✗ next to each row above, then copy again. -->");
+    } else if (!bad.length) {
+      lines.push("**All " + checked + " clusters render correctly.** ✅");
+      lines.push("");
+      lines.push("<!-- A clean report is valuable too — it tells us this " +
+                 "engine is covered. -->");
+    } else {
+      lines.push("**" + bad.length + " cluster(s) render incorrectly:**");
+      lines.push("");
+      bad.forEach(function (row) {
+        lines.push("- `" + row[0] + "` — expected: " + row[1]);
+      });
+      lines.push("");
+      lines.push("<!-- Please attach a screenshot of the rows above. -->");
+    }
+    document.getElementById("report").value = lines.join("\n");
+  }
+
+  document.getElementById("copy").addEventListener("click", function () {
+    var ta = document.getElementById("report");
+    ta.select();
+    navigator.clipboard ? navigator.clipboard.writeText(ta.value)
+                        : document.execCommand("copy");
+    this.textContent = "Copied ✓";
+    var b = this;
+    setTimeout(function () { b.textContent = "Copy report"; }, 1500);
+  });
+
+  document.getElementById("open-issue").addEventListener("click", function () {
+    window.open("https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues/14",
+                "_blank", "noopener");
+  });
+
+  applyStyle();
+})();
+</script>
+</body>
+</html>
