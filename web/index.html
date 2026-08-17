@@ -57,11 +57,11 @@
   </div>
   <div class="project-actions">
     <div class="secondary-actions" id="secondaryActions">
-      <a href="gallery.html" class="btn icon-btn" title="Community font gallery / ဖောင့်ပြခန်း" style="text-decoration:none">🖼</a>
-      <a href="showcase.html" class="btn icon-btn" title="Rendering showcase — every hard cluster, measured / ရေးသားပြသချက်" style="text-decoration:none">🔍</a>
-      <a href="book.html" class="btn icon-btn" title="Reading proof — a whole book set in a generated font / စာအုပ်ဖြင့် စမ်းသပ်ချက်" style="text-decoration:none">📖</a>
-      <a href="specimen.html" class="btn icon-btn" title="Type specimen — alphabet, waterfall and literature / စာလုံးပုံစံ" style="text-decoration:none">✦</a>
-      <a href="styles.html" class="btn icon-btn" title="Font styles — one drawing, many faces / ဖောင့်စတိုင်များ" style="text-decoration:none">🎨</a>
+      <!-- Rendered by js/sitenav.js from the same list every other page
+           uses, so a new page appears here too. Icon-only: this row sits
+           in the app toolbar, and on phones app.js moves it wholesale
+           into the ⋯ sheet. -->
+      <span data-sitenav="toolbar"></span>
       <button id="btnLang" class="btn icon-btn" title="Switch language / ဘာသာစကား">မြ</button>
       <button id="btnTheme" class="btn icon-btn" title="Theme: auto / light / dark">🌗</button>
       <button id="btnHelp" class="btn" data-i18n="help" title="How to use your exported font">Help</button>
@@ -364,5 +364,8 @@
 <script src="js/fontexport.js"></script>
 <script src="js/app.js"></script>
 <script src="js/install.js"></script>
+<!-- After app.js: app.js re-parents #secondaryActions into the phone sheet,
+     and the nav has to exist before that runs. -->
+<script src="js/sitenav.js"></script>
 </body>
 </html>
