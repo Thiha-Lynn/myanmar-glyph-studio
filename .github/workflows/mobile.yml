@@ -30,6 +30,12 @@ permissions:
 jobs:
   android:
     runs-on: ubuntu-latest
+    # Attaching the APK to a release is a write; the workflow default above
+    # is read-only, so v0.7.0 built a perfectly good APK and was then
+    # refused with "Resource not accessible by integration". Granted here
+    # rather than at the top so the iOS job stays read-only.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
