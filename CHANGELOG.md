@@ -30,6 +30,20 @@ versions are git tags with installable font zips on the
   so in one line, and the package metadata's maintainer field now names
   the same identity instead of the old machine one.
 
+### Changed
+- **The application dossier catches up with its own repository**
+  (`docs/OSS_APPLICATION.md`): the numbers are re-measured (26 merged
+  PRs, three stars — the first ones), and two claims that had quietly
+  gone stale are fixed. The dossier still said four `good first issue`
+  tasks stand open, but those issues were closed when the invitations
+  moved into CONTRIBUTING.md — a reviewer clicking through would have
+  found zero open issues, exactly the one-click puncture the dossier
+  itself warns against; both places now point at the standing
+  invitations. And the two "only you can do this" items shrink to their
+  true remainder: PyPI publishing is a one-time pypi.org form now that
+  the workflow exists, and the commit-history explanation ships in the
+  repo rather than waiting on a decision.
+
 ## [0.5.0] — 2026-08-17
 
 ### Added

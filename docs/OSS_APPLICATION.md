@@ -34,7 +34,7 @@ Live: https://thiha-lynn.github.io/myanmar-glyph-studio/
 > 40 million people.
 >
 > Let me be straight about the numeric lanes: I meet none of them. The
-> repository is four days old, has no stars, and no external contributors
+> repository is four days old, has three stars, and no external contributors
 > yet. I am applying under "if you maintain something the ecosystem
 > quietly depends on, apply anyway and tell us about it" — with the
 > honest amendment that nothing depends on it *yet*. What I can offer
@@ -100,11 +100,11 @@ Live: https://thiha-lynn.github.io/myanmar-glyph-studio/
 
 | Lane | Bar | Measured 2026-08-17 | Fit |
 |---|---|---|---|
-| Maintainers / library authors | 500+ dependent repos, 100+ dependent packages, or 200k+ monthly downloads | Not on PyPI (`pypi.org/pypi/myanmar-glyph-studio` → **404**). Five tagged releases; v0.5.0 ships three font families and desktop installers for macOS/Windows/Linux, but downloads to date are ~1 | ✗ |
+| Maintainers / library authors | 500+ dependent repos, 100+ dependent packages, or 200k+ monthly downloads | Not on PyPI (`pypi.org/pypi/myanmar-glyph-studio` → **404**); publishing is now wired as a tokenless workflow and waits only on §3.1's one-time form. Five tagged releases; v0.5.0 ships three font families and desktop installers for macOS/Windows/Linux, but downloads to date are ~1 | ✗ |
 | Core contributors | Committer on CPython/Rust/Node/Apache/CNCF-class projects | No | ✗ |
-| Active contributors | 100+ PRs merged into repos you don't own, 12 mo | **0** (`author:Thiha-Lynn is:merged -user:Thiha-Lynn` → 0; 14 merged PRs total, all in this repo) | ✗ |
+| Active contributors | 100+ PRs merged into repos you don't own, 12 mo | **0** (`author:Thiha-Lynn is:merged -user:Thiha-Lynn` → 0; 26 merged PRs total, all in this repo) | ✗ |
 | Community builders | 20+ unique external contributors merged, 12 mo | **0** | ✗ |
-| Critical infrastructure | OpenSSF criticality ≥ 0.4 | Created 2026-08-13; 0 stars, 0 forks, 0 watchers, 0 dependents → ≈ 0 | ✗ |
+| Critical infrastructure | OpenSSF criticality ≥ 0.4 | Created 2026-08-13; 3 stars, 0 forks, 0 watchers, 0 dependents → ≈ 0 | ✗ |
 
 **Nought for five, and not narrowly.** Reach in the last fortnight: 58
 views from 4 unique visitors. (293 clones from 102 "uniques" is almost
@@ -123,32 +123,34 @@ buying credibility for a reach claim it cannot support.
 
 ## 3. Three things only you can do before submitting
 
-1. **Publish to PyPI — the one lane you could actually move tonight.**
-   The package is built and PEP 621-complete; it has simply never been
-   uploaded, and `pip install myanmar-glyph-studio` currently 404s. This
-   needs your PyPI account and API token, so it is yours to run, not
-   something automation should do with your credentials:
-
-   ```bash
-   python3 -m pip install --upgrade build twine
-   python3 -m build
-   python3 -m twine upload dist/*
-   ```
+1. **Publish to PyPI — now one form and one click.** Publishing is
+   wired as [`publish.yml`](../.github/workflows/publish.yml) using PyPI
+   Trusted Publishing: no API token is stored anywhere, the artifacts
+   pass `twine check --strict`, and both corpora ship inside the wheel.
+   The step only you can do — because it authenticates your PyPI
+   account — is the one-time *pending publisher* form: pypi.org →
+   Account settings → Publishing (the workflow's header comment lists
+   the five exact values to enter). Then press **Run workflow**, or
+   simply publish the next release, and the upload happens by itself.
 
    It will not hit 200k monthly downloads by tonight — but it turns
    "installable software" from an assertion into a link, and it starts a
-   counter that only goes up. Until it is uploaded, **do not describe the
-   toolkit as pip-installable** anywhere in the application.
+   counter that only goes up. Until that form is filed, **do not
+   describe the toolkit as pip-installable** anywhere in the application.
 
-2. **Decide what to say about the commit history.** GitHub's Insights →
-   Contributors currently shows three identities: `uit-shinnthantkyaw`
-   (31 commits), `Thiha-Lynn` (14) and `dependabot[bot]` (8). The
-   `uit-*` commits date from before the repository-local git identity was
-   set. A reviewer opens Insights first and will see two human-looking
-   accounts. If that is your other account, say so in one line — it reads
-   as ordinary, and silence reads as an uncounted contributor. If it is a
-   different person, credit them. Either is fine; the mismatch is what
-   costs you.
+2. **The commit history now explains itself — one optional step left.**
+   Resolved 2026-08-17: [`.mailmap`](../.mailmap) maps all three git
+   identities (the machine's old university-account identity, a personal
+   email, and an early name typo) to `Thiha-Lynn`; the README's
+   community section says the same in one line; and the package
+   metadata's maintainer field names the same identity — it was about to
+   go to PyPI carrying the old one. GitHub's Insights graph ignores
+   `.mailmap`, so it will keep drawing three avatars; the README line is
+   what explains that where a reviewer looks. The one thing only you can
+   still do: add the personal email to your GitHub account's verified
+   addresses (Settings → Emails), and its 7 commits re-attribute to
+   `@Thiha-Lynn` in Insights immediately. The university address belongs
+   to its own account and stays as explained history — do not claim it.
 
 3. **Say the stage plainly, in your own words.** Four days old, one
    maintainer, built to fill a gap you hit yourself. The programme
@@ -243,9 +245,11 @@ the honest case above.
   per-family OFL compliance, topical labels, and tagged releases whose
   assets are built by CI — v0.5.0 carries per-family font zips plus
   desktop installers for all three platforms. GitHub community profile
-  at 100%, four `good first issue` tasks standing open as contributor
-  on-ramps, and a [CLAUDE.md](../CLAUDE.md) briefing so contributions
-  made with a coding assistant do not trip the project's invariants.
+  at 100%, four standing invitations written out in
+  [CONTRIBUTING.md](../CONTRIBUTING.md#where-to-start--four-standing-invitations)
+  as contributor on-ramps, and a [CLAUDE.md](../CLAUDE.md) briefing so
+  contributions made with a coding assistant do not trip the project's
+  invariants.
 * **Installable from a checkout:** `pip install -e ".[dev]"` gives
   fifteen command-line tools (build, variable build, proof, validate,
   CoreText diff, kerning, showcase, gallery, book, PDF, i18n check, …)
@@ -286,10 +290,11 @@ on the work. The record gets stronger every week without any change of
 strategy, and the routes that would flip a lane are already written down:
 
 * **Community-builder lane (0 → 20 external contributors):** the glyph
-  drive in [LAUNCH.md](LAUNCH.md) §5. Four `good first issue` tasks
-  (#11–#14) are staged and waiting for the visibility push. Even three
-  merged glyph PRs from strangers change the story from "personal
-  project" to "community infrastructure".
+  drive in [LAUNCH.md](LAUNCH.md) §5 and the four standing invitations
+  in [CONTRIBUTING.md](../CONTRIBUTING.md#where-to-start--four-standing-invitations)
+  — no ticket to claim, partial work welcome. Even three merged glyph
+  PRs from strangers change the story from "personal project" to
+  "community infrastructure".
 * **Downloads lane:** publish to PyPI (§3.1), then the fonts to Google
   Fonts / a package repository.
 * **Third-party validation:** an accepted PR to awesome-myanmar-unicode,
