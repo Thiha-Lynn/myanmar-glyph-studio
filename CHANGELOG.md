@@ -7,6 +7,27 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
+### Added
+- **A logo, drawn by the tool it stands for** (`pipeline/make_logo.py`,
+  `mgs-logo`): the mark is က set in Myanmar Glyph Sans — the typeface
+  this toolchain produces — carrying the project's one idea, a drawn
+  centre line with the letter grown around it. Both halves are real
+  data: the outline is read from the built TTF, the spine from the very
+  strokes in the project file that produced that outline, so the spine
+  lies inside the ink because that is what the ink came from. Text is
+  laid out with HarfBuzz, so the Burmese line on the share card is a
+  live shaping proof rather than a picture of one. Generates the app
+  icon, the mark, light and dark lockups for the READMEs, and a
+  1200×630 link-share card now wired as `og:image`
+  (`twitter:card` upgraded to `summary_large_image`).
+
+### Fixed
+- **The icon no longer renders as tofu** (`web/icons/icon.svg`): it was
+  `<text font-family="Padauk, …">`, so on any machine without a Myanmar
+  font installed the app's own icon showed an empty box — the precise
+  failure this project exists to fix, shipped as its logo. It is now
+  outline paths and depends on nothing. `sw.js` v29.
+
 ## [0.6.0] — 2026-08-17
 
 ### Fixed

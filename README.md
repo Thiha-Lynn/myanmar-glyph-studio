@@ -1,4 +1,14 @@
-# Myanmar Glyph Studio · မြန်မာဖောင့် ရေးဆွဲကိရိယာ
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-dark.svg">
+    <img src="docs/images/logo.svg" alt="Myanmar Glyph Studio — မြန်မာဖောင့် ရေးဆွဲကိရိယာ" width="460">
+  </picture>
+</p>
+
+<h1 align="center">Myanmar Glyph Studio · မြန်မာဖောင့် ရေးဆွဲကိရိယာ</h1>
+
+<p align="center"><em>Every letter above — Burmese and Latin — is set in
+Myanmar Glyph Sans, the typeface this toolkit built.</em></p>
 
 [![Build fonts](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/build.yml/badge.svg)](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/build.yml)
 [![Deploy studio](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/pages.yml/badge.svg)](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/pages.yml)

@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-dark.svg">
+    <img src="docs/images/logo.svg" alt="Myanmar Glyph Studio — မြန်မာဖောင့် ရေးဆွဲကိရိယာ" width="460">
+  </picture>
+</p>
+
 # မြန်မာဖောင့် ရေးဆွဲကိရိယာ (Myanmar Glyph Studio)
 
 **ကိုယ်ပိုင်မြန်မာဖောင့်ကို ဘရောက်ဇာထဲမှာ စာလုံးတစ်လုံးချင်း ရေးဆွဲပြီး —

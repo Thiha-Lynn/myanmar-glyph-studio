@@ -1,6 +1,6 @@
 /* Offline cache for the Glyph Studio (PWA).
  * Bump VERSION whenever any cached file changes. */
-var VERSION = "v28";
+var VERSION = "v29";
 var CACHE = "glyph-studio-" + VERSION;
 var ASSETS = [
   ".",
@@ -37,7 +37,8 @@ var ASSETS = [
   "manifest.webmanifest",
   "icons/icon.svg",
   "icons/icon-180.png",
-  "icons/icon-512.png"
+  "icons/icon-512.png",
+  "icons/social-preview.png"
 ];
 
 self.addEventListener("install", function (e) {
