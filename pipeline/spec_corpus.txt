@@ -1,7 +1,16 @@
 # Myanmar shaping spec corpus — Blocks A–O.
-# Extracted verbatim from the Burmese Glyph Studio shaping
-# specification (2026-08-16). Format: block<TAB>label<TAB>text.
+# Extracted from the Burmese Glyph Studio shaping specification
+# (2026-08-16). Format: block<TAB>label<TAB>text.
 # Blank lines and lines starting with # are ignored.
+#
+# One correction to the source spec (2026-08-17): its nine "S'gaw Karen"
+# rows carried U+A930–A938, which are REJANG letters — a different script
+# on a different continent, and one no Myanmar font should cover. They
+# tested nothing about S'gaw Karen. Replaced with the characters S'gaw
+# Karen actually adds to the Myanmar block (U+1061–1064: SHA, vowel EU,
+# tone HATHI, tone KE PHO), in the combinations they really occur in —
+# တၢ်, ယွၤ, ပှၤ, အိၣ်, မ့ၢ်. Found because the DirectWrite check flagged
+# the old rows as an engine disagreement; they were a corpus bug instead.
 #
 # Block A: Basic Consonant-Vowel Combinations
 # Block B: Descender Class + Side-Form Vowels
@@ -691,15 +700,17 @@ K	Shan	ၸိုၽ
 K	Shan	ၸိူၽ
 K	Shan	ၸွၽ
 K	Shan	ၸွင်ၽ
-K	S'gaw Karen	ကꤰ
-K	S'gaw Karen	ကꤱ
-K	S'gaw Karen	ကꤲ
-K	S'gaw Karen	ကꤳ
-K	S'gaw Karen	ကꤴ
-K	S'gaw Karen	ကꤵ
-K	S'gaw Karen	ကꤶ
-K	S'gaw Karen	ကꤷ
-K	S'gaw Karen	ကꤸ
+K	S'gaw Karen	ကၢ
+K	S'gaw Karen	ကၣ
+K	S'gaw Karen	ကၤ
+K	S'gaw Karen	ၡ
+K	S'gaw Karen	ၡၢ
+K	S'gaw Karen	လၢ
+K	S'gaw Karen	တၢ်
+K	S'gaw Karen	ယွၤ
+K	S'gaw Karen	ပှၤ
+K	S'gaw Karen	အိၣ်
+K	S'gaw Karen	မ့ၢ်
 K	S'gaw Karen	က္က
 
 # --- Block L: Ultimate Torture Text (All Rules Combined)

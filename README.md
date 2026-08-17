@@ -202,7 +202,7 @@ pip install myanmar-glyph-studio        # or: pip install -e ".[dev]" from a clo
 mgs-build MyFont.glyphstudio.json build/      # project file -> UFO + features
 mgs-variable MyFont.glyphstudio.json build/   # …plus weight masters and a VF
 mgs-proof build/MyFont-Regular.ttf "ကျွန်ုပ်" proof.png
-mgs-validate build/MyFont-Regular.ttf         # 1,484-cluster shaping audit
+mgs-validate build/MyFont-Regular.ttf         # 1,486-cluster shaping audit
 mgs-i18n-check                                # what a translation is missing
 ```
 
@@ -270,7 +270,7 @@ licensing details, including the bundled Padauk guide font, are in
 - [x] **Every shaping engine checked automatically** — HarfBuzz in CI,
       CoreText via a Swift shaper on macOS (`pipeline/coretext/`), and
       DirectWrite via a C++ shaper on a Windows runner
-      (`pipeline/directwrite/`). 6,357 cluster comparisons per engine
+      (`pipeline/directwrite/`). 6,363 cluster comparisons per engine
       across both corpora, zero rendering differences
 - [x] **Pro drawing tools** — Bézier pen with editable paths, selection
       with move/scale/rotate, node editing, cross-glyph copy/paste,
