@@ -7,6 +7,8 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-08-17
+
 ### Fixed
 - **The installed package behaves like one** (`pipeline/repo_paths.py`):
   building the wheel and running every console script from a clean venv
@@ -641,6 +643,7 @@ versions are git tags with installable font zips on the
 - Community health files, the contributor guide, the gallery site, and
   GitHub Pages deployment.
 
+[0.6.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.6.0
 [0.5.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.5.0
 [0.4.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.4.0
 [0.3.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.3.0
