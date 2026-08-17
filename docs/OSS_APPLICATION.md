@@ -79,14 +79,21 @@ application and toolchain, not a package on npm/PyPI.
   12,451-word Wiktionary vocabulary. Findings are graded so a malformed
   test string can never mask a real defect. Results:
   [`docs/VALIDATION.md`](VALIDATION.md).
-* **Verified on three shaping engines.** HarfBuzz in CI; Chromium/Skia
-  through the browser; and **CoreText automatically** — a Swift shaper
-  diffs Apple's engine against HarfBuzz over the whole corpus and runs as
-  a test on any Mac (`pipeline/coretext/`). Current result: **6,357
-  cluster comparisons, zero rendering differences.** DirectWrite is the
-  one engine left, and the repo ships a
+* **Verified on every shaping engine that matters, automatically.**
+  Myanmar is composed by the text engine, not the font, so the same file
+  can render differently on each platform. All three are now diffed
+  against each other in software: HarfBuzz in CI (Android, Chrome, Linux);
+  **CoreText** via a Swift shaper that runs as a test on any Mac
+  (`pipeline/coretext/`); and **DirectWrite** via a C++ shaper calling
+  `IDWriteTextAnalyzer` on a `windows-latest` runner, so Windows is
+  covered on every pull request (`pipeline/directwrite/`). Chromium/Skia
+  is checked through the browser. Current result: **6,357 cluster
+  comparisons against Apple's engine and 6,357 against Microsoft's, zero
+  rendering differences either way.** What is left for a person is
+  judgement, not geometry — whether it *looks* right to a reader of
+  Burmese — and the repo ships a
   [device-test page](https://thiha-lynn.github.io/myanmar-glyph-studio/devicetest.html)
-  that walks a Windows user through it and writes the report.
+  that walks anyone through it and writes the report.
 * **Automated quality gates on every push and PR:** 62 tests
   (`pipeline/tests/`), both shaping corpora, a HarfBuzz regression that
   fails the build if the reference font drops any glyph, and fontbakery's

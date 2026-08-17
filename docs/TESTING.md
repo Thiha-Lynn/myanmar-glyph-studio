@@ -142,29 +142,69 @@ Then look at the extremes: `hb-view MyFont-VF.ttf --variations=wght=700`
 should be visibly heavier with the same letterforms, no collapsed counters
 and no crossed outlines.
 
-## Apple's engine, checked automatically (macOS)
+## All three engines, checked automatically
 
-CoreText is one of the two engines CI cannot reach. On a Mac it can be
-diffed against HarfBuzz over the whole corpus — build the Swift shaper
-once, then run the checker (details:
-[pipeline/coretext/README.md](../pipeline/coretext/README.md)):
+Myanmar text is composed by the text engine, not the font, so the same
+font can render differently on different platforms. There are three
+engines that matter, and every one of them is now diffed against the
+others automatically:
+
+| Engine | Used by | Checked by |
+|---|---|---|
+| **HarfBuzz** | Android, Chrome, Linux, LibreOffice | CI, every push and PR |
+| **CoreText** | macOS, iOS, Safari, Apple apps | `pipeline/coretext/` — pytest on any Mac |
+| **DirectWrite** | Windows, Word, Edge, Office, WPF | `pipeline/directwrite/` — CI, `windows-latest` |
+
+Each platform checker shapes the whole corpus with its own engine and
+with HarfBuzz, then compares the glyph sequence and the placements,
+reporting only differences that would change what a reader sees. On macOS:
 
 ```bash
 cd pipeline/coretext && swiftc -O CoreTextShape.swift -o coretext-shape
 python3 pipeline/coretext_check.py projects/*/MyanmarGlyphSans-Regular.ttf
 ```
 
-Current result for the shipped family: **2,119 clusters compared across
-both corpora, zero rendering differences** in every weight. It also runs
-as part of `pytest` on macOS, so a Mac contributor covers Apple's engine
-without doing anything extra. That leaves **DirectWrite (Windows)** as
-the one engine still needing a human.
+On Windows (from a Developer Command Prompt, so `cl.exe` is on PATH):
+
+```bat
+cd pipeline\directwrite && cl /EHsc /O2 /std:c++17 DirectWriteShape.cpp
+python pipeline\directwrite_check.py projects\myanmar-glyph-sans\MyanmarGlyphSans-Regular.ttf
+```
+
+Current result for the shipped family, in every weight, across both
+corpora: **6,357 cluster comparisons against CoreText and 6,357 against
+DirectWrite, zero rendering differences either way.** Both run under
+`pytest` and skip on the platforms they do not apply to, so a Mac or
+Windows contributor covers their engine without doing anything extra.
+
+What the comparison deliberately ignores, because none of it is a font
+bug — the rules live in
+[`pipeline/shaping_diff.py`](../pipeline/shaping_diff.py) and are unit
+tested on every platform:
+
+* **Marks reordered but identically placed.** HarfBuzz's Myanmar shaper
+  puts the tone dot before the asat; the platform engines keep storage
+  order. The two attach to different anchors, so the picture is the same
+  — verified by coordinate, never assumed.
+* **Malformed input.** A dotted circle means both engines are *repairing*
+  a cluster that is not in Unicode storage order, and how much each
+  salvages is engine-defined.
+* **Characters the font does not cover.** The three engines say "no glyph
+  here" three different ways: HarfBuzz draws `.notdef`, CoreText
+  substitutes another font for the run, DirectWrite emits the font's
+  blank. All three mean the same thing.
+
+One limit worth knowing: a font with **no U+25CC glyph** cannot draw the
+repair mark, so each engine substitutes something of its own and those
+choices cannot be compared. The bundled sample font is in that position,
+which is why the gate covers the complete family.
 
 ## Test on a real device (issue #14 — anyone can do this)
 
-Our CI verifies shaping with HarfBuzz — the engine Android, Chrome and
-Linux use. **Windows (DirectWrite) and Apple (CoreText) can disagree**,
-and only real devices reveal it. This is a five-minute contribution that
+Automation now covers all three engines' *geometry*. What it cannot judge
+is whether the result **looks right** to a reader of Burmese, on real
+hardware, at real sizes — or how the font behaves in an app that still
+uses the older Uniscribe path. This is a five-minute contribution that
 needs no coding at all:
 
 **Open <https://thiha-lynn.github.io/myanmar-glyph-studio/devicetest.html>

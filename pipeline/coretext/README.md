@@ -41,6 +41,8 @@ stays quiet about the three kinds that don't:
 skips elsewhere, so a Mac contributor's `pytest` covers Apple's engine
 automatically.
 
-**Still uncovered: DirectWrite (Windows).** No automation here can reach
-it — that half of #14 still needs a person with a Windows machine and the
-[device test page](https://thiha-lynn.github.io/myanmar-glyph-studio/devicetest.html).
+**DirectWrite (Windows)** is covered the same way, by
+[`pipeline/directwrite/`](../directwrite/) — that one runs in CI on a
+`windows-latest` runner, so all three engines are now checked
+automatically. The comparison itself is shared between the two checkers in
+[`shaping_diff.py`](../shaping_diff.py).

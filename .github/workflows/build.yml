@@ -109,3 +109,66 @@ jobs:
             dist/**/*.ttf
             dist/**/*.woff2
             dist/**/proof.png
+
+  # The job above shapes with HarfBuzz — Android, Chrome, Linux,
+  # LibreOffice. Windows shapes with DirectWrite, and issue #14 assumed
+  # that engine needed a volunteer with a Windows machine. It does not:
+  # this runner IS a Windows machine with the real engine and the compiler
+  # already installed, so the shipped fonts get diffed against HarfBuzz
+  # here on every pull request. See pipeline/directwrite/README.md.
+  directwrite:
+    name: DirectWrite vs HarfBuzz
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      # Only what the diff needs — fontmake and fontbakery build fonts,
+      # and this job tests the ones already committed in projects/.
+      - name: Install the shaping dependencies
+        run: pip install "fonttools>=4.63.0" "uharfbuzz>=0.56.0"
+
+      - name: Build the DirectWrite shaper
+        shell: cmd
+        run: |
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do call "%%i\VC\Auxiliary\Build\vcvars64.bat"
+          cd pipeline\directwrite
+          cl /nologo /EHsc /O2 /std:c++17 DirectWriteShape.cpp
+
+      - name: Windows must render every cluster as HarfBuzz does
+        shell: pwsh
+        run: |
+          $failed = 0
+          foreach ($font in Get-ChildItem projects/myanmar-glyph-sans/*.ttf) {
+            foreach ($corpus in "spec_corpus", "word_corpus") {
+              Write-Host "::group::$($font.BaseName) - $corpus"
+              python pipeline/directwrite_check.py $font.FullName `
+                --corpus pipeline/$corpus.txt
+              if ($LASTEXITCODE -ne 0) { $failed = 1 }
+              Write-Host "::endgroup::"
+            }
+          }
+          exit $failed
+
+      # The sample font is a deliberately minimal demo, and it has no
+      # U+25CC glyph. Malformed input makes both engines reach for a dotted
+      # circle; a font that cannot draw one leaves each engine to
+      # substitute something of its own choosing, and comparing those
+      # choices says nothing about the font. So this runs for visibility
+      # but does not gate — the same reason the CoreText test covers only
+      # the complete family. Every cluster it reports has been checked
+      # against a font that DOES have U+25CC and confirmed malformed.
+      - name: Sample font (informational — no U+25CC to compare repairs by)
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          foreach ($corpus in "spec_corpus", "word_corpus") {
+            Write-Host "::group::GlyphStudioSample-Regular - $corpus"
+            python pipeline/directwrite_check.py `
+              projects/sample/GlyphStudioSample-Regular.ttf `
+              --corpus pipeline/$corpus.txt
+            Write-Host "::endgroup::"
+          }

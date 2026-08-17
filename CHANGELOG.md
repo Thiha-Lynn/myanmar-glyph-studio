@@ -7,7 +7,35 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
-## [Unreleased]
+### Added
+- **DirectWrite verified automatically — the last engine that needed a
+  human** ([pipeline/directwrite/](pipeline/directwrite/)): issue #14 asks
+  that the fonts be checked on HarfBuzz, CoreText and DirectWrite, and
+  DirectWrite was recorded as unreachable by automation. It is not:
+  GitHub's `windows-latest` runner is a real Windows box with the real
+  engine and MSVC already installed. `DirectWriteShape.cpp` calls
+  `IDWriteTextAnalyzer::GetGlyphs` + `GetGlyphPlacements` — the actual
+  OpenType shaping engine, the path `IDWriteTextLayout` uses internally —
+  and `directwrite_check.py` diffs its glyph run against HarfBuzz's on
+  every pull request. Result for the shipped family: **6,357 cluster
+  comparisons across both corpora in all three weights, zero rendering
+  differences.** Going through the analyzer rather than a layout keeps the
+  font under test the only font in play, so a character it lacks comes
+  back as glyph 0 and compares straight against HarfBuzz's `.notdef`.
+- The cross-engine comparison moved into
+  [`pipeline/shaping_diff.py`](pipeline/shaping_diff.py), shared by the
+  CoreText and DirectWrite checkers, and its exclusion rules are now unit
+  tested on every platform — including the Linux runner, where neither
+  engine exists. Two new rules came out of what Windows actually did:
+  a **blank where HarfBuzz draws `.notdef`** is the two engines saying
+  "this font has no glyph here" differently, and a **blank inserted where
+  HarfBuzz inserted nothing** is repair for malformed input in a font with
+  no U+25CC glyph. Both are gated so that a blank replacing real ink, or
+  one that shifts the rest of the cluster along, is still reported.
+
+### Fixed
+- The engine reports print in UTF-8, so a Windows console can show the
+  Myanmar cluster it is reporting instead of dying on `cp1252`.
 
 ### Added
 - **Kerning, measured from the drawn outlines** (`mgs-kerning`): the fonts

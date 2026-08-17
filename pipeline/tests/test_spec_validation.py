@@ -63,25 +63,99 @@ def test_geometry_helpers():
     assert vs.ink_clearance(a, inner) == 0.0
 
 
-def test_coretext_agrees_with_harfbuzz_on_macos():
-    """CI shapes with HarfBuzz; Apple platforms shape with CoreText, and
-    the two can disagree — the gap issue #14 exists to cover. On macOS
-    with the Swift shaper built we can close half of it automatically."""
+def test_shaping_diff_ignores_engine_quirks_but_not_real_differences():
+    """The cross-engine comparison's exclusions, checked on every platform.
+
+    These are pure functions, so the rules that let CoreText and
+    DirectWrite disagree *harmlessly* with HarfBuzz stay under test on the
+    Linux runner too — where neither engine exists.
+    """
+    import shaping_diff as sd
+
+    ka = ("uni1000", 0.0, 0.0)
+
+    # A blank against .notdef is the two engines saying "this font has no
+    # glyph here" differently. DirectWrite blanks it, HarfBuzz boxes it.
+    assert sd.compare([ka, ("space", 500.0, 0.0)],
+                      [ka, (".notdef", 500.0, 0.0)], 12) == []
+    # ...but a blank where HarfBuzz drew real ink means Windows would DROP
+    # ink this font draws. That has to stay reportable.
+    assert sd.compare([ka, ("space", 500.0, 0.0)],
+                      [ka, ("uni103C", 500.0, 0.0)], 12)
+
+    # A blank INSERTED where HarfBuzz inserted nothing: repairing a
+    # malformed cluster means a dotted circle, and a font without U+25CC
+    # gets a blank from DirectWrite and nothing from HarfBuzz. It draws
+    # nothing and, here, shifts nothing.
+    e = ("uni1031", 0.0, 0.0)
+    assert sd.compare([e, ("space", 562.0, 0.0), ("uni1000", 562.0, 0.0)],
+                      [e, ("uni1000", 562.0, 0.0)], 12) == []
+    # ...but a blank that pushes the rest of the cluster along really does
+    # change the spacing, and must not be waved through.
+    assert sd.compare([e, ("space", 562.0, 0.0), ("uni1000", 1000.0, 0.0)],
+                      [e, ("uni1000", 562.0, 0.0)], 12)
+
+    # Marks reordered by one engine but landing in the same place: the
+    # picture is identical, so it is not a difference.
+    assert sd.compare([ka, ("dot", 100.0, 50.0), ("asat", 100.0, 800.0)],
+                      [ka, ("asat", 100.0, 800.0), ("dot", 100.0, 50.0)],
+                      12) == []
+    # Reordered AND moved is a difference.
+    assert sd.compare([ka, ("dot", 100.0, 50.0), ("asat", 100.0, 800.0)],
+                      [ka, ("asat", 100.0, 800.0), ("dot", 100.0, -400.0)],
+                      12)
+
+    # Same glyphs, one of them displaced past the tolerance.
+    assert sd.compare([ka, ("dot", 100.0, 50.0)],
+                      [ka, ("dot", 100.0, -300.0)], 12)
+    # Within tolerance is agreement.
+    assert sd.compare([ka, ("dot", 100.0, 50.0)],
+                      [ka, ("dot", 100.0, 44.0)], 12) == []
+
+    # A dotted circle means both engines are repairing malformed input.
+    assert sd.compare([ka, ("uni25CC", 100.0, 0.0)],
+                      [("uni25CC", 0.0, 0.0), ka], 12) == []
+
+    # CoreText substituting another font for a gap the font declares.
+    assert sd.compare([ka, ("<fallback:Helvetica>", 500.0, 0.0)],
+                      [ka, (".notdef", 500.0, 0.0)], 12) == []
+
+
+def _cross_engine_check(engine, system, shaper, checker, hint):
+    """Run one platform engine against HarfBuzz over both corpora.
+
+    CI shapes with HarfBuzz; Apple platforms shape with CoreText and
+    Windows with DirectWrite, and any of them can disagree — the gap issue
+    #14 exists to cover. On the platform itself, with its shaper built, it
+    closes automatically; everywhere else this skips.
+    """
     import platform
     import subprocess
-    if platform.system() != "Darwin":
-        pytest.skip("CoreText is an Apple framework")
-    shaper = Path(__file__).resolve().parent.parent / "coretext" / "coretext-shape"
-    if not shaper.exists():
-        pytest.skip("coretext-shape not built (see pipeline/coretext/README.md)")
+    if platform.system() != system:
+        pytest.skip(f"{engine} is a {system} engine")
+    pipeline = Path(__file__).resolve().parent.parent
+    if not (pipeline / shaper).exists():
+        pytest.skip(f"{Path(shaper).name} not built ({hint})")
     font = ROOT / "projects" / "myanmar-glyph-sans" / "MyanmarGlyphSans-Regular.ttf"
     if not font.exists():
         pytest.skip("shipped font not present")
-    check = Path(__file__).resolve().parent.parent / "coretext_check.py"
     for corpus in (CORPUS, WORDS):
         proc = subprocess.run(
-            [sys.executable, str(check), str(font), "--corpus", str(corpus)],
+            [sys.executable, str(pipeline / checker), str(font),
+             "--corpus", str(corpus)],
             capture_output=True, text=True)
         assert proc.returncode == 0, (
-            f"CoreText disagrees with HarfBuzz on {corpus.name}:\n"
+            f"{engine} disagrees with HarfBuzz on {corpus.name}:\n"
             + proc.stdout[-2000:])
+
+
+def test_coretext_agrees_with_harfbuzz_on_macos():
+    _cross_engine_check(
+        "CoreText", "Darwin", "coretext/coretext-shape", "coretext_check.py",
+        "see pipeline/coretext/README.md")
+
+
+def test_directwrite_agrees_with_harfbuzz_on_windows():
+    _cross_engine_check(
+        "DirectWrite", "Windows", "directwrite/DirectWriteShape.exe",
+        "directwrite_check.py", "see pipeline/directwrite/README.md")
