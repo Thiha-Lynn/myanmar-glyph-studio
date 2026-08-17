@@ -7,6 +7,20 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
+## [0.6.1] — 2026-08-17
+
+### Fixed
+- **PyPI rejected 0.6.0 over one classifier.** `Natural Language ::
+  Burmese` looks entirely reasonable and does not exist — PyPI's list has
+  no Burmese or Myanmar entry at all — so the upload came back
+  `400 Bad Request` after authenticating fine. `twine check --strict`
+  does not validate classifiers, so nothing local caught it and the first
+  thing that noticed was the upload itself. The classifier is gone (the
+  script is named in the keywords and description anyway), and a test now
+  checks every classifier against `trove-classifiers`, the same list PyPI
+  validates against — verified by putting the bad value back and watching
+  it fail. Trusted publishing itself worked on the first attempt.
+
 ### Added
 - **A way in, on the website** (`web/contribute.html`): the four standing
   invitations existed only in `CONTRIBUTING.md` — visible to somebody who
@@ -717,6 +731,7 @@ versions are git tags with installable font zips on the
 - Community health files, the contributor guide, the gallery site, and
   GitHub Pages deployment.
 
+[0.6.1]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.6.1
 [0.6.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.6.0
 [0.5.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.5.0
 [0.4.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.4.0
