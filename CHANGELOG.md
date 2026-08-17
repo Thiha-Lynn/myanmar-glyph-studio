@@ -7,6 +7,21 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
+### Fixed
+- **The README's images will survive the trip to PyPI** (`README.md`,
+  `README.my.md`): PyPI renders this file as the project description and,
+  unlike GitHub, does not rewrite relative paths — so `docs/images/…`
+  would have arrived as broken images on the package page, on the very
+  first impression the project gets there. All four are now absolute
+  `raw.githubusercontent.com` URLs, verified by reading the built
+  wheel's METADATA rather than by assuming. (PyPI's sanitiser drops
+  `<picture>`/`<source>` but keeps the inner `<img>`, so the light/dark
+  logo still degrades to the light one.)
+- **`CITATION.cff` claimed version 0.3.0** — four releases stale, dated
+  2026-08-13. GitHub renders this in its "Cite this repository" box, so
+  it was the one piece of metadata most likely to be read and quoted by
+  exactly the kind of reviewer the project wants. Now 0.6.0.
+
 ### Added
 - **A logo, drawn by the tool it stands for** (`pipeline/make_logo.py`,
   `mgs-logo`): the mark is က set in Myanmar Glyph Sans — the typeface

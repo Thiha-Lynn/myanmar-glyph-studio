@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-dark.svg">
-    <img src="docs/images/logo.svg" alt="Myanmar Glyph Studio — မြန်မာဖောင့် ရေးဆွဲကိရိယာ" width="460">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Thiha-Lynn/myanmar-glyph-studio/main/docs/images/logo-dark.svg">
+    <img src="https://raw.githubusercontent.com/Thiha-Lynn/myanmar-glyph-studio/main/docs/images/logo.svg" alt="Myanmar Glyph Studio — မြန်မာဖောင့် ရေးဆွဲကိရိယာ" width="460">
   </picture>
 </p>
 
@@ -32,10 +32,10 @@ forms like stacked consonants) as a dimmed guide, you trace your own style
 over it, and the toolchain turns your sketches into a working font.
 
 <p align="center">
-  <img src="docs/images/studio-desktop.png"
+  <img src="https://raw.githubusercontent.com/Thiha-Lynn/myanmar-glyph-studio/main/docs/images/studio-desktop.png"
        alt="The studio on a desktop: glyph inventory, vector tools, and ka traced over its dimmed guide, with live shaped Burmese text below"
        width="720">
-  <img src="docs/images/studio-phone.png"
+  <img src="https://raw.githubusercontent.com/Thiha-Lynn/myanmar-glyph-studio/main/docs/images/studio-phone.png"
        alt="The same studio on a phone: compact toolbar, thumb bar, and the full drawing canvas"
        width="180">
 </p>

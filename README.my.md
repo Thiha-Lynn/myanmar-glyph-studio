@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-dark.svg">
-    <img src="docs/images/logo.svg" alt="Myanmar Glyph Studio — မြန်မာဖောင့် ရေးဆွဲကိရိယာ" width="460">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Thiha-Lynn/myanmar-glyph-studio/main/docs/images/logo-dark.svg">
+    <img src="https://raw.githubusercontent.com/Thiha-Lynn/myanmar-glyph-studio/main/docs/images/logo.svg" alt="Myanmar Glyph Studio — မြန်မာဖောင့် ရေးဆွဲကိရိယာ" width="460">
   </picture>
 </p>
 
@@ -19,10 +19,10 @@
 *(English README → [README.md](README.md))*
 
 <p align="center">
-  <img src="docs/images/studio-desktop.png"
+  <img src="https://raw.githubusercontent.com/Thiha-Lynn/myanmar-glyph-studio/main/docs/images/studio-desktop.png"
        alt="ကွန်ပျူတာပေါ်က စတူဒီယို — စာလုံးစာရင်း၊ ရေးဆွဲကိရိယာများနဲ့ မှိန်ပြလမ်းညွှန်ပေါ်မှာ က ကို ရေးဆွဲနေပုံ"
        width="720">
-  <img src="docs/images/studio-phone.png"
+  <img src="https://raw.githubusercontent.com/Thiha-Lynn/myanmar-glyph-studio/main/docs/images/studio-phone.png"
        alt="ဖုန်းပေါ်မှာ တူညီတဲ့ စတူဒီယို — ကျစ်လျစ်တဲ့ ကိရိယာဘား၊ လက်မဘားနဲ့ ရေးဆွဲကွက် အပြည့်"
        width="180">
 </p>
