@@ -7,6 +7,17 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
+### Changed
+- **The toolkit is on PyPI, and the documentation now says so**
+  ([pypi.org/project/myanmar-glyph-studio](https://pypi.org/project/myanmar-glyph-studio/)):
+  `pip install myanmar-glyph-studio` installs 0.6.1, published over
+  GitHub OIDC with no API token anywhere. Verified by installing from
+  the real index into a clean virtualenv and running a console script.
+  The README's install line and version badge, and the application
+  dossier's lane table, are updated — the lane is still unmet and the
+  table still says so plainly; what changed is that "installable
+  software" is now a link rather than an assertion.
+
 ## [0.6.1] — 2026-08-17
 
 ### Fixed
