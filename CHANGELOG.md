@@ -7,7 +7,19 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-08-17
+
 ### Added
+- **A briefing for AI-assisted contributions** ([CLAUDE.md](CLAUDE.md)):
+  contributions increasingly arrive with a coding assistant, and this
+  codebase has invariants a tool will otherwise confidently violate —
+  the JS/Python pairs that must change together, the generated data
+  files, the committed fonts that go stale when shaping rules change,
+  and the shaping behaviour that looks like a bug and is not. It opens
+  with the rule the project actually runs on: measure a typography
+  claim against Padauk before implementing it, because this repository
+  has already been handed confident, precisely wrong numbers once.
+  Linked from CONTRIBUTING.md.
 - **A font-styles page** ([web/styles.html](web/styles.html)): the
   "draw once, get many faces" story, live. The studio's real outline
   code expands the sample font's actual က while you drag the nib
@@ -531,6 +543,8 @@ versions are git tags with installable font zips on the
 - Community health files, the contributor guide, the gallery site, and
   GitHub Pages deployment.
 
+[0.5.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.5.0
+[0.4.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.4.0
 [0.3.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.3.0
 [0.2.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.2.0
 [0.1.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.1.0
