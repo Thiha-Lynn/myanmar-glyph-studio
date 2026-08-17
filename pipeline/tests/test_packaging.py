@@ -30,7 +30,7 @@ ROOT = PIPELINE.parent
 # Commands that regenerate repository data. Each must refuse to run
 # outside a checkout rather than write somewhere surprising.
 REPO_TOOLS = ["make_gallery", "gen_inventory", "make_showcase",
-              "make_book", "make_pdf", "make_reference"]
+              "make_book", "make_pdf", "make_reference", "make_logo"]
 
 
 def test_finds_the_checkout_from_inside_it():
