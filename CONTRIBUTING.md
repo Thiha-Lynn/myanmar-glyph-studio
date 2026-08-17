@@ -84,6 +84,16 @@ Two conventions worth knowing before you touch the shaping code:
   adjust one, say what you measured and how in the commit message; the
   existing comments show the format.
 
+## Contributing with an AI assistant
+
+Welcome, and read [CLAUDE.md](CLAUDE.md) first — point your assistant at
+it too. It lists the invariants that are not obvious from the code: the
+two files that must change together, which data files are generated,
+when the committed fonts have to be rebuilt, and the shaping behaviour
+that looks like a bug and is not. The house rule it opens with applies
+to everyone, tool or not: **measure a typography claim against Padauk
+before implementing it.**
+
 ## Style consistency: the lead-designer rule
 
 Free-form crowds don't converge on a style, so every font family in
