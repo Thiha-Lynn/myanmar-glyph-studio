@@ -1221,6 +1221,15 @@ def measure_dot_advances(font, drawn, clearance=MIN_INK_CLEARANCE):
         if "_bottom" in anchors and "side" in anchors and dot_side is not None:
             chains.append(anchors["side"].x - anchors["_bottom"].x)
 
+    # EVERY candidate gets an entry, including the ones that need nothing.
+    #
+    # The set cannot depend on the weight. Masters are merged into a
+    # variable font by varLib, which requires every master's lookups to
+    # have identical coverage — only the VALUES may differ between them.
+    # Filtering on `extra > 0` looked tidy and made Bold's fatter ink
+    # qualify two glyphs that Light's did not, so the merge died with
+    # "Expected to see .glyphs==150, instead saw 152". A zero is a no-op
+    # at run time and costs one rule.
     out = {}
     for name in sorted(drawn):
         glyph = font[name]
@@ -1230,9 +1239,7 @@ def measure_dot_advances(font, drawn, clearance=MIN_INK_CLEARANCE):
         reach = [bottom.x - dot_attach.x + dot_box.xMax]
         reach += [bottom.x + step - dot_side.x + dot_box.xMax
                   for step in chains]
-        extra = round(max(reach) + clearance - glyph.width - room)
-        if extra > 0:
-            out[name] = extra
+        out[name] = max(0, round(max(reach) + clearance - glyph.width - room))
     return out
 
 
@@ -1643,18 +1650,19 @@ def generate_features(drawn, wide_bases=None, bases=None, dot_advances=None):
                        if n == "medialRa-myanmar"
                        or n.startswith("medialRa-myanmar."))
     if dot_advances and all_wraps and "dotBelow-myanmar" in drawn:
-        by_value = defaultdict(list)
-        for glyph_name, extra in sorted(dot_advances.items()):
-            if glyph_name in drawn:
-                by_value[extra].append(glyph_name)
-        if by_value:
+        # One rule per carrier, in glyph order. Grouping by value would be
+        # shorter, but the groups differ between weights and varLib needs
+        # every master's lookups laid out identically — same rules, same
+        # order, same coverage, only the numbers moving.
+        carriers = sorted(n for n in dot_advances if n in drawn)
+        if carriers:
             lines.append("feature dist {")
             lines.append("  lookup dot_before_wrap {")
             lines.append("    lookupflag UseMarkFilteringSet "
                          "[dotBelow-myanmar];")
-            for extra, names in sorted(by_value.items()):
+            for name in carriers:
                 lines.append(
-                    f"    pos [{' '.join(names)}]' <0 0 {extra} 0> "
+                    f"    pos {name}' <0 0 {dot_advances[name]} 0> "
                     f"dotBelow-myanmar [{' '.join(all_wraps)}];")
             lines.append("  } dot_before_wrap;")
             lines.append("} dist;")
