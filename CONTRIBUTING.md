@@ -3,6 +3,71 @@
 ကြိုဆိုပါတယ် — welcome! This project runs on small contributions:
 a single well-drawn glyph, a bug report, a translated hint, a test sentence.
 
+## Where to start — four standing invitations
+
+These live here rather than in the issue tracker, because they are not
+bugs waiting to be fixed: they are open invitations that stay open. Take
+any of them at any time, without asking first, and without claiming a
+ticket. Partial work is welcome on all four.
+
+### A. Draw the 34 base consonants for a new community font
+
+The consonants က–အ set a font's whole personality. The families in this
+repository carry mine; this invitation is for **yours**. Open the
+[studio](https://thiha-lynn.github.io/myanmar-glyph-studio/), name your
+font, trace the dimmed guides in the Consonants group, press **Save**,
+and open a PR adding your `.glyphstudio.json` under
+`projects/<font-name>/`. Five letters in a consistent hand is already a
+real contribution. The
+[every-glyph grid](https://thiha-lynn.github.io/myanmar-glyph-studio/showcase.html#inventoryH)
+is a visual to-do list — a tofu box is a glyph nobody has drawn, and the
+✎ on each cell opens exactly that glyph.
+
+### B. Draw the digits ၀–၉ and the punctuation ၊ ။
+
+Twelve drawings, an evening's work, a complete PR. One thing worth
+knowing because it is easy to get wrong: **Myanmar digits are tabular** —
+every figure takes the same advance so numbers line up in columns. The
+build enforces it (the kerning tool refuses to touch digits, fontbakery
+checks it), so draw freely and let the pipeline handle spacing.
+
+### C. Translate the studio into more Myanmar languages
+
+The one thing no maintainer here can do alone. The UI is English and
+Burmese today; Shan, Mon and S'gaw Karen are wanted, as are corrections
+to the existing Burmese typography vocabulary. A language is **one file**
+in `web/js/lang/` registered with `I18N.register(code, {…})` —
+[docs/TRANSLATING.md](docs/TRANSLATING.md) walks through it, and the
+tooling tells you exactly what is missing:
+
+```bash
+mgs-i18n-check              # what every language has and lacks
+mgs-i18n-check --todo shn   # a paste-ready stub for Shan
+```
+
+Partial translations work: the UI falls back to English per string, so
+twenty translated strings help immediately and nothing breaks.
+
+### D. Judge a built font by eye — does it look right to you?
+
+All three shaping engines are verified in software (6,363 cluster
+comparisons each against Apple's CoreText and Microsoft's DirectWrite,
+zero rendering differences). That proves the engines draw what the font
+asks for. It does **not** prove that what the font asks for looks right
+to someone who reads Burmese. That judgement is the contribution.
+
+Open the
+[device shaping test](https://thiha-lynn.github.io/myanmar-glyph-studio/devicetest.html)
+— 25 known-difficult clusters, each with a note on what correct looks
+like, and it writes a paste-ready report. Or install a font from the
+[gallery](https://thiha-lynn.github.io/myanmar-glyph-studio/gallery.html)
+and type in Word, Chrome and Notepad. "ဋ္ဌ looks like a tangle" or "the
+tone mark sits too far right in ကျွန်ုပ်" is exactly the report wanted,
+and a screenshot is plenty — you need to know nothing about fonts to
+file one. Open a
+[Discussion](https://github.com/Thiha-Lynn/myanmar-glyph-studio/discussions)
+or an issue with what you saw.
+
 ## Ways to contribute
 
 ### 1. Draw glyphs for a community font

@@ -4,7 +4,7 @@
 [![Deploy studio](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/pages.yml/badge.svg)](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/pages.yml)
 [![Studio](https://img.shields.io/badge/studio-draw%20in%20your%20browser-a8352f)](https://thiha-lynn.github.io/myanmar-glyph-studio/)
 [![License: MIT + OFL](https://img.shields.io/badge/license-MIT%20%2B%20OFL--1.1-blue)](LICENSE)
-[![Good first issues](https://img.shields.io/github/issues/Thiha-Lynn/myanmar-glyph-studio/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-7057ff)](CONTRIBUTING.md#where-to-start--four-standing-invitations)
 
 **Sketch your own Myanmar font, glyph by glyph, over dimmed guide characters — then build a real, installable, Unicode-correct font.**
 
@@ -236,8 +236,9 @@ All skill levels welcome — drawing a single glyph is a real contribution.
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the ways in (drawing, tools,
 testing, translation), [projects/README.md](projects/README.md) for the
 font-family folder layout, and [docs/LAUNCH.md](docs/LAUNCH.md) for the
-maintainer playbook. New here? Pick a
-[good first issue](https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+maintainer playbook. New here? Take one of the four
+[standing invitations](CONTRIBUTING.md#where-to-start--four-standing-invitations)
+— no ticket to claim, partial work welcome.
 Testing a font on a real phone or Windows box is the easiest one: open the
 [device shaping test](https://thiha-lynn.github.io/myanmar-glyph-studio/devicetest.html)
 there and it renders every tricky cluster, tells you what correct looks

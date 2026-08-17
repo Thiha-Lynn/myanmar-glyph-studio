@@ -46,7 +46,7 @@ OpenType shaping စည်းမျဉ်းတွေ (blwf, rphf, pres, blws, m
 
 **စာလုံးတစ်လုံး ရေးဆွဲပေးတာတောင် တကယ့် contribution ဖြစ်ပါတယ်။**
 
-- စရန်လွယ်တဲ့ အလုပ်များ — [good first issues](https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+- စရန်လွယ်တဲ့ အလုပ်လေးခု — [ဖိတ်ခေါ်ချက်များ](CONTRIBUTING.md#where-to-start--four-standing-invitations)
 - ပါဝင်နည်း အသေးစိတ် — [CONTRIBUTING.md](CONTRIBUTING.md)
   (ရေးဆွဲခြင်း၊ ကိရိယာပြုပြင်ခြင်း၊ စမ်းသပ်ခြင်း၊ ဘာသာပြန်ခြင်း)
 - မေးခွန်းများ၊ အကြံဉာဏ်များ — [Discussions](https://github.com/Thiha-Lynn/myanmar-glyph-studio/discussions)
