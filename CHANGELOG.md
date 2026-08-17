@@ -176,6 +176,19 @@ versions are git tags with installable font zips on the
   one that shifts the rest of the cluster along, is still reported.
 
 ### Fixed
+- **Below-vowels sat at five different depths.** ု hung at −418 under ခ
+  and −463 under ရ, because the bottom anchor was derived from each base's
+  own ink and deep-descender letters got 40 units more than shallow ones.
+  Padauk puts every below-vowel at −439…−93 under every letter, and for
+  good reason: a reader scanning a line sees the vowels as a row, and one
+  that sags under န but not က reads as a wobble. Now the constant
+  `BOTTOM_ANCHOR_Y = −73`, landing every vowel within five units of
+  Padauk's row on all thirty-three consonants.
+
+  Every automated check passed throughout — each vowel was individually
+  attached, clear and inside the band. It took a screenshot of the
+  vocabulary list to see it, which is the second time this release that a
+  reader beat the test suite.
 - **ိံ collided with the kinzi above it** (လင်္ဃိံ, ကင်္ကိံ, သင်္ခိံ).
   The kinzi parks the next above-mark beside its hook with a gap sized
   for one mark, and ိံ is a single wide drawn ligature, so it landed on
