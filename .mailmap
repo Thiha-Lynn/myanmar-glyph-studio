@@ -1,0 +1,11 @@
+# One maintainer, three git identities.
+#
+# Commits before 2026-08-16 predate this repository's local git identity:
+# they were authored under the development machine's old global identity
+# (a university account GitHub displays as uit-shinnthantkyaw) or under a
+# personal email. Every one of them is the same maintainer. This file maps
+# them all to the canonical identity, so `git shortlog -sne` — and any
+# tool that respects .mailmap — shows the true picture.
+Thiha-Lynn <156650865+Thiha-Lynn@users.noreply.github.com> Thiha-Lin <156650865+Thiha-Lynn@users.noreply.github.com>
+Thiha-Lynn <156650865+Thiha-Lynn@users.noreply.github.com> SHINN THANT <b8_shinnthantkyaw@uit.edu.mm>
+Thiha-Lynn <156650865+Thiha-Lynn@users.noreply.github.com> Thomas <koshanlay1994@gmail.com>

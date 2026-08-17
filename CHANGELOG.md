@@ -19,6 +19,16 @@ versions are git tags with installable font zips on the
   pass `twine check --strict`; the corpora ship inside the wheel. Until
   the maintainer files that form, the package remains un-uploaded and the
   documentation keeps saying so.
+- **`.mailmap`, and one line that says who wrote this** (README
+  "Contributing & community"): GitHub's contributor graph shows what
+  looks like three humans, because the first days' commits were authored
+  under the development machine's old global identity (a university
+  account) and a personal email before the repository-local identity was
+  set on 2026-08-16. Every external review of the repo trips over it, and
+  silence reads worse than the ordinary truth: one maintainer, three git
+  identities. `.mailmap` maps them all to `Thiha-Lynn`, the README says
+  so in one line, and the package metadata's maintainer field now names
+  the same identity instead of the old machine one.
 
 ## [0.5.0] — 2026-08-17
 
