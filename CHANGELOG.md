@@ -37,6 +37,17 @@ versions are git tags with installable font zips on the
   manipulation`, dropping the double-tap-zoom delay on their buttons.
 
 ### Added
+- **The README finally shows the tool** (`docs/images/`): a repository
+  for a visual, phone-first drawing app had not a single screenshot.
+  Both READMEs (English and Burmese) now open with the studio on a
+  desktop and on a phone — real captures of the current build — and a
+  paragraph saying out loud what the mobile support actually is: palm
+  rejection, pressure, two-finger pan & zoom, multi-finger undo/redo,
+  thumb bar, offline PWA install.
+- **The full-vocabulary re-run is dated** (`docs/VALIDATION.md`): all
+  seven shipped font files re-validated 2026-08-17 against the complete
+  12,450-word DatarrX vocabulary — 0 FAIL everywhere, with the remaining
+  WARN/GAP/SPEC counts named and explained rather than left implied.
 - **PyPI publishing, wired and tokenless**
   (`.github/workflows/publish.yml`): the package has been PEP 621-complete
   since 0.3.0 but never uploaded, so `pip install myanmar-glyph-studio`

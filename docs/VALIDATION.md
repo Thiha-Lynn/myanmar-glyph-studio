@@ -44,6 +44,14 @@ have to agree. They do — the full vocabulary has never produced a
 finding the cover missed. That is a result about corpus design, and it
 is why CI still gates on the small offline one.
 
+Last full re-run: **2026-08-17**, all seven shipped font files (statics
+and variable builds, after the below-vowel depth unification): **0 FAIL
+everywhere**. What remains are the documented non-gating classes —
+`neighbour`/`bounds` WARNs (10–30 per file, the display weight highest),
+a GAP for U+2012 (a dataset character outside the Myanmar block), and,
+in the full-coverage fonts, six SPEC rows where the dataset stores a
+word in non-canonical order.
+
 ## Result summary
 
 **0 FAIL in every shipped font, on all four corpora.** WARNs are no longer
