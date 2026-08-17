@@ -7,6 +7,35 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
+### Fixed
+- **A second finger no longer eats your stroke** (`web/js/editor.js`):
+  landing a second finger mid-stroke used to silently discard everything
+  drawn so far — which is exactly what a resting palm or thumb does on a
+  phone. A stroke that was genuinely underway is now committed before the
+  pinch starts (a quick two-finger tap still cancels it, since the tap's
+  undo removes what was just committed — and redo brings it back). Worse,
+  an interrupted eraser drag kept its deletions but dropped the undo
+  snapshot, leaving erased ink with no history entry; the erase is now
+  sealed as a proper undo step instead.
+
+### Changed
+- **Drawing input costs what it should** (`web/js/editor.js`): the
+  screen→glyph transform read `getBoundingClientRect` — a forced layout —
+  once per coalesced sample, up to 240 Hz under a stylus; it is now
+  cached per stroke. Pointer-move rendering is coalesced to one paint per
+  animation frame (pinch, pan, eraser ring and freehand paths), instead
+  of one full canvas redraw per input event.
+- **The canvas re-fits itself** (`web/js/editor.js`): a `ResizeObserver`
+  on the canvas wrap replaces the reliance on hand-placed
+  `Editor.resize()` calls, so the soft keyboard, rotation and future
+  panels can no longer leave the drawing surface at a stale size.
+- **Touch gestures introduce themselves** (`web/js/app.js`): the
+  canvas-corner gesture tip is hidden on phones — the one place gestures
+  matter most — so the first finger on the canvas now shows a one-time
+  toast: two fingers pan & zoom, two-finger tap undoes, three-finger tap
+  redoes. The scrolling tool rows also declare `touch-action:
+  manipulation`, dropping the double-tap-zoom delay on their buttons.
+
 ### Added
 - **PyPI publishing, wired and tokenless**
   (`.github/workflows/publish.yml`): the package has been PEP 621-complete
