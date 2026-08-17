@@ -79,6 +79,13 @@ and keeps working offline, guide font and all. See
 [docs/PLATFORMS.md](docs/PLATFORMS.md) for installing it and for wrapping
 it as a store app.
 
+Prefer a downloadable application? Desktop builds — macOS DMG, Windows
+installer, Linux AppImage/deb — are attached to each
+[release](https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases).
+They are the same studio bundled with Electron, and they are unsigned;
+[docs/DESKTOP.md](docs/DESKTOP.md) explains exactly what that means and
+how to build your own.
+
 No build step, no install — it is plain HTML/JS:
 
 ```bash

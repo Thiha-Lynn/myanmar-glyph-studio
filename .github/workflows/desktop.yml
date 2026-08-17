@@ -1,0 +1,70 @@
+# Desktop builds: mac DMG, Windows installer, Linux AppImage/deb.
+#
+# Manual (workflow_dispatch) or on a published release, in which case the
+# artifacts are also uploaded to that release. Deliberately NOT part of
+# the PR-gating checks — the studio itself is tested by build.yml; this
+# workflow only wraps it in Electron.
+name: Desktop apps
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      # Bundle the WOFF2 webfont kits so the in-app gallery and showcase
+      # render the built fonts offline, same as the deployed site.
+      - name: Build gallery webfont kits
+        run: |
+          pip install fonttools brotli
+          python pipeline/make_gallery.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - name: Install Electron toolchain
+        working-directory: desktop
+        run: npm ci
+
+      - name: Build installers
+        working-directory: desktop
+        run: npx electron-builder --publish never
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: desktop-${{ matrix.os }}
+          path: |
+            desktop/dist/*.dmg
+            desktop/dist/*.exe
+            desktop/dist/*.AppImage
+            desktop/dist/*.deb
+          if-no-files-found: error
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          shopt -s nullglob
+          files=(desktop/dist/*.dmg desktop/dist/*.exe desktop/dist/*.AppImage desktop/dist/*.deb)
+          gh release upload "${{ github.event.release.tag_name }}" "${files[@]}" --clobber

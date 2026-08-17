@@ -1,0 +1,18 @@
+{
+  "name": "myanmar-glyph-studio-desktop",
+  "productName": "Myanmar Glyph Studio",
+  "version": "0.4.0",
+  "description": "Sketch your own Myanmar font, glyph by glyph — desktop shell for the Glyph Studio",
+  "author": "Myanmar Glyph Studio contributors",
+  "license": "MIT",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --publish never"
+  },
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8"
+  }
+}

@@ -1,0 +1,48 @@
+# Desktop packaging for the Glyph Studio. The whole web/ directory is
+# bundled as-is into resources/web and served over app:// by main.js —
+# what ships is byte-for-byte what the website serves.
+appId: io.github.thihalynn.MyanmarGlyphStudio
+productName: Myanmar Glyph Studio
+copyright: © Myanmar Glyph Studio contributors — MIT (app) + OFL (fonts)
+
+directories:
+  output: dist
+  buildResources: build
+
+files:
+  - main.js
+  - package.json
+
+extraResources:
+  - from: ../web
+    to: web
+
+# The builds are unsigned: there is no Apple Developer or Windows signing
+# certificate behind this project (docs/DESKTOP.md documents what users
+# see because of that). identity: null stops electron-builder searching
+# the keychain and keeps local and CI builds identical.
+mac:
+  category: public.app-category.graphics-design
+  icon: build/icon.png
+  identity: null
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+
+win:
+  icon: build/icon.png
+  target:
+    - target: nsis
+      arch: [x64]
+
+nsis:
+  oneClick: true
+  deleteAppDataOnUninstall: false
+
+linux:
+  icon: build/icon.png
+  category: Graphics
+  maintainer: Thiha-Lynn
+  target: [AppImage, deb]
+
+npmRebuild: false

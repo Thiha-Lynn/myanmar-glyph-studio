@@ -30,3 +30,8 @@ pipeline/build-*/
 *.egg-info/
 dist/
 build/
+
+# Desktop shell (Electron)
+desktop/node_modules/
+!desktop/build/
+!desktop/build/**
