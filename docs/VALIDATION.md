@@ -1,8 +1,8 @@
 # Shaping validation report
 
 Fonts under test: **Myanmar Glyph Sans** Light / Regular / Bold / VF and
-**Glyph Studio Sample** Regular, as committed in `projects/` (build of
-2026-08-16). Method: every string of the shaping specification corpus —
+**Glyph Studio Sample** Regular **and VF**, as committed in `projects/`
+(build of 2026-08-17). Method: every string of the shaping specification corpus —
 `pipeline/spec_corpus.txt`, 1 486 clusters across test Blocks A–O — is
 shaped with HarfBuzz and measured by `pipeline/validate_spec.py` per the
 checks in [SHAPING_SPEC.md §6](SHAPING_SPEC.md). Reference font for every
@@ -21,26 +21,45 @@ by greedy set cover so that together they contain **all 1 213 distinct
 syllable clusters** found in the 12 451-word Myanmar Wiktionary
 vocabulary of the [DatarrX Myanmar Word Glyphs
 dataset](https://huggingface.co/datasets/DatarrX/myanmar-word-glyphs)
-(CC BY 4.0). The full 12 450-word vocabulary was also run once in full
-during triage. (For scale context: the Myanmar OCR literature counts
+(CC BY 4.0). (For scale context: the Myanmar OCR literature counts
 1 881+ theoretically composable glyph shapes from 75 characters; real
 vocabulary uses the 1 213 measured here.)
 
+A third corpus is the **whole** of that vocabulary — all 12 450 words,
+not the cover drawn from it. It is fetched rather than committed, since
+vendoring somebody else's dataset raises a licensing question this repo
+does not need to answer:
+
+```bash
+cd pipeline
+pip install pyarrow
+python3 fetch_vocab.py                    # 41 MB, writes build-vocab/
+python3 validate_spec.py ../projects/myanmar-glyph-sans/MyanmarGlyphSans-Regular.ttf \
+        --corpus build-vocab/mwg_vocab_corpus.txt
+```
+
+The wide sweep exists to test the *cover*, not the font: if 711 words
+chosen for cluster coverage really do stand in for 12 450, the two runs
+have to agree. They do — the full vocabulary has never produced a
+finding the cover missed. That is a result about corpus design, and it
+is why CI still gates on the small offline one.
+
 ## Result summary
 
-**0 FAIL and 0 WARN findings in all five fonts, on both corpora** —
-every cluster of both corpora shapes and positions inside the measured
+**0 FAIL and 0 WARN findings in all six fonts, on all three corpora** —
+every cluster shapes and positions inside the measured
 bands with full clearances, in every weight. For calibration,
 the identical harness was run over the fonts the big platforms render
 Myanmar with. Ours is the only one that clears both corpora clean:
 
-| Font (engine context) | Spec corpus | Word corpus |
-| :--- | :--- | :--- |
-| **Myanmar Glyph Sans** (all weights + VF) | **0 FAIL, 0 WARN** | **0 FAIL, 0 WARN** |
-| Padauk 6.000 (SIL reference) | 7 FAIL — 5 mark collisions in ြ+ှ clusters, 2 unattached tone dots after ဌ | 1 FAIL |
-| Noto Sans Myanmar (Google Docs/Android family) | 4 FAIL | 0 FAIL |
-| Myanmar Text 1.10 (Microsoft Word/Windows font) | 7 FAIL | 4 FAIL |
-| PDA18-Stone (legacy PUA-ligature font) | 267 FAIL | 142 FAIL |
+| Font (engine context) | Spec corpus | Word corpus | Full 12 450-word vocabulary |
+| :--- | :--- | :--- | :--- |
+| **Myanmar Glyph Sans** (all weights + VF) | **0 FAIL, 0 WARN** | **0 FAIL, 0 WARN** | **0 FAIL, 0 WARN** |
+| **Glyph Studio Sample** (Regular + VF) | **0 FAIL, 0 WARN** | **0 FAIL, 0 WARN** | **0 FAIL, 0 WARN** |
+| Padauk 6.000 (SIL reference) | 7 FAIL — 5 mark collisions in ြ+ှ clusters, 2 unattached tone dots after ဌ | 1 FAIL | 5 FAIL |
+| Noto Sans Myanmar (Google Docs/Android family) | 4 FAIL | 0 FAIL | not run — font not on the test machine |
+| Myanmar Text 1.10 (Microsoft Word/Windows font) | 7 FAIL | 4 FAIL | not run — font not on the test machine |
+| PDA18-Stone (legacy PUA-ligature font) | 267 FAIL | 142 FAIL | 2 219 FAIL |
 
 Benchmark numbers use each font's own OS/2 clipping metrics and are
 read with the caveat that some checks (attachment distance, wrap
@@ -124,6 +143,52 @@ the real-vocabulary corpus caught. All now regression-tested
 
 Every fix was verified against Padauk's shaped geometry before/after,
 and the studio's anchor preview (`web/js/anchors.js`) mirrors them all.
+
+## Defects found and fixed (2026-08-17)
+
+### The variable fonts were shipping the pre-fix build
+
+Every fix listed above landed in the static TTFs and **not** in the two
+committed variable fonts, which had last been rebuilt on 2026-08-15.
+They stayed that way for three days: stacks sinking past usWinDescent,
+asat detaching, kinzi colliding — 437 FAILs across the full vocabulary,
+79 on the spec corpus. This table said "all weights + VF: 0 FAIL, 0
+WARN". It was measured; it was measured on files that were not the ones
+being shipped.
+
+Nothing was wrong with the corpora — either of them would have caught
+this on the first run. The gate simply never pointed at those two files:
+`SHIPPED` in `tests/test_spec_validation.py` was a hand-written list of
+four statics. A shipped font that is not on the list is not tested, and
+nothing anywhere said the list had to be complete.
+
+The list is now a glob over `projects/`, so a font cannot be shipped
+without being tested — only deleted. A companion test names the six
+files that must be discovered, because a glob that matches nothing turns
+every parametrised test below it into a silent pass.
+
+### ကွှု kept the curl while ကျှု took the tall stroke
+
+Found by the showcase's row-by-row comparison against Padauk
+(`pipeline/make_showcase.py`), not by either corpus: both report 0 FAIL
+here, because the wrong vowel *form* is still perfectly positioned, and
+the combination appears in **0 of the 12 450** vocabulary words.
+
+The tall-stroke rule (below) is supposed to reach through an intervening
+ha. It did after a medial ya and not after a medial wa. Two reasons,
+both introduced when the fused medials were traced:
+
+* `medialWa-myanmar.ha` was missing from the blws context class, so once
+  pres fused wa+ha there was no `medialWa-myanmar` left to match.
+* Adding it to the class was not enough. The wa medials are **marks**,
+  and a `UseMarkFilteringSet` skips every mark outside it — so a fused
+  wa the rule needs to match on must be in the *set* as well. The ya
+  ligatures needed no such entry: they are spacing glyphs, which a
+  filtering set cannot hide. That asymmetry is exactly why half the rule
+  worked and hid the other half.
+
+Now regression-tested on both halves, and the full ျ/ွ/ှ × ု/ူ matrix —
+14 combinations — agrees with Padauk on which form each takes.
 
 ## Letterform parity: တစ်ချောင်းငင် by context
 

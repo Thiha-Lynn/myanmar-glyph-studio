@@ -605,6 +605,42 @@ def test_vowels_take_tall_forms_after_ja_and_wa(tmp_path):
     assert "medialHa-myanmar" not in lookup
 
 
+def test_fused_wa_ha_still_triggers_the_tall_vowel(tmp_path):
+    """ကွှု must take the tall stroke exactly as ကွု does.
+
+    Once pres fuses wa+ha into one glyph there is no medialWa-myanmar left
+    for the blws context to match, so the LIGATURE has to be recognised in
+    its place — in the context class *and* in the filtering set, because a
+    UseMarkFilteringSet skips every mark outside it and the wa medials are
+    marks. Missing the filter entry is the subtle half of this: the rule
+    then looks correct in the FEA and still never fires.
+
+    Shipped for three days as ကျှု taking the tall stroke while ကွှု kept
+    the curl — the ya ligature is a spacing glyph, which no filtering set
+    can hide, so half the rule worked and hid the other half.
+    """
+    font, drawn = build(tmp_path, {
+        "medialYa-myanmar": {"advance": 158, "strokes": [YA]},
+        "medialWa-myanmar": {"advance": None, "strokes": [WA]},
+        "medialHa-myanmar": {"advance": None, "strokes": [HA]},
+        "medialWa-myanmar.ha": {"advance": None, "strokes": [WA, HA]},
+        "u-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, -150], [350, -150]], 40)]},
+        "u-myanmar.alt": {"advance": None,
+                          "strokes": [stroke([[250, -430], [250, 430]], 40)]},
+    })
+    fea = font.features.text
+    lookup = fea.split("lookup medial_vowels")[1].split("} medial_vowels")[0]
+    flag = lookup.split("UseMarkFilteringSet")[1].split(";")[0]
+
+    assert "medialWa-myanmar.ha" in lookup.split("sub [")[1].split("]")[0]
+    assert "medialWa-myanmar.ha" in flag, (
+        "the fused wa+ha is a mark; outside the filtering set the context "
+        f"can never see it. Set was: {flag}")
+    # ha itself stays out, so an UNfused ha is still transparent (လျှု)
+    assert "medialHa-myanmar" not in flag.replace("medialWa-myanmar.ha", "")
+
+
 def test_wrap_vowels_take_stroke_and_tall_forms(tmp_path):
     """ကြု: inside the wrap the u is the synthesized straight stroke
     hanging from the under-sweep (Padauk's fused uni103C102F); ကြူ: the

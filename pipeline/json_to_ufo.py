@@ -1322,11 +1322,27 @@ def generate_features(drawn, wide_bases=None, bases=None):
     # intervening ha (Padauk's လျှု is uni103B103E + the tall stroke).
     # ရှု still keeps the short curl: there the ha follows a BASE, and
     # bases are always visible to the context, so [ja|wa] cannot match.
+    #
+    # Every FUSED medial has to be named here too. Hiding ha in the
+    # filtering set only works while ha is still its own glyph — once
+    # pres fuses it into the medial beside it there is nothing left to
+    # hide, and the context has to recognise the ligature itself. Miss one
+    # and the rule half-works: ကျှု took the tall stroke while ကွှု kept
+    # the curl, because the ya+ha ligature was listed and the wa+ha one
+    # was not.
     medial_ctx = [n for n in ("medialYa-myanmar", "medialYa-myanmar.beforewa",
                               "medialYa-myanmar.wa", "medialYa-myanmar.ha",
-                              "medialWa-myanmar") if n in drawn]
+                              "medialYa-myanmar.waha",
+                              "medialWa-myanmar", "medialWa-myanmar.ha")
+                  if n in drawn]
     medial_rules = []
-    medial_filter = {"medialWa-myanmar"} & set(drawn)
+    # The wa medials are MARKS, and a UseMarkFilteringSet skips every mark
+    # outside it — so a wa the rule needs to *match on* has to be in the
+    # set, not merely in the context class above. The ya medials need no
+    # such entry: they are spacing glyphs, which a filtering set never
+    # hides. ha stays out on purpose, which is what lets the wa context
+    # reach through an unfused ha.
+    medial_filter = {"medialWa-myanmar", "medialWa-myanmar.ha"} & set(drawn)
     for base_v, alt_v in (("u-myanmar", "u-myanmar.alt"),
                           ("uu-myanmar", "uu-myanmar.alt")):
         if base_v in drawn and alt_v in drawn and medial_ctx:

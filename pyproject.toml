@@ -77,6 +77,8 @@ mgs-inventory = "myanmar_glyph_studio.gen_inventory:main"
 mgs-postbuild = "myanmar_glyph_studio.postbuild:main"
 mgs-i18n-check = "myanmar_glyph_studio.i18n_check:main"
 mgs-kerning = "myanmar_glyph_studio.make_kerning:main"
+mgs-fetch-vocab = "myanmar_glyph_studio.fetch_vocab:main"
+mgs-showcase = "myanmar_glyph_studio.make_showcase:main"
 
 # The modules live in pipeline/ so that the documented, clone-and-run
 # workflow (python3 pipeline/json_to_ufo.py …) keeps working unchanged;

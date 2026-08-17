@@ -20,12 +20,32 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 CORPUS = Path(__file__).resolve().parent.parent / "spec_corpus.txt"
 WORDS = Path(__file__).resolve().parent.parent / "word_corpus.txt"
 
-SHIPPED = [
-    ROOT / "projects" / "myanmar-glyph-sans" / "MyanmarGlyphSans-Regular.ttf",
-    ROOT / "projects" / "myanmar-glyph-sans" / "MyanmarGlyphSans-Light.ttf",
-    ROOT / "projects" / "myanmar-glyph-sans" / "MyanmarGlyphSans-Bold.ttf",
-    ROOT / "projects" / "sample" / "GlyphStudioSample-Regular.ttf",
-]
+# Discovered, never listed. A hand-written list is only correct until
+# someone ships a file that is not on it: the two variable fonts were
+# committed for three days rendering 437 vocabulary words wrong — stacks
+# sinking past usWinDescent, asat detaching, kinzi colliding — because
+# every one of those bugs had been fixed in a rebuild the VFs never got,
+# and nothing tested them. Globbing means a shipped font cannot be
+# forgotten; it can only be deleted.
+SHIPPED = sorted((ROOT / "projects").glob("*/**/*.ttf"))
+
+
+def test_discovery_found_every_shipped_font():
+    """A glob that matches nothing makes every test below vacuously pass.
+
+    So name what has to be there — the variable fonts especially, since
+    they are the ones that went stale unnoticed, and a parametrised test
+    over an empty list is exactly how that would stay quiet.
+    """
+    found = {p.name for p in SHIPPED}
+    assert {
+        "MyanmarGlyphSans-Regular.ttf",
+        "MyanmarGlyphSans-Light.ttf",
+        "MyanmarGlyphSans-Bold.ttf",
+        "MyanmarGlyphSans-VF.ttf",
+        "GlyphStudioSample-Regular.ttf",
+        "GlyphStudioSample-VF.ttf",
+    } <= found, f"shipped fonts missing from discovery: {found}"
 
 
 def test_corpus_parses_and_covers_all_blocks():

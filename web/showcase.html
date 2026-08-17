@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#a8352f">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<title>Rendering showcase — a sketched Myanmar font, measured</title>
+<meta name="description" content="Every hard Myanmar cluster rendered in a font drawn stroke-by-stroke in the browser, side by side with the font it was traced over — with the measurements behind each row. မြန်မာစာလုံးများ စမ်းသပ်ပြသချက်။">
+<link rel="canonical" href="https://thiha-lynn.github.io/myanmar-glyph-studio/showcase.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Myanmar Glyph Studio">
+<meta property="og:title" content="Rendering showcase — a sketched Myanmar font, measured">
+<meta property="og:description" content="Medial stacks, wraps, kinzi and tone marks rendered by a font generated from browser sketches — each row measured against Padauk.">
+<meta property="og:url" content="https://thiha-lynn.github.io/myanmar-glyph-studio/showcase.html">
+<meta property="og:image" content="https://thiha-lynn.github.io/myanmar-glyph-studio/icons/icon-512.png">
+<meta name="twitter:card" content="summary">
+<style>
+  :root {
+    --bg: #faf7f2; --card: #ffffff; --ink: #26211c; --muted: #7a7168;
+    --line: #e4ddd2; --accent: #a8352f; --accent-soft: #f6e8e7;
+    --ok: #2f7d46; --warn: #9a6410;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171412; --card: #211d1a; --ink: #ece6dd; --muted: #a1988d;
+      --line: #37312b; --accent: #e06a63; --accent-soft: #3a2422;
+      --ok: #79c78f; --warn: #e0b063;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  header, main, footer { max-width: 68rem; margin: 0 auto; padding: 0 22px; }
+  header { padding-top: 22px; }
+  h1 { font-size: 24px; margin: 0 0 .3rem; }
+  h2 { font-size: 17px; margin: 2.4rem 0 .2rem; }
+  h2 .my { font-weight: 400; color: var(--muted); font-size: 15px; }
+  .lede { color: var(--muted); max-width: 46rem; }
+  nav a { color: var(--accent); margin-right: 1rem; }
+
+  /* The two faces under test. Both are loaded as webfonts so the page
+     proves itself without asking anyone to install anything. */
+  .mine { font-family: "MGS Showcase", "Padauk", sans-serif;
+          font-variation-settings: "wght" var(--wght, 400); }
+  .ref  { font-family: "Padauk Showcase", "Padauk", "Myanmar Text",
+                       "Noto Sans Myanmar", "Myanmar MN", sans-serif; }
+
+  .bar {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; flex-wrap: wrap; gap: .55rem 1rem; align-items: center;
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: .6rem; padding: .7rem .9rem; margin: 1rem 0 .4rem;
+  }
+  .bar label { color: var(--muted); font-size: .85rem; }
+  input[type=range] { vertical-align: middle; }
+  select, button, textarea, input[type=text] {
+    font: inherit; color: var(--ink); background: var(--bg);
+    border: 1px solid var(--line); border-radius: .4rem; padding: .3rem .5rem;
+  }
+  button { cursor: pointer; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: .6rem; }
+  th, td { border-bottom: 1px solid var(--line); padding: .5rem .5rem;
+           text-align: left; vertical-align: middle; }
+  th { color: var(--muted); font-size: .72rem; text-transform: uppercase;
+       letter-spacing: .05em; font-weight: 600; }
+  td.spec { font-size: var(--size, 42px); line-height: 1.75;
+            white-space: nowrap; }
+  td.rule { color: var(--muted); font-size: .82rem; max-width: 20rem; }
+  .cp { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: .68rem; color: var(--muted); white-space: nowrap; }
+  .ev { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: .68rem; color: var(--muted); }
+  .ev b { font-weight: 600; color: var(--ink); }
+  .delta { display: inline-block; padding: .05rem .35rem; border-radius: .8rem;
+           font-size: .68rem; border: 1px solid var(--line); }
+  .delta.close { color: var(--ok); }
+  .delta.far { color: var(--warn); border-color: currentColor; }
+  tr.flagged { background: var(--accent-soft); }
+
+  .words { display: flex; flex-wrap: wrap; gap: .5rem .9rem;
+           font-size: var(--size, 42px); line-height: 1.9; }
+  .pangram { font-size: calc(var(--size, 42px) * .72); line-height: 1.85;
+             margin: .4rem 0 0; }
+  .panel { background: var(--card); border: 1px solid var(--line);
+           border-radius: .6rem; padding: 1rem; margin-top: .8rem; }
+  .note { background: var(--card); border-left: 3px solid var(--accent);
+          padding: .6rem .9rem; border-radius: 0 .4rem .4rem 0;
+          margin: .9rem 0; }
+  .miss { border-left-color: var(--warn); }
+  code { background: var(--card); padding: .1rem .3rem; border-radius: .25rem;
+         font-size: .85em; }
+  a { color: var(--accent); }
+  footer { color: var(--muted); font-size: .85rem; padding-bottom: 3rem;
+           margin-top: 2.5rem; }
+  #typed { width: 100%; font-size: var(--size, 42px); line-height: 1.8;
+           min-height: 3em; }
+
+  /* Phones: the comparison is the point, so keep the two faces stacked
+     and drop the evidence columns into the card body. */
+  @media (max-width: 52rem) {
+    header, main, footer { padding: 0 14px; }
+    thead { position: absolute; left: -9999px; }
+    tr { display: block; background: var(--card); border: 1px solid var(--line);
+         border-radius: .6rem; padding: .7rem; margin-bottom: .7rem; }
+    td { border: 0; padding: .1rem 0; display: block; }
+    td.spec { white-space: normal; }
+    td.spec::before { content: attr(data-face); display: block;
+                      font-size: .65rem; letter-spacing: .05em;
+                      text-transform: uppercase; color: var(--muted); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Rendering showcase</h1>
+  <p class="lede">This font was not drawn in a desktop font editor. Every
+  outline in it was <strong>sketched stroke-by-stroke in the browser</strong>
+  over a dimmed guide, and the OpenType shaping — the rules that decide
+  which of four shapes a vowel takes, how wide a ရရစ် wrap has to be, where
+  a tone mark lands — was <strong>generated from those sketches</strong>.
+  Below is what that produces on the clusters that are hard to get right,
+  next to <a href="https://software.sil.org/padauk/">SIL Padauk</a>, the
+  font the outlines were traced over.</p>
+  <p class="lede">Each row carries its own evidence: the glyphs the shaper
+  actually produced, and how far the result sits from the reference in
+  units of a 1000-unit em. Nothing here is judged by eye.</p>
+  <nav>
+    <a href="index.html">← Studio</a>
+    <a href="gallery.html">Font gallery</a>
+    <a href="devicetest.html">Device test</a>
+    <a href="https://github.com/Thiha-Lynn/myanmar-glyph-studio">Source</a>
+  </nav>
+</header>
+
+<main>
+  <div class="bar">
+    <span><label for="size">Size</label>
+      <input id="size" type="range" min="22" max="110" value="42"></span>
+    <span id="wghtWrap" hidden><label for="wght">Weight</label>
+      <input id="wght" type="range" min="300" max="700" step="10" value="400">
+      <span class="cp" id="wghtVal">400</span></span>
+    <span><label for="cmp"><input id="cmp" type="checkbox" checked> Compare with Padauk</label></span>
+    <span><label for="ev"><input id="ev" type="checkbox" checked> Show measurements</label></span>
+  </div>
+
+  <div id="status"></div>
+
+  <section id="families"></section>
+
+  <h2>Real words <span class="my">— အသုံးများသော စကားလုံးများ</span></h2>
+  <p class="lede">Ordinary vocabulary, not torture tests. These come from the
+  same word list the font is validated against.</p>
+  <div class="panel"><div class="words mine" id="words"></div></div>
+
+  <h2>Pangram <span class="my">— စာလုံးစုံ ဝါကျ</span></h2>
+  <div class="panel">
+    <p class="cp" id="pangramLabel"></p>
+    <p class="pangram mine" id="pangram"></p>
+    <p class="cp" id="pangramRefLabel" data-role="cmp"></p>
+    <p class="pangram ref" id="pangramRef" data-role="cmp"></p>
+  </div>
+
+  <h2>Type your own</h2>
+  <p class="lede">Anything you paste here is rendered by the generated font.
+  If a cluster looks wrong, that is a bug worth
+  <a href="https://github.com/Thiha-Lynn/myanmar-glyph-studio/issues/new/choose">reporting</a>.</p>
+  <textarea id="typed" class="mine" spellcheck="false">မြန်မာစာ ကျွန်ုပ်တို့ ရွှေ</textarea>
+</main>
+
+<footer>
+  <p id="provenance"></p>
+  <p>Padauk © SIL International, used here unmodified as the comparison
+  reference under the OFL. Word list from the
+  <a href="https://huggingface.co/datasets/DatarrX/myanmar-word-glyphs">DatarrX
+  Myanmar Word Glyphs</a> dataset (CC BY 4.0), vocabulary from
+  <a href="https://my.wiktionary.org/">Myanmar Wiktionary</a> (CC BY-SA).</p>
+</footer>
+
+<script src="data/showcase.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var S = window.SHOWCASE;
+  var status = document.getElementById("status");
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  function note(cls, html) {
+    var d = el("div", "note " + (cls || ""));
+    d.innerHTML = html;
+    status.appendChild(d);
+    return d;
+  }
+
+  if (!S) {
+    note("miss", "<b>showcase.js has not been generated.</b> Run " +
+         "<code>python3 pipeline/make_showcase.py</code> and reload.");
+    return;
+  }
+
+  // --- load the faces -----------------------------------------------------
+  // The reference is committed, so it always loads. The font under test is
+  // whatever the last build produced, published by make_gallery.py — when
+  // that has not run, say so plainly instead of quietly falling back to a
+  // system font and showing a comparison of Padauk against Padauk.
+  function face(family, url) {
+    var f = new FontFace(family, "url(" + url + ")");
+    return f.load().then(function (loaded) {
+      document.fonts.add(loaded);
+      return true;
+    }).catch(function () { return false; });
+  }
+
+  face("Padauk Showcase", "fonts/Padauk-Regular.ttf");
+
+  fetch("gallery-data/fonts.json")
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (manifest) {
+      if (!manifest || !manifest.fonts || !manifest.fonts.length) throw 0;
+      // Prefer the project whose family matches what showcase.js measured,
+      // so the page never renders one font while quoting another's numbers.
+      var pick = null;
+      manifest.fonts.forEach(function (f) {
+        if (!pick && f.family === S.font.family) pick = f;
+      });
+      pick = pick || manifest.fonts[0];
+
+      var variable = pick.variable;
+      var url = "gallery-data/" +
+        (variable && (variable.woff2 || variable.file) ||
+         pick.woff2 || pick.file);
+
+      return face("MGS Showcase", url).then(function (ok) {
+        if (!ok) throw 0;
+        if (pick.family !== S.font.family) {
+          note("miss", "Showing <b>" + pick.family + "</b>, but the " +
+               "measurements below were taken from <b>" + S.font.family +
+               "</b>. Re-run <code>make_showcase.py</code>.");
+        }
+        var wght = variable && variable.axes &&
+          variable.axes.filter(function (a) { return a.tag === "wght"; })[0];
+        if (wght) setupWeight(wght);
+      });
+    })
+    .catch(function () {
+      note("miss",
+        "<b>The generated font is not published yet.</b> This page loads it " +
+        "from <code>gallery-data/</code>, which the build writes. Run " +
+        "<code>python3 pipeline/make_gallery.py</code> locally, or view this " +
+        "page on the deployed site. Until then every row below falls back " +
+        "to Padauk and the comparison is meaningless.");
+    });
+
+  function setupWeight(axis) {
+    var wrap = document.getElementById("wghtWrap");
+    var slider = document.getElementById("wght");
+    var out = document.getElementById("wghtVal");
+    slider.min = axis.min; slider.max = axis.max; slider.value = axis.default;
+    out.textContent = axis.default;
+    wrap.hidden = false;
+    slider.addEventListener("input", function () {
+      document.documentElement.style.setProperty("--wght", slider.value);
+      out.textContent = slider.value;
+    });
+  }
+
+  // --- rows ---------------------------------------------------------------
+  function deltaChip(ref) {
+    var span = el("span", "delta " + (ref.notable ? "far" : "close"));
+    span.textContent = (ref.notable ? "Δ " : "± ") + ref.worst + "u";
+    span.title = "advance " + (ref.dAdvance >= 0 ? "+" : "") + ref.dAdvance +
+                 ", ink edges [" + ref.dInk.join(", ") + "] vs " +
+                 S.reference.family + ", in units of a 1000 em";
+    return span;
+  }
+
+  function evidence(row) {
+    var box = el("td", "ev");
+    var g = el("div", null, null);
+    g.appendChild(el("b", null, row.glyphs.join(" ")));
+    box.appendChild(g);
+    var meta = el("div", null, "adv " + row.advance +
+      (row.ink ? " · ink " + row.ink.join(" ") : ""));
+    box.appendChild(meta);
+    if (row.ref && !row.ref.unavailable) box.appendChild(deltaChip(row.ref));
+    if (row.notdef) {
+      var bad = el("div", null, "no glyph — renders as tofu");
+      bad.style.color = "var(--warn)";
+      box.appendChild(bad);
+    }
+    return box;
+  }
+
+  function rowNode(row) {
+    var tr = el("tr");
+    if (row.ref && row.ref.notable) tr.className = "flagged";
+
+    var mine = el("td", "spec mine", row.text);
+    mine.setAttribute("data-face", S.font.family);
+    tr.appendChild(mine);
+
+    var ref = el("td", "spec ref", row.text);
+    ref.setAttribute("data-face", S.reference ? S.reference.family : "reference");
+    ref.dataset.role = "cmp";
+    tr.appendChild(ref);
+
+    var rule = el("td", "rule", row.rule || "");
+    rule.appendChild(el("div", "cp", row.cps));
+    tr.appendChild(rule);
+
+    var ev = evidence(row);
+    ev.dataset.role = "ev";
+    tr.appendChild(ev);
+    return tr;
+  }
+
+  var host = document.getElementById("families");
+  S.families.forEach(function (fam) {
+    var h = el("h2", null, fam.title + " ");
+    if (fam.titleMy) h.appendChild(el("span", "my", "— " + fam.titleMy));
+    host.appendChild(h);
+    if (fam.note) host.appendChild(el("p", "lede", fam.note));
+
+    var table = el("table");
+    var thead = el("thead");
+    var hr = el("tr");
+    [S.font.family, S.reference ? S.reference.family : "reference",
+     "Rule under test", "What the shaper produced"].forEach(function (t, i) {
+      var th = el("th", null, t);
+      if (i === 1) th.dataset.role = "cmp";
+      if (i === 3) th.dataset.role = "ev";
+      hr.appendChild(th);
+    });
+    thead.appendChild(hr);
+    table.appendChild(thead);
+
+    var tbody = el("tbody");
+    fam.rows.forEach(function (r) { tbody.appendChild(rowNode(r)); });
+    table.appendChild(tbody);
+    host.appendChild(table);
+  });
+
+  var words = document.getElementById("words");
+  S.words.forEach(function (w) { words.appendChild(el("span", null, w.text)); });
+  document.getElementById("pangram").textContent = S.pangram;
+  document.getElementById("pangramRef").textContent = S.pangram;
+  document.getElementById("pangramLabel").textContent = S.font.family;
+  document.getElementById("pangramRefLabel").textContent =
+    S.reference ? S.reference.family : "reference";
+
+  var flagged = 0, total = 0;
+  S.families.forEach(function (f) {
+    f.rows.forEach(function (r) {
+      total++;
+      if (r.ref && r.ref.notable) flagged++;
+    });
+  });
+  document.getElementById("provenance").textContent =
+    total + " clusters measured in " + S.font.family +
+    (S.reference ? " against " + S.reference.family + "; " + flagged +
+      " sit more than " + S.notable + " units away and are highlighted — " +
+      "a difference that size is a drawing decision, not a shaping bug, " +
+      "but it is shown rather than hidden." : "") +
+    " Generated by pipeline/make_showcase.py.";
+
+  // --- controls -----------------------------------------------------------
+  function toggle(role, on) {
+    document.querySelectorAll('[data-role="' + role + '"]').forEach(
+      function (n) { n.hidden = !on; });
+  }
+  document.getElementById("size").addEventListener("input", function () {
+    document.documentElement.style.setProperty("--size", this.value + "px");
+  });
+  document.getElementById("cmp").addEventListener("change", function () {
+    toggle("cmp", this.checked);
+  });
+  document.getElementById("ev").addEventListener("change", function () {
+    toggle("ev", this.checked);
+  });
+}());
+</script>
+</body>
+</html>

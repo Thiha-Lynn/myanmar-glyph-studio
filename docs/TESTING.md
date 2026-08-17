@@ -102,6 +102,47 @@ scheme). What must match, row by row, is the visual structure: the same
 things stacked, the same marks above and below, the e-vowel reordered to
 the same place.
 
+For the comparison in a form you can read rather than squint at, build
+the showcase page:
+
+```bash
+python3 make_showcase.py            # -> ../web/data/showcase.js
+python3 make_gallery.py             # -> ../web/gallery-data/ (the webfonts)
+```
+
+`web/showcase.html` then renders 60 hard clusters in your font beside the
+reference, each row carrying the glyphs the shaper produced and how far
+the ink sits from the reference in units of a 1000 em. Rows more than 40
+units out are highlighted — that is a *drawing* difference, not
+necessarily a bug, which is why the page shows them instead of grading
+them.
+
+This catches a class the corpora cannot. `validate_spec.py` measures
+whether a mark is attached, clear and inside the band; it has no opinion
+on whether the shaper picked the *right form*. A vowel in the wrong
+contextual shape is still perfectly positioned, so it scores 0 FAIL —
+and if the combination happens to be absent from the vocabulary, the
+word corpus never sees it either. The 2026-08-17 ကွှု fix came from this
+page, not from the corpora.
+
+## Sweeping the whole vocabulary
+
+CI gates on `word_corpus.txt`, 711 words chosen by greedy set cover to
+contain all 1 213 syllable clusters in the source vocabulary. To check
+the cover against the thing it covers, fetch the full 12 450 words:
+
+```bash
+pip install pyarrow
+python3 fetch_vocab.py
+python3 validate_spec.py ../projects/myanmar-glyph-sans/MyanmarGlyphSans-Regular.ttf \
+        --corpus build-vocab/mwg_vocab_corpus.txt
+```
+
+It runs in about half a second once fetched. The download is 41 MB and
+the corpus is not committed, so this is a local check rather than a CI
+step — and so far it has never reported anything the 711-word cover
+missed, which is the result it exists to produce.
+
 ## Release QA: fontbakery
 
 Every pipeline build is checked in CI with

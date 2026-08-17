@@ -10,6 +10,7 @@
 
 **✏️ Try it now — no install: <https://thiha-lynn.github.io/myanmar-glyph-studio/>**
 · **🖼 Font gallery: <https://thiha-lynn.github.io/myanmar-glyph-studio/gallery.html>**
+· **🔍 Rendering showcase: <https://thiha-lynn.github.io/myanmar-glyph-studio/showcase.html>**
 · **🇲🇲 မြန်မာဘာသာဖြင့် ဖတ်ရန် → [README.my.md](README.my.md)**
 
 An open-source toolkit for the Myanmar fonts community. Anyone who can draw
@@ -203,6 +204,7 @@ mgs-build MyFont.glyphstudio.json build/      # project file -> UFO + features
 mgs-variable MyFont.glyphstudio.json build/   # …plus weight masters and a VF
 mgs-proof build/MyFont-Regular.ttf "ကျွန်ုပ်" proof.png
 mgs-validate build/MyFont-Regular.ttf         # 1,486-cluster shaping audit
+mgs-fetch-vocab                               # …or sweep all 12,450 real words
 mgs-i18n-check                                # what a translation is missing
 ```
 
@@ -257,6 +259,13 @@ licensing details, including the bundled Padauk guide font, are in
 - [x] Dotted-circle (U+25CC) support glyph in the inventory
 - [x] Gallery site of community fonts with live preview
       ([web/gallery.html](web/gallery.html), auto-built on deploy)
+- [x] **Rendering showcase** — 60 hard clusters rendered in the generated
+      webfont beside the font they were traced over, each row carrying the
+      glyphs the shaper produced and the ink distance between the two
+      ([web/showcase.html](web/showcase.html), data from
+      `pipeline/make_showcase.py`). It catches what the corpora cannot: a
+      vowel in the *wrong contextual form* is still perfectly positioned,
+      so it scores 0 FAIL
 - [x] fontbakery QA in CI (universal profile, FAIL-gated) + HarfBuzz
       shaping regression on the sample font
 - [x] Smooth curve outlines — strokes are decimated and fitted to cubic

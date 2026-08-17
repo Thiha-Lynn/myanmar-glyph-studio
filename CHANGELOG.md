@@ -8,6 +8,27 @@ versions are git tags with installable font zips on the
 ## [Unreleased]
 
 ### Added
+- **Rendering showcase** ([web/showcase.html](web/showcase.html), data from
+  [`pipeline/make_showcase.py`](pipeline/make_showcase.py)): 60 hard
+  clusters — the four shapes of တစ်ချောင်းငင်, narrow/wide/tall ရရစ် wraps,
+  fused medials, stacks and kinzi — rendered in the generated webfont
+  beside the font its outlines were traced over, plus real words and a
+  free-typing box. Every row carries the glyphs the shaper actually
+  produced, the cluster's advance and ink box, and the distance to the
+  reference in units of a 1000 em; the eleven rows more than 40 units out
+  are highlighted rather than hidden, because at that size the difference
+  is a drawing decision and a reader should get to judge it. Comparison is
+  by measurement, never by glyph name — the two fonts solve the same
+  cluster with differently-named glyphs, and a name diff would report
+  differences nobody can see.
+- **Full-vocabulary sweep** ([`pipeline/fetch_vocab.py`](pipeline/fetch_vocab.py),
+  `mgs-fetch-vocab`): downloads all 12,450 words of the DatarrX Myanmar
+  Word Glyphs vocabulary and writes them as a corpus `validate_spec.py`
+  can read. CI still gates on the committed 711-word cover; this exists to
+  test *the cover*, and so far it has never found anything the cover
+  missed. Not committed and not in the gating path — the parquet is 41 MB
+  and vendoring someone else's dataset raises a licensing question this
+  repo does not need to answer.
 - **DirectWrite verified automatically — the last engine that needed a
   human** ([pipeline/directwrite/](pipeline/directwrite/)): issue #14 asks
   that the fonts be checked on HarfBuzz, CoreText and DirectWrite, and
@@ -34,6 +55,47 @@ versions are git tags with installable font zips on the
   one that shifts the rest of the cluster along, is still reported.
 
 ### Fixed
+- **The two variable fonts were shipping the pre-2026-08-16 build.** Every
+  anchor fix from that day landed in the static TTFs and in neither VF,
+  and they stayed committed that way for three days: stacks sinking past
+  usWinDescent, asat detaching from its base, kinzi colliding with the
+  vowel — **437 FAILs across the full vocabulary, 79 on the spec corpus**.
+  VALIDATION.md claimed "all weights + VF: 0 FAIL, 0 WARN" the whole time.
+  Both are rebuilt and both now measure clean on all three corpora.
+
+  Neither corpus was at fault — either would have caught this on the first
+  run. `SHIPPED` in `tests/test_spec_validation.py` was a hand-written
+  list of four statics, and a shipped font that is not on the list is not
+  tested. It is now a glob over `projects/`, so a font can be forgotten
+  only by being deleted, with a companion test naming the six files that
+  must be discovered — a glob that matches nothing would otherwise turn
+  every parametrised test below it into a silent pass.
+- **ကွှု kept the curl where ကျှု correctly took the tall stroke.** After
+  a medial ya or wa, ု/ူ is the tall spacing stroke, and the rule is meant
+  to reach through an intervening ha. It did so after ya and not after wa,
+  because the fused `medialWa-myanmar.ha` was missing from the blws
+  context — and adding it there was only half the fix: the wa medials are
+  **marks**, and a `UseMarkFilteringSet` skips every mark outside it, so a
+  fused wa the rule matches on has to be in the set too. The ya ligatures
+  never needed that entry, being spacing glyphs no filtering set can hide,
+  which is precisely how half the rule worked and concealed the other
+  half. The whole ျ/ွ/ှ × ု/ူ matrix — 14 combinations — now agrees with
+  Padauk on which form each takes.
+
+  Found by the showcase's comparison, not by either corpus: both score
+  0 FAIL here, since a vowel in the wrong contextual form is still
+  perfectly positioned, and the combination occurs in **0 of the 12,450**
+  vocabulary words. Geometry checks cannot see a form error.
+- **A missing hyphen was being excused as "not Myanmar text".** The
+  validator sorted every uncovered non-Myanmar character into a SPEC
+  bucket meaning *the test datum is malformed* — a rule that exists
+  because the corpus once carried Rejang letters. Punctuation is the
+  opposite case: Burmese prose contains hyphens (၈-ပါး), full stops and
+  dashes, so a font that cannot draw one renders a tofu box a reader
+  actually sees. Letters from another script still report SPEC; shared
+  punctuation and digits now report GAP, which is what they are. This
+  surfaced two real, previously hidden gaps — U+002D in the sample font
+  and U+2012 FIGURE DASH in Myanmar Glyph Sans.
 - **Block K now tests S'gaw Karen instead of Rejang.** The nine spec-corpus
   rows labelled "S'gaw Karen" carried U+A930–A938 — Rejang letters, a
   different script on a different continent, which no Myanmar font should
