@@ -201,6 +201,10 @@ docs/       design notes, the shaping spec + validation report, testing
             and debugging guides
 ```
 
+The full map — every module, the data flow, the pairs of files that must
+change together, and where to start as a designer, translator or
+developer — is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 ### Install the toolchain
 
 The studio needs nothing but a browser. The build pipeline is a normal
