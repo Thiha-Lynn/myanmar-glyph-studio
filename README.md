@@ -10,6 +10,9 @@
 
 **✏️ Try it now — no install: <https://thiha-lynn.github.io/myanmar-glyph-studio/>**
 · **🖼 Font gallery: <https://thiha-lynn.github.io/myanmar-glyph-studio/gallery.html>**
+· **🔍 Rendering showcase: <https://thiha-lynn.github.io/myanmar-glyph-studio/showcase.html>**
+· **✦ Type specimen: <https://thiha-lynn.github.io/myanmar-glyph-studio/specimen.html>**
+· **📖 Reading proof: <https://thiha-lynn.github.io/myanmar-glyph-studio/book.html>**
 · **🇲🇲 မြန်မာဘာသာဖြင့် ဖတ်ရန် → [README.my.md](README.my.md)**
 
 An open-source toolkit for the Myanmar fonts community. Anyone who can draw
@@ -197,12 +200,14 @@ The studio needs nothing but a browser. The build pipeline is a normal
 Python package:
 
 ```bash
-pip install myanmar-glyph-studio        # or: pip install -e ".[dev]" from a clone
+pip install -e ".[dev]"                 # from a clone — not on PyPI yet
 
 mgs-build MyFont.glyphstudio.json build/      # project file -> UFO + features
 mgs-variable MyFont.glyphstudio.json build/   # …plus weight masters and a VF
 mgs-proof build/MyFont-Regular.ttf "ကျွန်ုပ်" proof.png
 mgs-validate build/MyFont-Regular.ttf         # 1,486-cluster shaping audit
+mgs-fetch-vocab                               # …or sweep all 12,450 real words
+mgs-book                                      # page a book for the reading proof
 mgs-i18n-check                                # what a translation is missing
 ```
 
@@ -257,6 +262,21 @@ licensing details, including the bundled Padauk guide font, are in
 - [x] Dotted-circle (U+25CC) support glyph in the inventory
 - [x] Gallery site of community fonts with live preview
       ([web/gallery.html](web/gallery.html), auto-built on deploy)
+- [x] **Rendering showcase** — 60 hard clusters rendered in the generated
+      webfont beside the font they were traced over, each row carrying the
+      glyphs the shaper produced and the ink distance between the two
+      ([web/showcase.html](web/showcase.html), data from
+      `pipeline/make_showcase.py`). It catches what the corpora cannot: a
+      vowel in the *wrong contextual form* is still perfectly positioned,
+      so it scores 0 FAIL
+- [x] **Reading proof** — 34 pages of a classical Burmese orthography
+      primer set in a generated font, optionally beside Padauk
+      ([web/book.html](web/book.html), `pipeline/make_book.py`)
+- [x] **Shaped pens** — the nib is a superellipse (`meta.pen`: 2 round,
+      4 squircle, 8 slab) and `make_sample --squircle` squares the
+      skeletons themselves, so the toolkit can produce display faces and
+      not only monolinear sans. See
+      [Bagan Display](projects/bagan-display/)
 - [x] fontbakery QA in CI (universal profile, FAIL-gated) + HarfBuzz
       shaping regression on the sample font
 - [x] Smooth curve outlines — strokes are decimated and fitted to cubic

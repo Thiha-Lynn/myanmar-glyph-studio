@@ -30,6 +30,7 @@ import math
 import re
 import sys
 import unicodedata
+from collections import defaultdict
 from pathlib import Path
 
 try:
@@ -181,6 +182,10 @@ SIGN_LSB = 60  # left sidebearing given to re-aligned spacing signs
 # own _top anchor, so 60 here reproduces that gap — and keeps stacked
 # above-marks inside the +900 ascender.
 TOP_CLEARANCE = 60
+# The shaping spec's minimum separation between two pieces of ink
+# (docs/SHAPING_SPEC.md §6). Used here for the gap the `dist` feature has
+# to open up between a cluster's အောက်မြစ် and the next syllable's wrap.
+MIN_INK_CLEARANCE = 50
 # Deepest a subjoined letter may hang from, whatever the base's leg does.
 # Same floor the below-vowels use: Padauk's subjoined band is −440…−80.
 STACK_FLOOR = -50
@@ -249,19 +254,63 @@ def _smooth(points, iterations=2):
     return points
 
 
-def _arc(cx, cy, r, a0, a1, out):
-    for i in range(CAP_SEGMENTS + 1):
-        a = a0 + (a1 - a0) * (i / CAP_SEGMENTS)
-        out.append([cx + r * math.cos(a), cy + r * math.sin(a)])
+# Pen shape. The nib is a superellipse |x|^n + |y|^n = r^n, so ONE number
+# spans the whole range a designer cares about: 2 is a circle (the classic
+# round-nib brush this pipeline has always drawn), 4 is a squircle — square
+# enough to read as geometric, round enough to stay warm — and 8 is a
+# near-square slab. Anything else in the file stays identical at n = 2, so
+# every existing project compiles byte-for-byte as before.
+DEFAULT_PEN = 2.0
+PEN_MIN, PEN_MAX = 2.0, 12.0
 
 
-def _circle(cx, cy, r):
-    n = CAP_SEGMENTS * 4
-    return [[cx + r * math.cos(2 * math.pi * i / n),
-             cy + r * math.sin(2 * math.pi * i / n)] for i in range(n)]
+def _pen_radius(theta, n):
+    """How far the unit nib reaches in direction `theta`.
+
+    Polar form, deliberately: the stroke sides are offset along the
+    NORMAL, so the cap has to be described in the same terms or the two
+    do not meet and the outline develops a notch at every terminal. At
+    n = 2 this is 1.0 everywhere and the maths collapses back to the
+    circle the pipeline drew before.
+    """
+    if n == 2.0:
+        return 1.0
+    c, s = abs(math.cos(theta)), abs(math.sin(theta))
+    return (c ** n + s ** n) ** (-1.0 / n)
 
 
-def stroke_to_polygon(stroke, width_scale=1.0):
+def _arc(cx, cy, r, a0, a1, out, pen=DEFAULT_PEN):
+    # A squared nib turns most of its corner over a few degrees, so it
+    # needs more samples than a circle or the corner reads as a chamfer.
+    steps = CAP_SEGMENTS if pen == DEFAULT_PEN else CAP_SEGMENTS * 3
+    for i in range(steps + 1):
+        a = a0 + (a1 - a0) * (i / steps)
+        rr = r * _pen_radius(a, pen)
+        out.append([cx + rr * math.cos(a), cy + rr * math.sin(a)])
+
+
+def _circle(cx, cy, r, pen=DEFAULT_PEN):
+    n = CAP_SEGMENTS * (4 if pen == DEFAULT_PEN else 8)
+    pts = []
+    for i in range(n):
+        a = 2 * math.pi * i / n
+        rr = r * _pen_radius(a, pen)
+        pts.append([cx + rr * math.cos(a), cy + rr * math.sin(a)])
+    return pts
+
+
+def pen_exponent(project):
+    """The nib shape for a project: meta.pen, clamped, default round."""
+    try:
+        value = float((project.get("meta") or {}).get("pen", DEFAULT_PEN))
+    except (TypeError, ValueError):
+        return DEFAULT_PEN
+    if not math.isfinite(value):
+        return DEFAULT_PEN
+    return min(PEN_MAX, max(PEN_MIN, value))
+
+
+def stroke_to_polygon(stroke, width_scale=1.0, pen=DEFAULT_PEN):
     """Points are [x, y] or [x, y, w] (per-point pressure width).
 
     A stroke marked "fill": true is already a closed contour (e.g. an
@@ -281,10 +330,16 @@ def stroke_to_polygon(stroke, width_scale=1.0):
         return None
     if len(pts) == 1:
         return _circle(pts[0][0], pts[0][1],
-                       _pt_width(pts[0], stroke["width"]) * width_scale / 2.0)
+                       _pt_width(pts[0], stroke["width"]) * width_scale / 2.0,
+                       pen)
     pts = _smooth(pts, 2)
 
-    radii, normals = [], []
+    # Each side is offset by the nib's reach in that normal direction, not
+    # by a bare radius. With a round nib the reach is the radius and this
+    # is the old code exactly; with a squared one the stroke fattens where
+    # the nib presents its flat and thins on the diagonals, which is what
+    # gives the letterform its modulation instead of a uniform sausage.
+    radii, normals, angles = [], [], []
     for i in range(len(pts)):
         radii.append(max(1.0, _pt_width(pts[i], stroke["width"])
                          * width_scale / 2.0))
@@ -292,28 +347,32 @@ def stroke_to_polygon(stroke, width_scale=1.0):
         b = pts[min(len(pts) - 1, i + 1)]
         dx, dy = b[0] - a[0], b[1] - a[1]
         length = math.hypot(dx, dy) or 1.0
-        normals.append([-dy / length, dx / length])
+        nx, ny = -dy / length, dx / length
+        normals.append([nx, ny])
+        angles.append(math.atan2(ny, nx))
 
-    left = [[p[0] + n[0] * r, p[1] + n[1] * r]
-            for p, n, r in zip(pts, normals, radii)]
-    right = [[p[0] - n[0] * r, p[1] - n[1] * r]
-             for p, n, r in zip(pts, normals, radii)]
+    left, right = [], []
+    for p, n, r, ang in zip(pts, normals, radii, angles):
+        out_r = r * _pen_radius(ang, pen)
+        back_r = r * _pen_radius(ang + math.pi, pen)
+        left.append([p[0] + n[0] * out_r, p[1] + n[1] * out_r])
+        right.append([p[0] - n[0] * back_r, p[1] - n[1] * back_r])
 
     poly = list(left)
-    pe, ne = pts[-1], normals[-1]
-    ae = math.atan2(ne[1], ne[0])
-    _arc(pe[0], pe[1], radii[-1], ae, ae - math.pi, poly)
+    pe = pts[-1]
+    ae = angles[-1]
+    _arc(pe[0], pe[1], radii[-1], ae, ae - math.pi, poly, pen)
     poly.extend(reversed(right))
-    ps, ns = pts[0], normals[0]
-    a_s = math.atan2(-ns[1], -ns[0])
-    _arc(ps[0], ps[1], radii[0], a_s, a_s - math.pi, poly)
+    ps = pts[0]
+    a_s = angles[0] + math.pi
+    _arc(ps[0], ps[1], radii[0], a_s, a_s - math.pi, poly, pen)
     return poly
 
 
-def polygons_for(glyph_data, width_scale=1.0):
+def polygons_for(glyph_data, width_scale=1.0, pen=DEFAULT_PEN):
     polys = []
     for stroke in glyph_data.get("strokes", []):
-        poly = stroke_to_polygon(stroke, width_scale)
+        poly = stroke_to_polygon(stroke, width_scale, pen)
         if poly:
             polys.append(poly)
     return polys
@@ -544,6 +603,7 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
     family = meta.get("fontName", "MyMyanmarFont")
     style = style_name or meta.get("styleName", "Regular")
     author = meta.get("author", "")
+    nib = pen_exponent(project)
 
     font = ufoLib2.Font()
     info = font.info
@@ -622,14 +682,15 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             # U+1039 is invisible in rendered Burmese — ignore any sketched
             # ink and let the synthesizer below emit the empty control glyph.
             continue
-        polys = polygons_for(data, width_scale)
+        polys = polygons_for(data, width_scale, nib)
         if not polys:
             continue
 
         # The contour plan is always taken from the drawing as sketched,
         # before any re-alignment below: every weight master must decide
         # the same points and corners or the masters cannot interpolate.
-        ref_polys = polygons_for(data, 1.0) if width_scale != 1.0 else polys
+        ref_polys = (polygons_for(data, 1.0, nib)
+                     if width_scale != 1.0 else polys)
 
         cp = name_to_codepoint(name)
 
@@ -1010,8 +1071,8 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         g = font.newGlyph(vname)
         path = {"width": 48, "points": [[0, -250], [0, -470], [5, -515],
                                         [28, -545], [70, -557]]}
-        bar = [stroke_to_polygon(path, width_scale)]
-        bar_ref = ([stroke_to_polygon(path, 1.0)]
+        bar = [stroke_to_polygon(path, width_scale, nib)]
+        bar_ref = ([stroke_to_polygon(path, 1.0, nib)]
                    if width_scale != 1.0 else bar)
         draw_glyph(g, bar, ref_polys=bar_ref)
         g.width = 0
@@ -1043,7 +1104,8 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
     font.features.text = generate_features(
         set(drawn), wide_bases=measure_wide_bases(base_glyphs, ink_right,
                                                   advances),
-        bases=base_glyphs)
+        bases=base_glyphs,
+        dot_advances=measure_dot_advances(font, set(drawn)))
 
     # PostScript production names: the friendly source names carry hyphens,
     # which are not valid in shipped glyph names. ufo2ft renames at compile
@@ -1112,7 +1174,76 @@ def measure_wide_bases(base_glyphs, ink_right, advances):
                   if base_start + ink_right.get(name, 0) > wrap_reach + 100)
 
 
-def generate_features(drawn, wide_bases=None, bases=None):
+def measure_dot_advances(font, drawn, clearance=MIN_INK_CLEARANCE):
+    """How much advance each base needs so a following ြ clears its dot.
+
+    အောက်မြစ် is placed BESIDE the ink it belongs to, not under it, so on
+    a narrow letter it ends up past the cluster's advance — the letter
+    stops at 571 and the dot's ink runs to 784. Nothing notices until the
+    next syllable begins with a medial-ra wrap, whose under-sweep comes
+    down into exactly that band and draws straight through the dot.
+
+    Padauk answers this with the `dist` feature, widening the glyph that
+    carries the dot when a wrap follows (its uni102F goes 144 → 409). Do
+    the same, but derive the number instead of copying it: place the dot
+    on each base's own bottom anchor, see how far past the advance its ink
+    lands, and ask for that much back plus the clearance protocol.
+
+    Returns {glyph_name: extra_advance}, only for glyphs that need one.
+    """
+    dot = font["dotBelow-myanmar"] if "dotBelow-myanmar" in drawn else None
+    wrap = font["medialRa-myanmar"] if "medialRa-myanmar" in drawn else None
+    if dot is None or wrap is None:
+        return {}
+    dot_attach = {a.name: a for a in dot.anchors}.get("_bottom")
+    dot_box = dot.getBounds(font)
+    wrap_box = wrap.getBounds(font)
+    if dot_attach is None or dot_box is None or wrap_box is None:
+        return {}
+
+    # Where the wrap's own ink starts relative to its origin: that is the
+    # space the dot is allowed to occupy past the advance before the two
+    # collide.
+    room = wrap_box.xMin
+
+    # The dot does not always hang off the base. Below-marks carry `side`
+    # anchors so that a second mark lands BESIDE the first rather than
+    # under it, and the dot is usually that second mark — in ဖြုံ့ it
+    # chains onto the wrap's u-ghost and ends up 164 units past the
+    # advance, nowhere near where the base alone would put it. So walk one
+    # link of that chain for every below-mark that offers a `side`, and
+    # size the base's allowance by the furthest right the dot can end up.
+    dot_side = {a.name: a for a in dot.anchors}.get("_side")
+    chains = []
+    for name in sorted(drawn):
+        mark = font[name]
+        anchors = {a.name: a for a in mark.anchors}
+        if "_bottom" in anchors and "side" in anchors and dot_side is not None:
+            chains.append(anchors["side"].x - anchors["_bottom"].x)
+
+    # EVERY candidate gets an entry, including the ones that need nothing.
+    #
+    # The set cannot depend on the weight. Masters are merged into a
+    # variable font by varLib, which requires every master's lookups to
+    # have identical coverage — only the VALUES may differ between them.
+    # Filtering on `extra > 0` looked tidy and made Bold's fatter ink
+    # qualify two glyphs that Light's did not, so the merge died with
+    # "Expected to see .glyphs==150, instead saw 152". A zero is a no-op
+    # at run time and costs one rule.
+    out = {}
+    for name in sorted(drawn):
+        glyph = font[name]
+        bottom = {a.name: a for a in glyph.anchors}.get("bottom")
+        if bottom is None or glyph.width <= 0:
+            continue
+        reach = [bottom.x - dot_attach.x + dot_box.xMax]
+        reach += [bottom.x + step - dot_side.x + dot_box.xMax
+                  for step in chains]
+        out[name] = max(0, round(max(reach) + clearance - glyph.width - room))
+    return out
+
+
+def generate_features(drawn, wide_bases=None, bases=None, dot_advances=None):
     """Emit only rules whose glyphs were actually drawn.
 
     Rules are written before any script statement so they register under
@@ -1287,29 +1418,48 @@ def generate_features(drawn, wide_bases=None, bases=None):
     # the swap looks straight through an intervening ha — Padauk's ရှု is
     # ra.alt + its ha+u ligature. In the shared lookup ha must stay
     # visible (နှ swaps ON the ha itself), which would block ရှု.
+    # ဉ is the fourth of these and the odd one out twice over. Its side
+    # form is not a `.alt` variant but a DIFFERENT LETTER already in the
+    # font — Padauk swaps uni1009 for uni1025, and so do we, because ဉ's
+    # long tail is 838 units of ink inside a 555 advance and it runs
+    # straight into whatever follows. And its triggers include the ASAT,
+    # which the shared lookup must never see: na's swap has to fire
+    # *across* an asat (ကျွန်ုပ်), and a filtering set that contains asat
+    # makes it visible and blocks that match. So ဉ gets its own lookup,
+    # for the same reason ra has one.
     side_specs = (
         ("na-myanmar", ("u-myanmar", "uu-myanmar", "medialWa-myanmar",
                         "medialHa-myanmar", "medialWa-myanmar.ha",
                         "medialYa-myanmar", "medialYa-myanmar.beforewa")
-         + stack_trigs, "na"),
+         + stack_trigs, "na", None),
         ("nnya-myanmar", ("u-myanmar", "uu-myanmar", "medialWa-myanmar",
                           "medialHa-myanmar", "medialWa-myanmar.ha")
-         + stack_trigs, "na"),
+         + stack_trigs, "na", None),
         ("ra-myanmar", ("u-myanmar", "uu-myanmar", "medialWa-myanmar.ha",
-                        "medialHa-myanmar.u", "medialHa-myanmar.uu"), "ra"),
+                        "medialHa-myanmar.u", "medialHa-myanmar.uu"),
+         "ra", None),
+        # Measured against Padauk, which swaps before asat, below-vowel and
+        # subjoined letter — and leaves ဉွ ဉျ ဉံ ဉီ on the plain letter.
+        ("nya-myanmar", ("asat-myanmar", "u-myanmar", "uu-myanmar")
+         + stack_trigs, "nya", "u.indep-myanmar"),
     )
     side_rules = []
     side_filter = set()
     ra_side_rules = []
     ra_side_filter = set()
-    for side_base, trigger_names, group in side_specs:
-        alt = f"{side_base}.alt"
+    nya_side_rules = []
+    nya_side_filter = set()
+    for side_base, trigger_names, group, replacement in side_specs:
+        alt = replacement or f"{side_base}.alt"
         trigs = [t for t in trigger_names if t in drawn]
         if alt in drawn and side_base in drawn and trigs:
             rule = f"    sub {side_base}' [{' '.join(trigs)}] by {alt};"
             if group == "ra":
                 ra_side_rules.append(rule)
                 ra_side_filter.update(trigs)
+            elif group == "nya":
+                nya_side_rules.append(rule)
+                nya_side_filter.update(trigs)
             else:
                 side_rules.append(rule)
                 side_filter.update(t for t in trigs
@@ -1322,18 +1472,35 @@ def generate_features(drawn, wide_bases=None, bases=None):
     # intervening ha (Padauk's လျှု is uni103B103E + the tall stroke).
     # ရှု still keeps the short curl: there the ha follows a BASE, and
     # bases are always visible to the context, so [ja|wa] cannot match.
+    #
+    # Every FUSED medial has to be named here too. Hiding ha in the
+    # filtering set only works while ha is still its own glyph — once
+    # pres fuses it into the medial beside it there is nothing left to
+    # hide, and the context has to recognise the ligature itself. Miss one
+    # and the rule half-works: ကျှု took the tall stroke while ကွှု kept
+    # the curl, because the ya+ha ligature was listed and the wa+ha one
+    # was not.
     medial_ctx = [n for n in ("medialYa-myanmar", "medialYa-myanmar.beforewa",
                               "medialYa-myanmar.wa", "medialYa-myanmar.ha",
-                              "medialWa-myanmar") if n in drawn]
+                              "medialYa-myanmar.waha",
+                              "medialWa-myanmar", "medialWa-myanmar.ha")
+                  if n in drawn]
     medial_rules = []
-    medial_filter = {"medialWa-myanmar"} & set(drawn)
+    # The wa medials are MARKS, and a UseMarkFilteringSet skips every mark
+    # outside it — so a wa the rule needs to *match on* has to be in the
+    # set, not merely in the context class above. The ya medials need no
+    # such entry: they are spacing glyphs, which a filtering set never
+    # hides. ha stays out on purpose, which is what lets the wa context
+    # reach through an unfused ha.
+    medial_filter = {"medialWa-myanmar", "medialWa-myanmar.ha"} & set(drawn)
     for base_v, alt_v in (("u-myanmar", "u-myanmar.alt"),
                           ("uu-myanmar", "uu-myanmar.alt")):
         if base_v in drawn and alt_v in drawn and medial_ctx:
             medial_rules.append(
                 f"    sub [{' '.join(medial_ctx)}] {base_v}' by {alt_v};")
             medial_filter.add(base_v)
-    if blws_rules or side_rules or ra_side_rules or medial_rules:
+    if (blws_rules or side_rules or ra_side_rules or nya_side_rules
+            or medial_rules):
         lines.append("feature blws {")
         if blws_rules:
             lines.append("  lookup desc_vowels {")
@@ -1359,6 +1526,12 @@ def generate_features(drawn, wide_bases=None, bases=None):
                          f"[{' '.join(sorted(ra_side_filter))}];")
             lines.extend(ra_side_rules)
             lines.append("  } side_bases_ra;")
+        if nya_side_rules:
+            lines.append("  lookup side_bases_nya {")
+            lines.append("    lookupflag UseMarkFilteringSet "
+                         f"[{' '.join(sorted(nya_side_filter))}];")
+            lines.extend(nya_side_rules)
+            lines.append("  } side_bases_nya;")
         lines.append("} blws;")
         lines.append("")
 
@@ -1368,8 +1541,33 @@ def generate_features(drawn, wide_bases=None, bases=None):
     # the vowel then belongs to the ya and would overlap the kinzi's spot.
     abvs_rules = []
     if {"iAnusvara-myanmar", "i-myanmar", "anusvara-myanmar"} <= drawn:
-        abvs_rules.append(
-            "  sub i-myanmar anusvara-myanmar by iAnusvara-myanmar;")
+        # …but NOT after a kinzi. The kinzi parks the next above-mark
+        # beside its hook, with a gap sized for one mark; the ိံ ligature
+        # is a single wide glyph and lands on the hook instead
+        # (လင်္ဃိံ — found by the Jātaka corpus, and Padauk avoids it too
+        # by fusing the i INTO its kinzi and leaving ံ separate). Left
+        # unligated, ိ and ံ chain one after the other along the existing
+        # side anchors, which already handle exactly this.
+        if "kinzi-myanmar" in drawn:
+            # `ignore` only suppresses inside its OWN lookup, and a plain
+            # ligature rule cannot share one with a chain rule — feaLib
+            # splits them by GSUB type, so the ignore ends up alone in a
+            # lookup that does nothing and the ligature fires regardless.
+            # Making the ligature contextual too puts both in one GSUB6
+            # lookup, where the ignore actually bites.
+            lines.append("lookup iAnusvaraLigature {")
+            lines.append("  sub i-myanmar anusvara-myanmar "
+                         "by iAnusvara-myanmar;")
+            lines.append("} iAnusvaraLigature;")
+            lines.append("")
+            abvs_rules.append(
+                "  ignore sub kinzi-myanmar i-myanmar' anusvara-myanmar';")
+            abvs_rules.append(
+                "  sub i-myanmar' lookup iAnusvaraLigature "
+                "anusvara-myanmar';")
+        else:
+            abvs_rules.append(
+                "  sub i-myanmar anusvara-myanmar by iAnusvara-myanmar;")
     kinzi_ya = [n for n in ("medialYa-myanmar", "medialYa-myanmar.beforewa",
                             "medialYa-myanmar.wa", "medialYa-myanmar.ha")
                 if n in drawn]
@@ -1462,6 +1660,38 @@ def generate_features(drawn, wide_bases=None, bases=None):
                          "by uu-myanmar.alt;")
         lines.append("} psts;")
         lines.append("")
+
+    # dist: reserve room for the အောက်မြစ် when the next syllable opens with
+    # a ြ wrap. The dot itself cannot carry the advance — HarfBuzz zeroes
+    # the advance of GDEF marks — so the widening goes on the last SPACING
+    # glyph of the cluster, which is what Padauk does too. The filtering set
+    # holds only the dot, so any marks stacked between the letter and the
+    # dot are invisible and the three-glyph context still matches.
+    # EVERY wrap, not just the four plain ones: a cluster that begins with
+    # a fused wrap+u (ဖြုံ့ဖြုံ့) collides exactly the same way, and
+    # leaving `.u`/`.wa` out of the context is how five of these survived
+    # the first attempt at this fix.
+    all_wraps = sorted(n for n in drawn
+                       if n == "medialRa-myanmar"
+                       or n.startswith("medialRa-myanmar."))
+    if dot_advances and all_wraps and "dotBelow-myanmar" in drawn:
+        # One rule per carrier, in glyph order. Grouping by value would be
+        # shorter, but the groups differ between weights and varLib needs
+        # every master's lookups laid out identically — same rules, same
+        # order, same coverage, only the numbers moving.
+        carriers = sorted(n for n in dot_advances if n in drawn)
+        if carriers:
+            lines.append("feature dist {")
+            lines.append("  lookup dot_before_wrap {")
+            lines.append("    lookupflag UseMarkFilteringSet "
+                         "[dotBelow-myanmar];")
+            for name in carriers:
+                lines.append(
+                    f"    pos {name}' <0 0 {dot_advances[name]} 0> "
+                    f"dotBelow-myanmar [{' '.join(all_wraps)}];")
+            lines.append("  } dot_before_wrap;")
+            lines.append("} dist;")
+            lines.append("")
 
     # mark/mkmk GPOS is generated automatically by ufo2ft's MarkFeatureWriter
     # from the top/bottom/side anchors placed on each glyph.

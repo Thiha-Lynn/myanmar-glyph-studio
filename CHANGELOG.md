@@ -8,6 +8,117 @@ versions are git tags with installable font zips on the
 ## [Unreleased]
 
 ### Added
+- **A type specimen** ([web/specimen.html](web/specimen.html)): the full
+  set of plates a foundry publishes — masthead, the 33 consonants and
+  every sign as a grid, a waterfall from 84px to 15px, running text in
+  three sizes, a display plate, and the clusters that break Myanmar
+  fonts — for any face in the gallery, with a weight slider where the
+  family has an axis.
+
+  Set in classical Burmese throughout, never filler. A specimen exists to
+  be judged by a reader, and a reader cannot judge texture from lorem
+  ipsum in a script they read. The palette is palm leaf and lacquer: the
+  two surfaces Burmese was written on for a thousand years, parchment and
+  iron-gall dark by day, lacquer black and leaf gold at night.
+- **A reference corpus built from 538 Jātaka stories**
+  ([`pipeline/make_reference.py`](pipeline/make_reference.py),
+  `pipeline/jataka_corpus.txt`). `word_corpus.txt` was built once by hand
+  and nothing in the repository could reproduce it or point the same idea
+  somewhere else; this can. Give it a Wikisource category and it fetches
+  every page, segments them into syllable clusters exactly as HarfBuzz
+  does, and greedily selects the fewest passages that still contain every
+  cluster it saw.
+
+  On ကဏ္ဍ:ဇာတ်နိပါတ် — the Buddha's past-life cycle, 3.66 million
+  characters of classical narrative — that is **1,605 distinct clusters**,
+  a third more than the 1,213 in the DatarrX vocabulary, held by 556
+  passages (4.7% of the source). It found two real defects on its first
+  run, both fixed below. At 18s per font it is a deep sweep rather than a
+  CI gate; the fast regressions for what it caught are in the suite.
+- **A PDF typesetter** ([`pipeline/make_pdf.py`](pipeline/make_pdf.py),
+  `mgs-pdf`): the book as a real PDF, set in a generated font. A PDF
+  reader has no shaping engine — embed a Myanmar font and hand it a
+  string and you get storage order with no reordering or mark
+  positioning, the Zawgyi-era mess. So the producer shapes it: HarfBuzz
+  lays out every line and each positioned glyph goes into the page as a
+  filled vector path. Nothing to install, identical everywhere, prints.
+  Each glyph is a Form XObject defined once — inlining the outline at
+  every occurrence made a 26 MB file of the same ka drawn a few thousand
+  times; referencing it makes 323 KB.
+- **A second typeface, and the two knobs that shape it.** *Bagan Display* —
+  bold, squircle, 480 glyphs ([projects/bagan-display/](projects/bagan-display/)).
+  It exists because the pipeline could not previously make a font that
+  looked like anything but a monolinear round sans, and now it can:
+  - **`meta.pen`** — the nib is a superellipse, one number spanning the
+    range that matters: 2 is the circle the pipeline always drew, 4 a
+    squircle, 8 a slab. Written in polar form so the cap meets the stroke
+    sides exactly instead of notching at every terminal. Existing projects
+    compile **byte-for-byte identical** at the default, which is asserted
+    rather than assumed.
+  - **`make_sample --squircle N`** — squares the *skeletons*. This is the
+    knob that does the visible work: Myanmar's character lives in its
+    bowls, and those are circles, so a squared nib alone still reads as a
+    rounded sans. Each stroke is warped about its own centre from `(r, θ)`
+    to `(r · k(θ), θ)` and scaled back into its original box, which turns
+    circles into superellipses without changing a letter's extents or
+    where its anchors land.
+  - **`make_sample --weight X`** to scale stroke widths off the extracted
+    skeleton.
+
+  Bolding pushes marks upward, because mark anchors follow the base's ink:
+  at ×1.80 and full height, 930 clusters put ink above the design
+  ascender. Compressing the drawing to y × 0.90 brings that to 10. Nothing
+  was ever clipped — but the measurement is why the number is 0.90 rather
+  than a guess.
+- **A reading proof** ([web/book.html](web/book.html), data from
+  [`pipeline/make_book.py`](pipeline/make_book.py)): 34 pages of
+  **ကဗျာသာရတ္ထသတ်ပုံ**, a classical Burmese orthography primer in verse by
+  ညောင်ကန်ဆရာတော်, set page by page in the generated font with the option
+  to put the same page beside Padauk. A proof sheet shows a font the
+  clusters somebody chose for it; a book shows it the ones nobody chose.
+  A *spelling* book is the fairest test there is of a typeface claiming to
+  spell — its subject matter is the exact clusters that break Myanmar
+  fonts, chosen by its author because they are hard. Text from
+  မြန်မာဝီကီရင်းမြစ် (Burmese Wikisource), CC BY-SA 4.0, in its own file
+  with its own licence header.
+- **The whole vocabulary, rendered.** The showcase now renders all
+  **12,450** words of the DatarrX Myanmar Word Glyphs vocabulary in the
+  generated webfont — the entire dataset the font is validated against,
+  not a sample. The word list ships in
+  [`web/data/vocabulary.js`](web/data/vocabulary.js) (365 KB, 62 KB over
+  the wire) with its own licence header, deliberately kept out of
+  showcase.js: the code here is MIT, that is somebody else's CC BY /
+  CC BY-SA data, and the boundary belongs in the repository rather than
+  in a credits line. A "spot-check against the live dataset" button
+  samples five random pages from the Hugging Face API and reports whether
+  the bundled copy still matches. Loading all 12,450 live instead was
+  tried and measured: it is 498 paged requests, Hugging Face rate-limits
+  partway through, and the demo ends up half-drawn.
+- **Credits on the showcase** for the DatarrX dataset, the Myanmar
+  Wiktionary contributors whose volunteer work is the vocabulary, and SIL
+  Padauk. Two defects in this release were found because that dataset
+  exists.
+- **Rendering showcase** ([web/showcase.html](web/showcase.html), data from
+  [`pipeline/make_showcase.py`](pipeline/make_showcase.py)): 60 hard
+  clusters — the four shapes of တစ်ချောင်းငင်, narrow/wide/tall ရရစ် wraps,
+  fused medials, stacks and kinzi — rendered in the generated webfont
+  beside the font its outlines were traced over, plus real words and a
+  free-typing box. Every row carries the glyphs the shaper actually
+  produced, the cluster's advance and ink box, and the distance to the
+  reference in units of a 1000 em; the eleven rows more than 40 units out
+  are highlighted rather than hidden, because at that size the difference
+  is a drawing decision and a reader should get to judge it. Comparison is
+  by measurement, never by glyph name — the two fonts solve the same
+  cluster with differently-named glyphs, and a name diff would report
+  differences nobody can see.
+- **Full-vocabulary sweep** ([`pipeline/fetch_vocab.py`](pipeline/fetch_vocab.py),
+  `mgs-fetch-vocab`): downloads all 12,450 words of the DatarrX Myanmar
+  Word Glyphs vocabulary and writes them as a corpus `validate_spec.py`
+  can read. CI still gates on the committed 711-word cover; this exists to
+  test *the cover*, and so far it has never found anything the cover
+  missed. Not committed and not in the gating path — the parquet is 41 MB
+  and vendoring someone else's dataset raises a licensing question this
+  repo does not need to answer.
 - **DirectWrite verified automatically — the last engine that needed a
   human** ([pipeline/directwrite/](pipeline/directwrite/)): issue #14 asks
   that the fonts be checked on HarfBuzz, CoreText and DirectWrite, and
@@ -34,6 +145,96 @@ versions are git tags with installable font zips on the
   one that shifts the rest of the cluster along, is still reported.
 
 ### Fixed
+- **ိံ collided with the kinzi above it** (လင်္ဃိံ, ကင်္ကိံ, သင်္ခိံ).
+  The kinzi parks the next above-mark beside its hook with a gap sized
+  for one mark, and ိံ is a single wide drawn ligature, so it landed on
+  the hook. Suppressed after a kinzi — the pair then chains along the
+  side anchors that already work, which is close to Padauk's answer
+  (it fuses the ိ into its kinzi and leaves ံ separate). Found by the new
+  Jātaka corpus; invisible to the other three.
+
+  Worth recording how it had to be done: `ignore` only suppresses inside
+  its own lookup, and feaLib will not put a plain ligature rule in the
+  same lookup as a chain rule. The first fix compiled cleanly and changed
+  nothing, because the ignore was emitted into a lookup of its own. The
+  ligature had to become contextual too.
+- **A doubled mark was graded as a font bug.** Real transcribed text
+  contains slips — ကောာလိက, ကင်် — that nobody writes; 12 of the 556
+  Jātaka passages have one, and neither hand-built corpus has any. The
+  shaper stacks the duplicate because that is what a mark chain does, and
+  the second copy then rides past the clipping metrics. `validate_spec`
+  now reports `repeated-mark` as SPEC, which is what it is: a measurement
+  of the typo, not of the typeface.
+- **One syllable was drawn through the next, in 50 of the 12,450
+  vocabulary words.** Reported by a reader looking at rendered Burmese,
+  not by any test here — every geometry check measured a cluster against
+  itself, so nothing that happened across a cluster boundary was visible.
+  Down to **11, against Padauk's 7** on the same corpus, and four of the
+  eleven are words Padauk fails on too. Two causes:
+  - **ဉ had no narrow form.** 838 units of ink inside a 555 advance, so
+    its tail ran into whatever followed (`စဉ်ကြယ်`, `ငါးရှဉ့်ပုန်း`).
+    Padauk swaps in **uni1025** before the asat, a below-vowel or a
+    subjoined letter and leaves ဉွ ဉျ ဉံ ဉီ alone; we now do the same,
+    and the glyph was already drawn. It needs a lookup of its own because
+    its triggers include the asat, and na's swap has to fire *across* an
+    asat (ကျွန်ုပ်) — putting asat in the shared filtering set makes it
+    visible and blocks that match. 27 of the 50 were this.
+  - **အောက်မြစ် reserved no room.** The dot sits *beside* its cluster's
+    ink, so on a narrow letter it lands past the advance, and the next
+    syllable's ြ brings its under-sweep down into exactly that band
+    (`မျှု့ကြ`, `ဖြုံ့ဖြုံ့`, `ရွှေ့ပြောင်း`). Padauk answers with the
+    `dist` feature; we had no `dist` at all. Ours is now generated with
+    the number **derived rather than copied** — place the dot on each
+    base's own bottom anchor, and on the `side` anchor of every below-mark
+    it might chain onto (that chain is what carries it out in ဖြုံ့), then
+    ask for the overshoot back plus the 50-unit protocol. Per weight, so
+    Bold gets more than Light. The advance cannot go on the dot itself:
+    HarfBuzz zeroes the advance of GDEF marks.
+- **`validate_spec.py` now checks across cluster boundaries** —
+  a `neighbour` finding at **WARN**, because Padauk trips it too (3 spec
+  rows, 1 word row, 7 of the vocabulary) and a gate here would fail the
+  reference implementation.
+- **The two variable fonts were shipping the pre-2026-08-16 build.** Every
+  anchor fix from that day landed in the static TTFs and in neither VF,
+  and they stayed committed that way for three days: stacks sinking past
+  usWinDescent, asat detaching from its base, kinzi colliding with the
+  vowel — **437 FAILs across the full vocabulary, 79 on the spec corpus**.
+  VALIDATION.md claimed "all weights + VF: 0 FAIL, 0 WARN" the whole time.
+  Both are rebuilt and both now measure clean on all three corpora.
+
+  Neither corpus was at fault — either would have caught this on the first
+  run. `SHIPPED` in `tests/test_spec_validation.py` was a hand-written
+  list of four statics, and a shipped font that is not on the list is not
+  tested. It is now a glob over `projects/`, so a font can be forgotten
+  only by being deleted, with a companion test naming the six files that
+  must be discovered — a glob that matches nothing would otherwise turn
+  every parametrised test below it into a silent pass.
+- **ကွှု kept the curl where ကျှု correctly took the tall stroke.** After
+  a medial ya or wa, ု/ူ is the tall spacing stroke, and the rule is meant
+  to reach through an intervening ha. It did so after ya and not after wa,
+  because the fused `medialWa-myanmar.ha` was missing from the blws
+  context — and adding it there was only half the fix: the wa medials are
+  **marks**, and a `UseMarkFilteringSet` skips every mark outside it, so a
+  fused wa the rule matches on has to be in the set too. The ya ligatures
+  never needed that entry, being spacing glyphs no filtering set can hide,
+  which is precisely how half the rule worked and concealed the other
+  half. The whole ျ/ွ/ှ × ု/ူ matrix — 14 combinations — now agrees with
+  Padauk on which form each takes.
+
+  Found by the showcase's comparison, not by either corpus: both score
+  0 FAIL here, since a vowel in the wrong contextual form is still
+  perfectly positioned, and the combination occurs in **0 of the 12,450**
+  vocabulary words. Geometry checks cannot see a form error.
+- **A missing hyphen was being excused as "not Myanmar text".** The
+  validator sorted every uncovered non-Myanmar character into a SPEC
+  bucket meaning *the test datum is malformed* — a rule that exists
+  because the corpus once carried Rejang letters. Punctuation is the
+  opposite case: Burmese prose contains hyphens (၈-ပါး), full stops and
+  dashes, so a font that cannot draw one renders a tofu box a reader
+  actually sees. Letters from another script still report SPEC; shared
+  punctuation and digits now report GAP, which is what they are. This
+  surfaced two real, previously hidden gaps — U+002D in the sample font
+  and U+2012 FIGURE DASH in Myanmar Glyph Sans.
 - **Block K now tests S'gaw Karen instead of Rejang.** The nine spec-corpus
   rows labelled "S'gaw Karen" carried U+A930–A938 — Rejang letters, a
   different script on a different continent, which no Myanmar font should

@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#9b2c22">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<title>Type specimen — Myanmar faces, set in Myanmar literature</title>
+<meta name="description" content="A full type specimen for every font in the gallery: alphabet, waterfall, running text and display settings, set in classical Burmese literature rather than filler. မြန်မာစာလုံးပုံစံ ပြသချက်။">
+<link rel="canonical" href="https://thiha-lynn.github.io/myanmar-glyph-studio/specimen.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Myanmar Glyph Studio">
+<meta property="og:title" content="Type specimen — Myanmar faces, set in Myanmar literature">
+<meta property="og:description" content="Alphabet, waterfall, running text and display settings for every community font — set in classical Burmese, not filler.">
+<meta property="og:url" content="https://thiha-lynn.github.io/myanmar-glyph-studio/specimen.html">
+<meta property="og:image" content="https://thiha-lynn.github.io/myanmar-glyph-studio/icons/icon-512.png">
+<meta name="twitter:card" content="summary">
+<style>
+  /* Palm-leaf and lacquer: the two surfaces Burmese was written on for a
+     thousand years. Parchment and iron-gall dark for light mode, lacquer
+     black and leaf gold for dark. */
+  :root {
+    --bg: #efe4cf; --panel: #f8f1e2; --ink: #221a12; --muted: #7c6a53;
+    --line: #d8c6a6; --accent: #9b2c22; --gold: #a97722;
+    --grain: rgba(155, 44, 34, .04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121009; --panel: #1b1710; --ink: #f0e6d2; --muted: #9d9079;
+      --line: #383021; --accent: #e2705f; --gold: #d7a94a;
+      --grain: rgba(215, 169, 74, .05);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+    background-image:
+      repeating-linear-gradient(0deg, var(--grain) 0 1px, transparent 1px 3px);
+  }
+  .wrap { max-width: 72rem; margin: 0 auto; padding: 0 24px; }
+  a { color: var(--accent); }
+  .mm { font-family: var(--face, "Padauk"), Padauk, sans-serif; }
+
+  /* --- masthead ---------------------------------------------------------- */
+  header { padding: 26px 0 6px; }
+  .kicker { font-size: .72rem; letter-spacing: .22em; text-transform: uppercase;
+            color: var(--gold); font-weight: 700; }
+  h1 { font-size: clamp(26px, 5vw, 44px); margin: .15em 0 .1em; line-height: 1.1; }
+  .sub { color: var(--muted); max-width: 42rem; }
+  nav { margin-top: .8rem; }
+  nav a { margin-right: 1.1rem; text-decoration: none; border-bottom: 1px solid var(--line); }
+
+  .bar { position: sticky; top: 0; z-index: 9; display: flex; flex-wrap: wrap;
+         gap: .5rem 1.1rem; align-items: center; margin: 1.1rem 0 0;
+         padding: .65rem .9rem; background: var(--panel);
+         border: 1px solid var(--line); border-radius: .5rem; }
+  .bar label { color: var(--muted); font-size: .82rem; }
+  select, input[type=range], button {
+    font: inherit; color: var(--ink); background: var(--bg);
+    border: 1px solid var(--line); border-radius: .35rem; padding: .28rem .5rem; }
+  button { cursor: pointer; }
+
+  /* --- sections ---------------------------------------------------------- */
+  section { margin: 3.2rem 0; }
+  h2 { font-size: .74rem; letter-spacing: .2em; text-transform: uppercase;
+       color: var(--gold); font-weight: 700; margin: 0 0 .1rem;
+       display: flex; align-items: center; gap: .9rem; }
+  h2::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .note { color: var(--muted); margin: .1rem 0 1rem; max-width: 44rem; }
+
+  .hero { background: var(--panel); border: 1px solid var(--line);
+          border-radius: .5rem; padding: clamp(1.4rem, 4vw, 3rem);
+          text-align: center; overflow: hidden; }
+  .hero .big { font-size: clamp(46px, 13vw, 150px); line-height: 1.28;
+               margin: 0; overflow-wrap: anywhere; }
+  .hero .romanised { color: var(--muted); font-size: .82rem;
+                     letter-spacing: .14em; text-transform: uppercase;
+                     margin-top: .7rem; }
+
+  .grid { display: grid; gap: 6px;
+          grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); }
+  .cell { background: var(--panel); border: 1px solid var(--line);
+          border-radius: .35rem; text-align: center; padding: .5rem .2rem .35rem;
+          transition: border-color .12s; }
+  .cell:hover { border-color: var(--accent); }
+  .cell .ch { font-size: 40px; line-height: 1.5; }
+  .cell .cp { font-size: .58rem; color: var(--muted); letter-spacing: .04em;
+              font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  .fall div { line-height: 1.55; margin: 0 0 .15em; overflow-wrap: anywhere; }
+  .fall .sz { font-size: .6rem; color: var(--muted); vertical-align: super;
+              margin-right: .6rem; font-family: ui-monospace, Menlo, monospace; }
+
+  .cols { columns: 2; column-gap: 2.4rem; }
+  @media (max-width: 54rem) { .cols { columns: 1; } }
+  .cols p { break-inside: avoid; margin: 0 0 1em; text-align: justify; }
+
+  .plate { background: var(--panel); border: 1px solid var(--line);
+           border-left: 4px solid var(--gold); border-radius: .4rem;
+           padding: clamp(1.2rem, 3vw, 2.4rem); }
+  .plate .verse { font-size: clamp(22px, 3.4vw, 38px); line-height: 1.95;
+                  margin: 0; overflow-wrap: anywhere; }
+  .plate .src { color: var(--muted); font-size: .82rem; margin-top: 1.1rem;
+                border-top: 1px solid var(--line); padding-top: .7rem; }
+
+  .clusters { display: flex; flex-wrap: wrap; gap: .55rem; }
+  .chip { background: var(--panel); border: 1px solid var(--line);
+          border-radius: .4rem; padding: .3rem .7rem .45rem; text-align: center; }
+  .chip .g { font-size: 38px; line-height: 1.45; }
+  .chip .lab { font-size: .58rem; color: var(--muted); }
+
+  footer { color: var(--muted); font-size: .84rem; padding: 2rem 0 3.5rem;
+           border-top: 1px solid var(--line); margin-top: 3rem; }
+  .miss { background: var(--panel); border-left: 3px solid var(--accent);
+          padding: .6rem .9rem; border-radius: 0 .4rem .4rem 0; margin: 1rem 0; }
+  code { background: var(--panel); padding: .08rem .3rem; border-radius: .25rem; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <div class="kicker">Type specimen · စာလုံးပုံစံ</div>
+  <h1 id="title">Myanmar faces, set in Myanmar literature</h1>
+  <p class="sub">Every face below was drawn stroke by stroke in a browser and
+  compiled by this repository. A specimen usually shows a typeface at its
+  best; this one shows it doing its job — the alphabet, a size ramp, running
+  text, and the clusters that break Myanmar fonts. The words are classical
+  Burmese, never filler.</p>
+  <nav>
+    <a href="index.html">← Studio</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="showcase.html">Measured showcase</a>
+    <a href="book.html">Reading proof</a>
+  </nav>
+</header>
+
+<div class="bar">
+  <span><label for="face">Face</label> <select id="face"></select></span>
+  <span id="wghtWrap" hidden><label for="wght">Weight</label>
+    <input id="wght" type="range" min="300" max="700" step="10" value="400">
+    <span class="cp" id="wghtVal"></span></span>
+  <span><label for="scale">Scale</label>
+    <input id="scale" type="range" min="70" max="150" value="100"></span>
+  <span class="cp" id="meta"></span>
+</div>
+
+<div id="status"></div>
+
+<section>
+  <div class="hero">
+    <p class="big mm" id="hero">မြန်မာ</p>
+    <div class="romanised" id="heroName"></div>
+  </div>
+</section>
+
+<section>
+  <h2>The alphabet · ဗျည်း ၃၃ လုံး</h2>
+  <p class="note">Thirty-three consonants, the vowel signs, and the digits —
+  the parts a contributor actually draws. Everything else in the font is
+  built from these by rule.</p>
+  <div class="grid mm" id="alphabet"></div>
+</section>
+
+<section>
+  <h2>Waterfall · အရွယ်အစား</h2>
+  <p class="note">The same line from 84px down to 15px. A face that holds
+  together large and falls apart small is a display face; one that survives
+  the bottom of this ramp can set a book.</p>
+  <div class="fall mm" id="waterfall"></div>
+</section>
+
+<section>
+  <h2>Running text · စာပိုဒ်</h2>
+  <p class="note">Narrative prose from the Jātaka cycle — the Buddha's past
+  lives, in classical Burmese. Texture is the only thing that matters here:
+  even colour, no rivers, no cluster punching a hole in the line.</p>
+  <div class="cols mm" id="running"></div>
+</section>
+
+<section>
+  <h2>Display · ခေါင်းစဉ်</h2>
+  <div class="plate">
+    <p class="verse mm" id="verse"></p>
+    <div class="src" id="verseSrc"></div>
+  </div>
+</section>
+
+<section>
+  <h2>The hard part · ခက်ခဲသော အက္ခရာများ</h2>
+  <p class="note">Stacked consonants, the four medials, kinzi, and the vowel
+  that takes four different shapes depending on what precedes it. This is
+  where Myanmar fonts fail, so it is the part worth staring at.</p>
+  <div class="clusters mm" id="clusters"></div>
+</section>
+
+<footer>
+  <p id="credit"></p>
+  <p>Text: <a href="https://my.wikisource.org/">မြန်မာဝီကီရင်းမြစ် (Burmese
+  Wikisource)</a>, CC BY-SA 4.0 — the Jātaka stories and
+  ကဗျာသာရတ္ထသတ်ပုံ, classical works transcribed by volunteers. Fonts under
+  the <a href="https://openfontlicense.org">SIL Open Font License 1.1</a>;
+  Padauk © SIL International.</p>
+</footer>
+</div>
+
+<script src="data/book.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+
+  var CONSONANTS = "ကခဂဃငစဆဇဈညဋဌဍဎဏတထဒဓနပဖဗဘမယရလဝသဟဠအ";
+  var SIGNS = "ာါိီုူေဲံ့းျြွှ်္";
+  var DIGITS = "၀၁၂၃၄၅၆၇၈၉၊။";
+
+  // Clusters worth staring at, with what each one is testing.
+  var HARD = [
+    ["က္က", "stack"], ["ဗုဒ္ဓ", "stack"], ["ကမ္မဋ္ဌာန်း", "double stack"],
+    ["သင်္ဘော", "kinzi"], ["အင်္ကျီ", "kinzi + ya"], ["ကိံ", "i + anusvara"],
+    ["ကျ", "ya"], ["ကြ", "ra wrap"], ["ကွ", "wa"], ["ကှ", "ha"],
+    ["ကြီး", "tall wide wrap"], ["မြို့", "wrap + vowel + dot"],
+    ["ကု", "curl"], ["ကျု", "tall stroke"], ["ကြု", "fused wrap+u"],
+    ["ကွူ", "spacing form"], ["ကျွန်ုပ်", "ya+wa fusion"],
+    ["လွှဲ", "wa+ha + tone"], ["ရွှံ့", "the deepest cluster"],
+    ["ဩ", "independent"], ["ဪ", "independent + tone"], ["စက္ကူ", "stack + vowel"]
+  ];
+
+  var VERSES = [
+    ["သီဟိုဠ်မှ ဉာဏ်ကြီးရှင်သည် အာယုဝဍ္ဎနဆေးညွှန်းစာကို ဇလွန်ဈေးဘေး " +
+     "ဗာဒံပင်ထက် အဓိဋ္ဌာန်လျက် ဟောလေသည်။",
+     "The Burmese pangram — every consonant, most of the marks, one sentence."]
+  ];
+
+  // --- faces ---------------------------------------------------------------
+  function face(family, url) {
+    return new FontFace(family, "url(" + url + ")").load()
+      .then(function (f) { document.fonts.add(f); return true; })
+      .catch(function () { return false; });
+  }
+  face("Padauk", "fonts/Padauk-Regular.ttf");
+
+  var picker = $("face"), records = {};
+
+  fetch("gallery-data/fonts.json")
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (m) {
+      if (!m || !m.fonts || !m.fonts.length) throw 0;
+      return Promise.all(m.fonts.map(function (f) {
+        var src = f.variable && (f.variable.woff2 || f.variable.file);
+        return face(f.family, "gallery-data/" + (src || f.woff2 || f.file))
+          .then(function (ok) {
+            if (ok) records[f.family] = f;
+            return ok ? f.family : null;
+          });
+      }));
+    })
+    .then(function (names) {
+      names.filter(Boolean).forEach(function (n) {
+        picker.appendChild(new Option(n, n));
+      });
+      picker.appendChild(new Option("Padauk (reference)", "Padauk"));
+      use(picker.value);
+    })
+    .catch(function () {
+      picker.appendChild(new Option("Padauk (reference)", "Padauk"));
+      use("Padauk");
+      var d = document.createElement("div");
+      d.className = "miss";
+      d.innerHTML = "<b>The generated fonts are not published yet.</b> Run " +
+        "<code>python3 pipeline/make_gallery.py</code>, or view this on the " +
+        "deployed site. Showing Padauk meanwhile — which is the reference, " +
+        "not one of the faces this repository built.";
+      $("status").appendChild(d);
+    });
+
+  function use(name) {
+    document.documentElement.style.setProperty("--face", '"' + name + '"');
+    $("heroName").textContent = name;
+    var rec = records[name];
+    $("meta").textContent = rec
+      ? [rec.glyphs + " glyphs", rec.license || "OFL-1.1",
+         rec.drawnGlyphs ? rec.drawnGlyphs + " drawn" : null]
+        .filter(Boolean).join(" · ")
+      : "bundled reference";
+
+    var axis = rec && rec.variable && rec.variable.axes &&
+      rec.variable.axes.filter(function (a) { return a.tag === "wght"; })[0];
+    $("wghtWrap").hidden = !axis;
+    if (axis) {
+      var s = $("wght");
+      s.min = axis.min; s.max = axis.max; s.value = axis.default;
+      $("wghtVal").textContent = axis.default;
+      document.documentElement.style.setProperty("--wght", axis.default);
+    }
+  }
+  picker.addEventListener("change", function () { use(this.value); });
+  $("wght").addEventListener("input", function () {
+    document.documentElement.style.setProperty("--wght", this.value);
+    $("wghtVal").textContent = this.value;
+    document.querySelectorAll(".mm").forEach(function (n) {
+      n.style.fontVariationSettings = '"wght" ' + this.value;
+    }, this);
+  });
+  $("scale").addEventListener("input", function () {
+    document.documentElement.style.fontSize = (this.value / 100 * 15) + "px";
+  });
+
+  // --- build the plates ----------------------------------------------------
+  function cell(ch) {
+    var d = document.createElement("div");
+    d.className = "cell";
+    var g = document.createElement("div");
+    g.className = "ch"; g.textContent = ch;
+    var c = document.createElement("div");
+    c.className = "cp";
+    c.textContent = "U+" + ch.codePointAt(0).toString(16).toUpperCase();
+    d.appendChild(g); d.appendChild(c);
+    return d;
+  }
+  var alphabet = $("alphabet");
+  (CONSONANTS + SIGNS + DIGITS).split("").forEach(function (ch) {
+    // dependent signs need a base to sit on, or they render on a dotted circle
+    alphabet.appendChild(cell(ch));
+  });
+
+  var LINE = "မြန်မာစာပေ ရှေးဟောင်းယဉ်ကျေးမှု";
+  [84, 60, 44, 32, 24, 19, 15].forEach(function (px) {
+    var row = document.createElement("div");
+    row.style.fontSize = px + "px";
+    var tag = document.createElement("span");
+    tag.className = "sz"; tag.textContent = px;
+    row.appendChild(tag);
+    row.appendChild(document.createTextNode(LINE));
+    $("waterfall").appendChild(row);
+  });
+
+  // running text: the book we already ship, at three sizes down one column
+  var running = $("running");
+  var source = (window.BOOK && window.BOOK.pages) ? window.BOOK.pages : [];
+  var paras = [];
+  source.slice(2, 8).forEach(function (page) { paras = paras.concat(page); });
+  [21, 17, 14].forEach(function (px, i) {
+    var p = document.createElement("p");
+    p.style.fontSize = px + "px";
+    p.style.lineHeight = px > 18 ? 2.0 : 1.9;
+    p.textContent = (paras[i] || LINE).slice(0, 620);
+    running.appendChild(p);
+  });
+
+  $("verse").textContent = VERSES[0][0];
+  $("verseSrc").textContent = VERSES[0][1];
+
+  HARD.forEach(function (pair) {
+    var c = document.createElement("div");
+    c.className = "chip";
+    var g = document.createElement("div");
+    g.className = "g"; g.textContent = pair[0];
+    var l = document.createElement("div");
+    l.className = "lab"; l.textContent = pair[1];
+    c.appendChild(g); c.appendChild(l);
+    $("clusters").appendChild(c);
+  });
+
+  $("hero").textContent = "မြန်မာ";
+  $("credit").textContent =
+    CONSONANTS.length + " consonants, " + SIGNS.length + " signs and " +
+    DIGITS.length + " digits and punctuation marks shown above, plus " +
+    HARD.length + " clusters and " +
+    (window.BOOK ? window.BOOK.pages.length + " pages of source text." : "");
+}());
+</script>
+</body>
+</html>

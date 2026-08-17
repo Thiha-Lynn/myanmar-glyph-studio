@@ -4,7 +4,9 @@
  * Sketches are stored as center-line polylines with a stroke width. Points
  * are [x, y] or [x, y, w] where w is a per-point width in font units
  * (recorded from stylus pressure). Each stroke expands into a closed
- * polygon: offset the polyline to both sides and close it with round caps.
+ * polygon: offset the polyline to both sides and close it with caps shaped
+ * by the project's nib (see penRadius — round by default, squared as the
+ * exponent rises).
  * Overlapping strokes fill correctly because TrueType uses the nonzero
  * winding rule and every polygon we emit winds the same way.
  *
@@ -14,6 +16,23 @@
   "use strict";
 
   var CAP_SEGMENTS = 8; // half-circle cap resolution
+  var DEFAULT_PEN = 2;  // superellipse exponent: 2 round, 4 squircle, 8 slab
+
+  /* How far the unit nib reaches in direction theta. Polar form, because
+     the stroke sides are offset along the NORMAL and the cap has to be
+     described the same way or the two do not meet. 2 gives 1.0 everywhere
+     and the maths collapses back to a circle. Mirror of _pen_radius(). */
+  function penRadius(theta, n) {
+    if (n === DEFAULT_PEN) return 1;
+    var c = Math.abs(Math.cos(theta)), s = Math.abs(Math.sin(theta));
+    return Math.pow(Math.pow(c, n) + Math.pow(s, n), -1 / n);
+  }
+
+  var penShape = DEFAULT_PEN;
+  function setPen(n) {
+    n = parseFloat(n);
+    penShape = (isFinite(n) && n >= 2 && n <= 12) ? n : DEFAULT_PEN;
+  }
 
   function ptWidth(p, fallback) {
     return (p.length > 2 && p[2] > 0) ? p[2] : fallback;
@@ -63,18 +82,21 @@
   }
 
   function arc(cx, cy, r, a0, a1, out) {
-    for (var i = 0; i <= CAP_SEGMENTS; i++) {
-      var a = a0 + (a1 - a0) * (i / CAP_SEGMENTS);
-      out.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+    var steps = penShape === DEFAULT_PEN ? CAP_SEGMENTS : CAP_SEGMENTS * 3;
+    for (var i = 0; i <= steps; i++) {
+      var a = a0 + (a1 - a0) * (i / steps);
+      var rr = r * penRadius(a, penShape);
+      out.push([cx + rr * Math.cos(a), cy + rr * Math.sin(a)]);
     }
   }
 
   function circle(cx, cy, r) {
     var out = [];
-    var n = CAP_SEGMENTS * 4;
+    var n = CAP_SEGMENTS * (penShape === DEFAULT_PEN ? 4 : 8);
     for (var i = 0; i < n; i++) {
       var a = (i / n) * Math.PI * 2;
-      out.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+      var rr = r * penRadius(a, penShape);
+      out.push([cx + rr * Math.cos(a), cy + rr * Math.sin(a)]);
     }
     return out;
   }
@@ -100,7 +122,7 @@
     pts = smooth(pts, 2);
 
     // per-point radii (pressure) and normals, averaged at joints
-    var radii = [], normals = [];
+    var radii = [], normals = [], angles = [];
     var i, dx, dy, len;
     for (i = 0; i < pts.length; i++) {
       radii.push(Math.max(1, ptWidth(pts[i], stroke.width) / 2));
@@ -109,27 +131,32 @@
       dx = b[0] - a[0]; dy = b[1] - a[1];
       len = Math.hypot(dx, dy) || 1;
       normals.push([-dy / len, dx / len]);
+      angles.push(Math.atan2(dx / len, -dy / len));
     }
 
+    // Offset by the nib's reach in each normal direction, not a bare
+    // radius: that is what fattens the flats and thins the diagonals.
     var left = [], right = [];
     for (i = 0; i < pts.length; i++) {
-      var n = normals[i], r = radii[i];
-      left.push([pts[i][0] + n[0] * r, pts[i][1] + n[1] * r]);
-      right.push([pts[i][0] - n[0] * r, pts[i][1] - n[1] * r]);
+      var n = normals[i], r = radii[i], ang = angles[i];
+      var outR = r * penRadius(ang, penShape);
+      var backR = r * penRadius(ang + Math.PI, penShape);
+      left.push([pts[i][0] + n[0] * outR, pts[i][1] + n[1] * outR]);
+      right.push([pts[i][0] - n[0] * backR, pts[i][1] - n[1] * backR]);
     }
 
     var poly = left.slice();
 
     // end cap: half-circle from left offset around to right offset
-    var pe = pts[pts.length - 1], ne = normals[pts.length - 1];
-    var ae = Math.atan2(ne[1], ne[0]);
+    var pe = pts[pts.length - 1];
+    var ae = angles[angles.length - 1];
     arc(pe[0], pe[1], radii[radii.length - 1], ae, ae - Math.PI, poly);
 
     for (i = right.length - 1; i >= 0; i--) poly.push(right[i]);
 
     // start cap
-    var ps = pts[0], ns = normals[0];
-    var as = Math.atan2(-ns[1], -ns[0]);
+    var ps = pts[0];
+    var as = angles[0] + Math.PI;
     arc(ps[0], ps[1], radii[0], as, as - Math.PI, poly);
 
     return poly;
@@ -162,6 +189,9 @@
     strokeToPolygon: strokeToPolygon,
     glyphPolygons: glyphPolygons,
     bounds: bounds,
-    smooth: smooth
+    smooth: smooth,
+    // the project's nib shape, so the canvas previews what the build emits
+    setPen: setPen,
+    getPen: function () { return penShape; }
   };
 })();

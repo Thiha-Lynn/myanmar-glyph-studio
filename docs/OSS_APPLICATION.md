@@ -12,24 +12,42 @@ something public. Update the numbers (marked `‹…›`) on the day you submit.
 
 ## Which category do you fit?
 
-The program's five lanes, checked against this repo (verified against the
-program page 2026-08-13 — it offers 6 months of Claude Max 20x):
+The program's five lanes, re-verified against the program page and
+against this repo's own API on **2026-08-17**. It offers 6 months of
+Claude Max 20x. Every "us today" number below was measured, not
+estimated:
 
-| Lane | Bar | Us today | Fit? |
+| Lane | Bar | Us today (2026-08-17) | Fit? |
 |---|---|---|---|
-| Maintainers / library authors | 500+ dependent repos, 100+ dependent packages, or 200k+ monthly downloads | Not a registry package | ✗ |
-| Core contributors | Committer on CPython/Rust/Node/Apache/CNCF-class projects | — | ✗ |
-| Active contributors | 100+ merged PRs into repos you don't own, 12 mo | Check your own profile before claiming | likely ✗ |
-| Community builders | 20+ unique external contributors merged, 12 mo | 0 external contributors yet | ✗ (goal) |
-| Critical infrastructure | OpenSSF criticality ≥ 0.4 | Repo is days old; score will be ~0 | ✗ |
+| Maintainers / library authors | 500+ dependent repos, 100+ dependent packages, or 200k+ monthly downloads | Not published: `pypi.org/pypi/myanmar-glyph-studio` returns 404 | ✗ |
+| Core contributors | Committer on CPython/Rust/Node/Apache/CNCF-class projects | No | ✗ |
+| Active contributors | 100+ merged PRs into repos you don't own, 12 mo | **0** (`author:Thiha-Lynn is:merged -user:Thiha-Lynn` → 0; 9 merged PRs total, all in this repo) | ✗ |
+| Community builders | 20+ unique external contributors merged, 12 mo | **0** — merged-PR authors are `Thiha-Lynn` and `dependabot[bot]` | ✗ |
+| Critical infrastructure | OpenSSF criticality ≥ 0.4 | Repo created 2026-08-13; 0 stars, 0 forks, 0 watchers, 0 dependents → score ≈ 0 | ✗ |
 
-The program adds, verbatim: *"If you maintain something the ecosystem
-quietly depends on, apply anyway and tell us about it."* **That is our
-lane.** Answer honestly under it, and re-check the Community-builder lane
-once the contributor count is real (see the checklist at the bottom).
+**Nought for five, and not narrowly.** The honest reading is that this
+project is four days old and has not yet been used by anyone outside it:
+4 unique visitors in the last fortnight, and the 102 unique cloners are
+mostly CI. That is a statement about *age and reach*, not about quality —
+the engineering evidence below is real and checkable — but the lanes
+measure reach, and reach is what is missing.
 
-Do **not** claim the download/dependent-count lanes — this is an
-application and toolchain, not a package on npm/PyPI.
+The program does add, verbatim: *"If you maintain something the ecosystem
+quietly depends on, apply anyway and tell us about it."* Read it
+carefully before leaning on it. The operative phrase is **"the ecosystem
+quietly depends on"** — present tense, about existing dependents. A repo
+with no external users does not qualify under it yet, and an application
+that stretches it invites the reviewer to check, find nothing, and
+conclude the rest of the claims are stretched too. The engineering record
+here is strong enough that it should never be spent buying credibility
+for a reach claim it cannot support.
+
+**Recommendation: do not submit yet.** Submit when at least one lane is
+genuinely met, or when "quietly depended on" is defensible with evidence
+— see *When to submit* at the bottom.
+
+Do **not** claim the download/dependent-count lanes, and do not describe
+the toolkit as pip-installable until it is actually on PyPI.
 
 ## One-paragraph pitch
 
@@ -94,11 +112,27 @@ application and toolchain, not a package on npm/PyPI.
   Burmese — and the repo ships a
   [device-test page](https://thiha-lynn.github.io/myanmar-glyph-studio/devicetest.html)
   that walks anyone through it and writes the report.
-* **Automated quality gates on every push and PR:** 62 tests
-  (`pipeline/tests/`), both shaping corpora, a HarfBuzz regression that
-  fails the build if the reference font drops any glyph, and fontbakery's
-  universal profile gated on FAIL. See the
+* **Automated quality gates on every push and PR:** 69 tests
+  (`pipeline/tests/`), both shaping corpora against *every* shipped font
+  file (discovered by glob, so a font cannot ship untested), a HarfBuzz
+  regression that fails the build if the reference font drops any glyph,
+  and fontbakery's universal profile gated on FAIL. See the
   [Actions tab](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions).
+* **Validated against the whole of a real vocabulary.** Beyond the
+  711-word CI corpus, `pipeline/fetch_vocab.py` runs all **12,450** words
+  of the [DatarrX Myanmar Word Glyphs](https://huggingface.co/datasets/DatarrX/myanmar-word-glyphs)
+  vocabulary through the same checker: 0 FAIL, 0 WARN in all six shipped
+  fonts. The wide sweep exists to test the *cover*, and has never found
+  anything the 711 words miss — a result about corpus design, published
+  rather than assumed.
+* **A showcase that shows its work.**
+  [showcase.html](https://thiha-lynn.github.io/myanmar-glyph-studio/showcase.html)
+  renders 60 hard clusters beside the reference font with the glyphs the
+  shaper produced and the ink distance between them, then renders all
+  12,450 vocabulary words in the generated webfont. It is also a working
+  QA instrument: it found a contextual-form bug (ကွှု) that both corpora
+  score as passing, because a vowel in the wrong shape is still perfectly
+  positioned.
 * **Real font engineering, not a wrapper:** stroke→outline expansion
   mirrored in JS and Python, generated `mym2` feature code, automatic
   mark anchors with in-browser anchor editing, virama synthesis,
@@ -202,3 +236,41 @@ application and toolchain, not a package on npm/PyPI.
 5. **Let the repo age a few weeks with visible activity** (merged PRs,
    answered Discussions, gallery growth) before submitting: every
    reviewer will open the Insights tab first.
+
+## When to submit — a test you can actually apply
+
+The temptation with a programme like this is to submit early "in case".
+Resist it. There is no partial credit for a near miss, an application is
+a first impression you get once, and the record here gets stronger every
+week without any change of strategy. Concretely, submit when **any one**
+of these is true:
+
+* **A lane is genuinely met.** In practice that means the
+  Community-builder lane: 20 unique external contributors with merged
+  PRs in 12 months. From 0 today, the glyph drive in
+  [LAUNCH.md](LAUNCH.md) §5 is the only realistic route.
+* **"Quietly depended on" is defensible with evidence.** Not "it could
+  be useful to 40 million readers" — that is a market, not a dependency.
+  Evidence looks like: a font made with this tool shipping in something
+  real; another project vendoring the pipeline; a Myanmar organisation
+  or localisation team using it in a documented workflow; the fonts
+  packaged somewhere downstream. One of those, linkable, changes the
+  sentence from aspiration to fact.
+* **A third party has validated the work.** An accepted PR to
+  awesome-myanmar-unicode, a ScriptSource entry, a mention from SIL or
+  the Noto/Google Fonts community, a write-up by someone who is not the
+  maintainer.
+
+Rough check before hitting submit: could a reviewer verify every claim in
+your application from public links in ten minutes, and would every one
+come back true? If any claim needs them to take your word for it, cut the
+claim — what is left is stronger than what you removed.
+
+**What is already application-grade** and needs nothing further: the
+specification and its machine checker, three engines diffed with zero
+differences, the benchmark table, the full-vocabulary sweep, the
+[rendering showcase](https://thiha-lynn.github.io/myanmar-glyph-studio/showcase.html),
+and the defect record in [VALIDATION.md](VALIDATION.md) — including the
+bugs this project found in its *own* shipped fonts and wrote up rather
+than quietly fixing. That last one is unusual and worth pointing at: it
+demonstrates the engineering culture the programme is trying to fund.

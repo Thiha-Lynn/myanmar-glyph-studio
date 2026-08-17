@@ -6,6 +6,7 @@ glyphs, anchors, metrics, features and production names directly.
     cd pipeline && python3 -m pytest tests/ -q
 """
 
+import math
 import sys
 from pathlib import Path
 
@@ -603,6 +604,229 @@ def test_vowels_take_tall_forms_after_ja_and_wa(tmp_path):
     # (Padauk's လျှု takes the tall stroke), while ရှု stays safe because
     # the base ra before the ha is always visible and blocks the match
     assert "medialHa-myanmar" not in lookup
+
+
+def test_i_anusvara_does_not_ligate_after_a_kinzi(tmp_path):
+    """လင်္ဃိံ: after a kinzi, ိ and ံ must stay two marks.
+
+    The kinzi parks the next above-mark beside its hook with a gap sized
+    for one mark. ိံ is a single WIDE drawn ligature, so it lands on the
+    hook instead and the two overlap. Padauk dodges this by fusing the ိ
+    into its kinzi and leaving ံ separate; we suppress the ligature, and
+    the pair then chains along the side anchors that already work.
+
+    The mechanics matter as much as the rule: `ignore` only suppresses
+    inside its own lookup, and feaLib will not put a plain ligature rule
+    in the same lookup as a chain rule — so the ligature has to be
+    contextual too, or the ignore is emitted into a lookup of its own
+    where it does nothing at all. That was the first attempt, and it
+    compiled cleanly while changing nothing.
+    """
+    font, drawn = build(tmp_path, {
+        "ka-myanmar": {"advance": None, "strokes": [BOX]},
+        "nga-myanmar": {"advance": None, "strokes": [BOX]},
+        "i-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, 600], [350, 640]], 40)]},
+        "anusvara-myanmar": {"advance": None, "strokes": [[300, 700]]
+                             and [{"width": 60, "points": [[300, 700]]}]},
+        "iAnusvara-myanmar": {"advance": None,
+                              "strokes": [stroke([[250, 600], [420, 700]], 40)]},
+        "kinzi-myanmar": {"advance": None,
+                          "strokes": [stroke([[100, 620], [260, 700]], 40)]},
+    })
+    fea = font.features.text
+    assert "lookup iAnusvaraLigature" in fea, (
+        "the ligature must live in its own lookup so a contextual rule can "
+        "call it")
+    abvs = fea.split("feature abvs")[1].split("} abvs;")[0]
+    assert "ignore sub kinzi-myanmar i-myanmar' anusvara-myanmar';" in abvs
+    # the ligature is applied contextually, never as a bare rule in abvs
+    assert "sub i-myanmar' lookup iAnusvaraLigature anusvara-myanmar';" in abvs
+    assert "sub i-myanmar anusvara-myanmar by iAnusvara-myanmar;" not in abvs
+
+
+def test_repeated_mark_is_reported_as_a_source_defect():
+    """ကောာလိက and ကင်် are typos, and must not be graded as font bugs."""
+    import validate_spec as vs
+    assert vs.repeated_mark("ကောာလိက") == "ာ"
+    assert vs.repeated_mark("ဝက်ကင််ဂေါ") == "်"
+    # ordinary Burmese, including legitimately adjacent DIFFERENT marks
+    assert vs.repeated_mark("ကျွန်ုပ်တို့") is None
+    assert vs.repeated_mark("ရွှံ့") is None
+    assert vs.repeated_mark("ကိံ") is None
+    # a repeated BASE letter is normal (ကက္ကု, ဖြုံ့ဖြုံ့) — marks only
+    assert vs.repeated_mark("ကကတစ်") is None
+
+
+def test_round_nib_is_the_default_and_unchanged():
+    """A round pen must still produce exactly the old circle.
+
+    meta.pen is opt-in, and every project written before it existed has to
+    compile byte-for-byte as it did. The superellipse collapses to a
+    circle at n = 2, so this is checkable rather than a hope.
+    """
+    stroke = {"width": 60, "points": [[100, 0], [100, 550], [500, 550]]}
+    default = json_to_ufo.stroke_to_polygon(stroke, 1.0)
+    explicit = json_to_ufo.stroke_to_polygon(stroke, 1.0, 2.0)
+    assert default == explicit
+    for x, y in default:
+        assert -100 < x < 700 and -100 < y < 700
+    # the nib's reach is 1.0 in every direction — that IS a circle
+    for degrees in (0, 30, 45, 60, 90, 137):
+        assert json_to_ufo._pen_radius(math.radians(degrees), 2.0) == 1.0
+
+
+def test_squared_nib_reaches_further_on_the_diagonal(tmp_path):
+    """n = 4 is a squircle: same reach on the axes, more at the corners.
+
+    |x|⁴+|y|⁴ = 1 puts the corner at 2^0.25 ≈ 1.189 while the axes stay at
+    1.0. That ratio is the whole difference between a round face and a
+    squared one, so pin it here rather than eyeballing an outline.
+    """
+    assert json_to_ufo._pen_radius(0.0, 4.0) == pytest.approx(1.0)
+    assert json_to_ufo._pen_radius(math.pi / 2, 4.0) == pytest.approx(1.0)
+    assert json_to_ufo._pen_radius(math.pi / 4, 4.0) == pytest.approx(2 ** 0.25,
+                                                                     abs=1e-9)
+    # a squared nib needs more points to turn its corner cleanly
+    stroke = {"width": 60, "points": [[100, 0], [100, 550], [500, 550]]}
+    assert (len(json_to_ufo.stroke_to_polygon(stroke, 1.0, 4.0))
+            > len(json_to_ufo.stroke_to_polygon(stroke, 1.0, 2.0)))
+
+
+def test_pen_exponent_is_clamped_and_survives_nonsense():
+    read = json_to_ufo.pen_exponent
+    assert read({}) == 2.0
+    assert read({"meta": {}}) == 2.0
+    assert read({"meta": {"pen": 4}}) == 4.0
+    assert read({"meta": {"pen": "4"}}) == 4.0
+    assert read({"meta": {"pen": 0.5}}) == 2.0          # below the floor
+    assert read({"meta": {"pen": 9999}}) == 12.0        # above the ceiling
+    assert read({"meta": {"pen": "round"}}) == 2.0      # not a number
+    assert read({"meta": {"pen": float("nan")}}) == 2.0
+
+
+def test_squircle_warp_squares_a_circle_without_resizing_it():
+    """make_sample --squircle turns bowls into superellipses in place."""
+    import make_sample
+    circle = [[500 + 200 * math.cos(t * math.pi / 24),
+               300 + 200 * math.sin(t * math.pi / 24)] for t in range(48)]
+    glyphs = {"o": {"advance": 1000, "strokes": [{"width": 60,
+                                                  "points": circle}]}}
+    make_sample.squircle_project(glyphs, 4.0)
+    pts = glyphs["o"]["strokes"][0]["points"]
+
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    # extents preserved: the shape is redistributed, never inflated
+    assert min(xs) == pytest.approx(300, abs=1.5)
+    assert max(xs) == pytest.approx(700, abs=1.5)
+    assert min(ys) == pytest.approx(100, abs=1.5)
+    assert max(ys) == pytest.approx(500, abs=1.5)
+    # …but the corners now push out where a circle would not reach
+    corner = max(math.hypot(x - 500, y - 300) for x, y in pts)
+    assert corner / 200 == pytest.approx(2 ** 0.25, abs=0.03)
+
+
+def test_fused_wa_ha_still_triggers_the_tall_vowel(tmp_path):
+    """ကွှု must take the tall stroke exactly as ကွု does.
+
+    Once pres fuses wa+ha into one glyph there is no medialWa-myanmar left
+    for the blws context to match, so the LIGATURE has to be recognised in
+    its place — in the context class *and* in the filtering set, because a
+    UseMarkFilteringSet skips every mark outside it and the wa medials are
+    marks. Missing the filter entry is the subtle half of this: the rule
+    then looks correct in the FEA and still never fires.
+
+    Shipped for three days as ကျှု taking the tall stroke while ကွှု kept
+    the curl — the ya ligature is a spacing glyph, which no filtering set
+    can hide, so half the rule worked and hid the other half.
+    """
+    font, drawn = build(tmp_path, {
+        "medialYa-myanmar": {"advance": 158, "strokes": [YA]},
+        "medialWa-myanmar": {"advance": None, "strokes": [WA]},
+        "medialHa-myanmar": {"advance": None, "strokes": [HA]},
+        "medialWa-myanmar.ha": {"advance": None, "strokes": [WA, HA]},
+        "u-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, -150], [350, -150]], 40)]},
+        "u-myanmar.alt": {"advance": None,
+                          "strokes": [stroke([[250, -430], [250, 430]], 40)]},
+    })
+    fea = font.features.text
+    lookup = fea.split("lookup medial_vowels")[1].split("} medial_vowels")[0]
+    flag = lookup.split("UseMarkFilteringSet")[1].split(";")[0]
+
+    assert "medialWa-myanmar.ha" in lookup.split("sub [")[1].split("]")[0]
+    assert "medialWa-myanmar.ha" in flag, (
+        "the fused wa+ha is a mark; outside the filtering set the context "
+        f"can never see it. Set was: {flag}")
+    # ha itself stays out, so an UNfused ha is still transparent (လျှု)
+    assert "medialHa-myanmar" not in flag.replace("medialWa-myanmar.ha", "")
+
+
+def test_nya_swaps_to_its_narrow_form_but_not_in_its_own_lookup(tmp_path):
+    """ဉ် ဉု ဉ္စ take uni1025; ဉွ ဉျ ဉံ keep the plain letter.
+
+    ဉ carries 838 units of ink in a 555 advance, so its tail runs into
+    whatever follows. Padauk swaps in uni1025 — a different letter already
+    in the font, not a `.alt` variant — before the asat, a below-vowel or
+    a subjoined letter, and leaves it alone elsewhere.
+
+    The asat is why this cannot join the shared side-base lookup: na's
+    swap has to fire *across* an asat (ကျွန်ုပ်), and a filtering set
+    containing asat makes it visible and blocks that match.
+    """
+    font, drawn = build(tmp_path, {
+        "nya-myanmar": {"advance": None, "strokes": [BOX]},
+        "u.indep-myanmar": {"advance": None, "strokes": [BOX]},
+        "na-myanmar": {"advance": None, "strokes": [BOX]},
+        "na-myanmar.alt": {"advance": None, "strokes": [BOX]},
+        "asat-myanmar": {"advance": None,
+                         "strokes": [stroke([[80, 500], [200, 560]], 40)]},
+        "u-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, -150], [350, -150]], 40)]},
+    })
+    fea = font.features.text
+    nya = fea.split("lookup side_bases_nya")[1].split("} side_bases_nya")[0]
+    assert "by u.indep-myanmar;" in nya
+    assert "asat-myanmar" in nya.split("UseMarkFilteringSet")[1].split(";")[0]
+    # …and the shared lookup must NOT have gained the asat
+    shared = fea.split("lookup side_bases ")[1].split("} side_bases;")[0]
+    assert "asat-myanmar" not in shared.split(
+        "UseMarkFilteringSet")[1].split(";")[0]
+
+
+def test_dot_reserves_room_for_a_following_wrap(tmp_path):
+    """အောက်မြစ် hangs past the advance; the next ြ must not sit on it.
+
+    The dot is placed beside its cluster's ink rather than under it, so on
+    a narrow base it ends up outside the advance and the following
+    syllable's wrap — whose under-sweep occupies the same band — is drawn
+    through it. The advance cannot go on the dot itself: HarfBuzz zeroes
+    the advance of GDEF marks. It goes on the last spacing glyph, which is
+    what Padauk's `dist` feature does.
+    """
+    font, drawn = build(tmp_path, {
+        "ka-myanmar": {"advance": None, "strokes": [BOX]},
+        "medialRa-myanmar": RA_WRAP,
+        # a below-vowel for the dot to chain sideways onto — that chain is
+        # what carries it past the advance in real words (ဖြုံ့)
+        "u-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, -150], [420, -150]], 40)]},
+        "dotBelow-myanmar": {"advance": None,
+                             "strokes": [stroke([[300, -260], [430, -260]], 60)]},
+    })
+    fea = font.features.text
+    assert "feature dist" in fea, "no dist feature was emitted"
+    dist = fea.split("feature dist")[1].split("} dist;")[0]
+    # the dot must be the only visible mark, or intervening marks block it
+    assert "UseMarkFilteringSet [dotBelow-myanmar]" in dist
+    # every wrap variant present has to be in the context, fused ones too
+    assert "medialRa-myanmar" in dist
+    # a positive advance, applied to a spacing glyph and not to the dot
+    import re
+    values = [int(m) for m in re.findall(r"<0 0 (\d+) 0>", dist)]
+    assert values and all(v > 0 for v in values)
+    assert "pos [dotBelow-myanmar]'" not in dist
 
 
 def test_wrap_vowels_take_stroke_and_tall_forms(tmp_path):

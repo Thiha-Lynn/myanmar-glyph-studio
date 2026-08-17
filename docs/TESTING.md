@@ -102,6 +102,90 @@ scheme). What must match, row by row, is the visual structure: the same
 things stacked, the same marks above and below, the e-vowel reordered to
 the same place.
 
+For the comparison in a form you can read rather than squint at, build
+the showcase page:
+
+```bash
+python3 make_showcase.py            # -> ../web/data/showcase.js
+python3 make_gallery.py             # -> ../web/gallery-data/ (the webfonts)
+```
+
+`web/showcase.html` then renders 60 hard clusters in your font beside the
+reference, each row carrying the glyphs the shaper produced and how far
+the ink sits from the reference in units of a 1000 em. Rows more than 40
+units out are highlighted — that is a *drawing* difference, not
+necessarily a bug, which is why the page shows them instead of grading
+them.
+
+This catches a class the corpora cannot. `validate_spec.py` measures
+whether a mark is attached, clear and inside the band; it has no opinion
+on whether the shaper picked the *right form*. A vowel in the wrong
+contextual shape is still perfectly positioned, so it scores 0 FAIL —
+and if the combination happens to be absent from the vocabulary, the
+word corpus never sees it either. The 2026-08-17 ကွှု fix came from this
+page, not from the corpora.
+
+## Sweeping the whole vocabulary
+
+CI gates on `word_corpus.txt`, 711 words chosen by greedy set cover to
+contain all 1 213 syllable clusters in the source vocabulary. To check
+the cover against the thing it covers, fetch the full 12 450 words:
+
+```bash
+pip install pyarrow
+python3 fetch_vocab.py
+python3 validate_spec.py ../projects/myanmar-glyph-sans/MyanmarGlyphSans-Regular.ttf \
+        --corpus build-vocab/mwg_vocab_corpus.txt
+```
+
+It runs in about half a second once fetched. The download is 41 MB and
+the corpus is not committed, so this is a local check rather than a CI
+step — and so far it has never reported anything the 711-word cover
+missed, which is the result it exists to produce.
+
+## The deep sweep: a corpus from real books
+
+The two committed corpora are hand-built. `pipeline/make_reference.py`
+builds one from the wild instead — point it at a Wikisource category and
+it fetches every page, segments the text into syllable clusters exactly as
+HarfBuzz does, and greedily keeps the fewest passages that still contain
+every cluster it saw:
+
+```bash
+python3 make_reference.py                 # -> jataka_corpus.txt
+python3 validate_spec.py <font.ttf> --corpus jataka_corpus.txt
+```
+
+The shipped `jataka_corpus.txt` comes from ကဏ္ဍ:ဇာတ်နိပါတ်, the 538 Jātaka
+stories: 3.66 million characters of classical narrative, **1,605 distinct
+clusters** — a third more than the 1,213 in the DatarrX vocabulary — held
+in 556 passages.
+
+It is not a CI gate: 18 seconds per font against 0.3 for the spec corpus,
+which is what happens when passages are paragraphs rather than words. Run
+it when shaping rules change. It earns that on its first run — it found
+the ိံ/kinzi collision that all three other corpora score as passing.
+
+Expect a handful of SPEC rows from any corpus drawn from scanned text.
+Twelve of these 556 passages contain a mark typed twice in a row
+(ကောာလိက, ကင််); `validate_spec` reports those as `repeated-mark` rather
+than grading a transcription slip as a font defect.
+
+## Reading it as a book, and as a PDF
+
+```bash
+python3 make_book.py                      # -> ../web/data/book.js
+python3 make_pdf.py --font ../projects/bagan-display/BaganDisplay-Bold.ttf
+```
+
+`web/book.html` sets the book page by page, optionally beside Padauk.
+`make_pdf.py` writes a real PDF — and does it by shaping with HarfBuzz and
+drawing every positioned glyph as a vector path, because **a PDF reader
+has no shaping engine**. Embedding a Myanmar font and handing it a string
+gets you storage order with no reordering and no mark positioning. If you
+ever need to check that claim, open a PDF produced any other way and look
+at a ေ.
+
 ## Release QA: fontbakery
 
 Every pipeline build is checked in CI with

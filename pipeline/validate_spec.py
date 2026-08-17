@@ -76,8 +76,9 @@ MEDIAL_RA = 0x103C
 TALL_AA = 0x102B
 AA = 0x102C
 
-# Myanmar and its extension blocks; anything else in the corpus is a
-# different script and cannot be the font's responsibility.
+# Myanmar and its extension blocks. A *letter* from outside them is a
+# different script and cannot be the font's responsibility — but see
+# is_other_script(): shared punctuation is nobody's other script.
 MYANMAR_RANGES = ((0x1000, 0x109F), (0xA9E0, 0xA9FF), (0xAA60, 0xAA7F),
                   (0x116D0, 0x116FF))
 
@@ -89,6 +90,31 @@ LANGUAGE_TAGS = {                     # Block K rows carry the language name
 
 def is_myanmar(cp):
     return any(lo <= cp <= hi for lo, hi in MYANMAR_RANGES)
+
+
+def is_other_script(ch):
+    """Is this character a *different writing system's* letter?
+
+    The distinction decides who gets blamed for a missing glyph, so it has
+    to be drawn honestly. The rule exists because a spec corpus once
+    carried Rejang letters (U+A930–A938) mislabelled as S'gaw Karen: no
+    Myanmar font should cover those, and reporting them as coverage gaps
+    would have been a standing lie about the font.
+
+    Punctuation is the opposite case. A hyphen in ၈-ပါး, a figure dash, a
+    full stop — Unicode files these under the Common script precisely
+    because they belong to no one script and appear inside everybody's
+    text. Burmese prose contains them, so a font that cannot draw one
+    renders a tofu box a reader will actually see. Calling that "not
+    Myanmar text" excuses a real defect, which is the one direction this
+    check must never fail in.
+
+    Approximated with the general category rather than the full Script
+    property: letters (L*) belong to a script, marks/punctuation/symbols/
+    digits are shared. Close enough for a corpus of Burmese words, and it
+    needs nothing beyond the standard library.
+    """
+    return not is_myanmar(ord(ch)) and unicodedata.category(ch).startswith("L")
 
 
 def uplus(text):
@@ -442,18 +468,46 @@ def clusters_of(glyphs):
     return [groups[k] for k in sorted(groups)]
 
 
+def repeated_mark(text):
+    """The first mark this text writes twice in a row, if any.
+
+    Nobody writes ကောာလိက or ကင်် — they are transcription slips, and they
+    turn up the moment a corpus is drawn from real scanned text instead of
+    a hand-made list (12 of 556 passages in the Jātaka corpus; none at all
+    in the two hand-built ones). A font stacks the duplicate because that
+    is what a mark chain is for, and the second copy then rides above the
+    clipping metrics. That measures the typo, not the typeface.
+    """
+    for first, second in zip(text, text[1:]):
+        if first == second and unicodedata.category(first) in ("Mn", "Mc"):
+            return first
+    return None
+
+
 def check_case(font, case, glyphs, total_advance):
     """Every measurement for one shaped string. Returns [Finding, ...]."""
     findings = []
     text = case.text
     names = [g.name for g in glyphs]
 
+    doubled = repeated_mark(text)
+    if doubled is not None:
+        # Report and stop: every geometry check below would be measuring
+        # the consequences of the duplicate rather than the font.
+        return [Finding(
+            "SPEC", "repeated-mark",
+            f"{doubled} ({uplus(doubled)} "
+            f"{unicodedata.name(doubled, '?')}) appears twice in a row — "
+            "a transcription slip in the source, not something Burmese "
+            "writes; the shaper stacks the second copy because that is "
+            "what a mark chain does")]
+
     # -- coverage ---------------------------------------------------------
     missing = [ch for ch in text
                if not ch.isspace() and not font.covers(ord(ch))]
     if missing:
-        out_of_script = [c for c in missing if not is_myanmar(ord(c))]
-        in_script = [c for c in missing if is_myanmar(ord(c))]
+        out_of_script = [c for c in missing if is_other_script(c)]
+        in_script = [c for c in missing if not is_other_script(c)]
         if in_script:
             findings.append(Finding(
                 "GAP", "coverage",
@@ -616,6 +670,45 @@ def check_case(font, case, glyphs, total_advance):
                     "WARN", "clearance",
                     f"{gi.name}/{gj.name} clear by only {clearance:.0f} units "
                     f"(spec minimum {MIN_MARK_CLEARANCE})"))
+
+    # -- one syllable running into the next ---------------------------------
+    # Everything above measures a cluster against itself, which is how a
+    # whole class of defect stayed invisible: အောက်မြစ် is placed BESIDE
+    # the ink it belongs to, so on a narrow letter it lands past the
+    # cluster's advance and the NEXT syllable's ြ wrap — whose under-sweep
+    # comes down into exactly that band — is drawn straight through it.
+    # Inside its own cluster nothing is wrong; the damage is entirely
+    # across the boundary.
+    #
+    # WARN, not FAIL. Padauk does this too (3 rows of the spec corpus, 1 of
+    # the word corpus, 7 of the 12,450-word vocabulary): a little overlap
+    # between neighbouring syllables is a normal consequence of marks that
+    # legitimately overhang, and a gate here would fail the reference
+    # implementation. What matters is that the count stays near it.
+    cluster_boxes = {}
+    for g, box in base_boxes + mark_boxes:
+        acc = cluster_boxes.setdefault(g.cluster, [box[0], box[2], []])
+        acc[0] = min(acc[0], box[0])
+        acc[1] = max(acc[1], box[2])
+        acc[2].append(g)
+    for left, right in zip(sorted(cluster_boxes), sorted(cluster_boxes)[1:]):
+        a, b = cluster_boxes[left], cluster_boxes[right]
+        if a[1] <= b[0]:                       # no horizontal overlap at all
+            continue
+        for ga in a[2]:
+            for gb in b[2]:
+                if ink_clearance(_translated(font.outline(ga.name), ga.x, ga.y),
+                                 _translated(font.outline(gb.name),
+                                             gb.x, gb.y)) != 0.0:
+                    continue
+                findings.append(Finding(
+                    "WARN", "neighbour",
+                    f"{ga.name} overlaps {gb.name} in the next syllable — "
+                    "ink escaping the cluster's advance"))
+                break
+            else:
+                continue
+            break
 
     # -- pre-base reordering ----------------------------------------------
     # ေ is stored AFTER its consonant and must render BEFORE it. Compare

@@ -923,6 +923,57 @@ def debug_dump(contours, strokes, px_per_unit, path):
 # Main
 # ---------------------------------------------------------------------------
 
+def squircle_project(glyphs, n):
+    """Square off round skeletons — turn every bowl into a superellipse.
+
+    The nib shape (meta.pen) only reaches the terminals and the
+    modulation; Myanmar's character lives in its bowls, and those are
+    circles. To make a face that reads as squared *and* rounded, the
+    circles themselves have to become squircles, which is a change to the
+    drawing rather than to the outline.
+
+    Each stroke is warped about its own centre, radially: a point at
+    (r, θ) moves to (r · k(θ), θ) where k is the superellipse's reach.
+    That maps a circle exactly onto a superellipse; a straight line
+    through the centre stays straight, because scaling along a ray cannot
+    bend it. The result is then scaled back into the stroke's original
+    bounding box, so the letter keeps its designed extents — the shape is
+    redistributed, not inflated, and the metrics and anchor maths
+    downstream see the same envelope they always did.
+    """
+    def reach(theta):
+        c, s = abs(math.cos(theta)), abs(math.sin(theta))
+        return (c ** n + s ** n) ** (-1.0 / n)
+
+    touched = 0
+    for glyph in glyphs.values():
+        for stroke in glyph.get("strokes", []):
+            pts = stroke.get("points") or []
+            if len(pts) < 3 or stroke.get("fill"):
+                continue                       # dots and imported contours
+            xs = [p[0] for p in pts]
+            ys = [p[1] for p in pts]
+            x0, x1, y0, y1 = min(xs), max(xs), min(ys), max(ys)
+            cx, cy = (x0 + x1) / 2.0, (y0 + y1) / 2.0
+            if x1 - x0 < 1e-6 and y1 - y0 < 1e-6:
+                continue
+            warped = []
+            for p in pts:
+                dx, dy = p[0] - cx, p[1] - cy
+                k = reach(math.atan2(dy, dx))
+                warped.append([cx + dx * k, cy + dy * k] + list(p[2:]))
+            # back into the original box, so extents are preserved exactly
+            wx = [q[0] for q in warped]
+            wy = [q[1] for q in warped]
+            sx = ((x1 - x0) / (max(wx) - min(wx))) if max(wx) > min(wx) else 1.0
+            sy = ((y1 - y0) / (max(wy) - min(wy))) if max(wy) > min(wy) else 1.0
+            for q, p in zip(warped, pts):
+                p[0] = round(cx + (q[0] - cx) * sx, 2)
+                p[1] = round(cy + (q[1] - cy) * sy, 2)
+            touched += 1
+    return touched
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Skeletonize Padauk into a sample Glyph Studio project.")
@@ -934,6 +985,12 @@ def main(argv=None):
     parser.add_argument("--author", help="author credit for the project")
     parser.add_argument("--core-only", action="store_true",
                         help="core Burmese only (the 118-entry studio set)")
+    parser.add_argument("--squircle", type=float, default=0.0, metavar="N",
+                        help="square off the skeletons with a superellipse "
+                             "warp (2 = untouched circles, 4 = squircle, "
+                             "8 = nearly rectangular)")
+    parser.add_argument("--weight", type=float, default=1.0, metavar="X",
+                        help="multiply every stroke width (1.8 ≈ Bold)")
     args = parser.parse_args(argv)
 
     meta = dict(META)
@@ -1010,6 +1067,24 @@ def main(argv=None):
             debug_dir = Path(args.debug)
             debug_dir.mkdir(parents=True, exist_ok=True)
             debug_dump(contours, strokes, scale, debug_dir / f"{name}.png")
+
+    if args.weight and args.weight != 1.0:
+        for glyph in glyphs.values():
+            for stroke in glyph.get("strokes", []):
+                if stroke.get("fill"):
+                    continue
+                stroke["width"] = round(stroke["width"] * args.weight)
+                for point in stroke.get("points") or []:
+                    if len(point) > 2 and point[2]:
+                        point[2] = round(point[2] * args.weight)
+        print(f"\nStroke widths ×{args.weight:g}")
+
+    if args.squircle and args.squircle > 2.0:
+        squared = squircle_project(glyphs, args.squircle)
+        meta["notes"] = (f"Skeletons squared with a superellipse n="
+                         f"{args.squircle:g} warp. " + meta.get("notes", "")).strip()
+        print(f"\nSquircle warp n={args.squircle:g}: "
+              f"{squared} strokes reshaped")
 
     project = {
         "format": "mm-glyph-studio",
