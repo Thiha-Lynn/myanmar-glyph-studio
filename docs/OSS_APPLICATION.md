@@ -100,7 +100,7 @@ Live: https://thiha-lynn.github.io/myanmar-glyph-studio/
 
 | Lane | Bar | Measured 2026-08-17 | Fit |
 |---|---|---|---|
-| Maintainers / library authors | 500+ dependent repos, 100+ dependent packages, or 200k+ monthly downloads | Not on PyPI (`pypi.org/pypi/myanmar-glyph-studio` → **404**); 1 release-asset download total | ✗ |
+| Maintainers / library authors | 500+ dependent repos, 100+ dependent packages, or 200k+ monthly downloads | Not on PyPI (`pypi.org/pypi/myanmar-glyph-studio` → **404**). Five tagged releases; v0.5.0 ships three font families and desktop installers for macOS/Windows/Linux, but downloads to date are ~1 | ✗ |
 | Core contributors | Committer on CPython/Rust/Node/Apache/CNCF-class projects | No | ✗ |
 | Active contributors | 100+ PRs merged into repos you don't own, 12 mo | **0** (`author:Thiha-Lynn is:merged -user:Thiha-Lynn` → 0; 14 merged PRs total, all in this repo) | ✗ |
 | Community builders | 20+ unique external contributors merged, 12 mo | **0** | ✗ |
@@ -240,9 +240,12 @@ the honest case above.
   reporting, Dependabot, four issue templates, PR template, contributor
   guide, a full Burmese README (`README.my.md`), SUPPORT.md, CHANGELOG.md,
   CITATION.cff, a repository map ([ARCHITECTURE.md](ARCHITECTURE.md)),
-  per-family OFL compliance, topical labels, tagged releases with
-  installable font zips — GitHub community profile at 100%, and four
-  `good first issue` tasks standing open as contributor on-ramps.
+  per-family OFL compliance, topical labels, and tagged releases whose
+  assets are built by CI — v0.5.0 carries per-family font zips plus
+  desktop installers for all three platforms. GitHub community profile
+  at 100%, four `good first issue` tasks standing open as contributor
+  on-ramps, and a [CLAUDE.md](../CLAUDE.md) briefing so contributions
+  made with a coding assistant do not trip the project's invariants.
 * **Installable from a checkout:** `pip install -e ".[dev]"` gives
   fifteen command-line tools (build, variable build, proof, validate,
   CoreText diff, kerning, showcase, gallery, book, PDF, i18n check, …)
