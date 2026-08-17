@@ -8,6 +8,23 @@ versions are git tags with installable font zips on the
 ## [Unreleased]
 
 ### Added
+- **The whole vocabulary, rendered.** The showcase now renders all
+  **12,450** words of the DatarrX Myanmar Word Glyphs vocabulary in the
+  generated webfont — the entire dataset the font is validated against,
+  not a sample. The word list ships in
+  [`web/data/vocabulary.js`](web/data/vocabulary.js) (365 KB, 62 KB over
+  the wire) with its own licence header, deliberately kept out of
+  showcase.js: the code here is MIT, that is somebody else's CC BY /
+  CC BY-SA data, and the boundary belongs in the repository rather than
+  in a credits line. A "spot-check against the live dataset" button
+  samples five random pages from the Hugging Face API and reports whether
+  the bundled copy still matches. Loading all 12,450 live instead was
+  tried and measured: it is 498 paged requests, Hugging Face rate-limits
+  partway through, and the demo ends up half-drawn.
+- **Credits on the showcase** for the DatarrX dataset, the Myanmar
+  Wiktionary contributors whose volunteer work is the vocabulary, and SIL
+  Padauk. Two defects in this release were found because that dataset
+  exists.
 - **Rendering showcase** ([web/showcase.html](web/showcase.html), data from
   [`pipeline/make_showcase.py`](pipeline/make_showcase.py)): 60 hard
   clusters — the four shapes of တစ်ချောင်းငင်, narrow/wide/tall ရရစ် wraps,

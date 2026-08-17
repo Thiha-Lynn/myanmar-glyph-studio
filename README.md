@@ -198,7 +198,7 @@ The studio needs nothing but a browser. The build pipeline is a normal
 Python package:
 
 ```bash
-pip install myanmar-glyph-studio        # or: pip install -e ".[dev]" from a clone
+pip install -e ".[dev]"                 # from a clone — not on PyPI yet
 
 mgs-build MyFont.glyphstudio.json build/      # project file -> UFO + features
 mgs-variable MyFont.glyphstudio.json build/   # …plus weight masters and a VF

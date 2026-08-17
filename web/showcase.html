@@ -61,6 +61,14 @@
     border: 1px solid var(--line); border-radius: .4rem; padding: .3rem .5rem;
   }
   button { cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent);
+                   color: #fff; font-weight: 600; }
+  button[disabled] { opacity: .5; cursor: default; }
+  #vocab { max-height: 60vh; overflow-y: auto; }
+  .credit { background: var(--card); border: 1px solid var(--line);
+            border-radius: .6rem; padding: 1rem 1.1rem; margin-top: 1rem; }
+  .credit h3 { margin: 0 0 .4rem; font-size: 15px; }
+  .credit p { margin: .4rem 0; }
 
   table { width: 100%; border-collapse: collapse; margin-top: .6rem; }
   th, td { border-bottom: 1px solid var(--line); padding: .5rem .5rem;
@@ -165,6 +173,19 @@
     <p class="pangram ref" id="pangramRef" data-role="cmp"></p>
   </div>
 
+  <h2>The whole vocabulary <span class="my">— ဝေါဟာရ တစ်ခုလုံး</span></h2>
+  <p class="lede">Not a sample — <strong>every word</strong> of the
+  <a href="https://huggingface.co/datasets/DatarrX/myanmar-word-glyphs">Myanmar
+  Word Glyphs</a> vocabulary, the same 12,450 real Burmese words this font is
+  validated against, rendered here by the font itself. Scroll it. Every one
+  of them shapes with zero failures; if any looks wrong to you, that is a bug
+  report worth more than the whole test suite.</p>
+  <div class="bar">
+    <button id="checkLive" type="button" class="primary">Spot-check against the live dataset</button>
+    <span class="cp" id="vocabStatus"></span>
+  </div>
+  <div class="panel"><div class="words mine" id="vocab"></div></div>
+
   <h2>Type your own</h2>
   <p class="lede">Anything you paste here is rendered by the generated font.
   If a cluster looks wrong, that is a bug worth
@@ -173,15 +194,30 @@
 </main>
 
 <footer>
+  <div class="credit">
+    <h3>With thanks <span class="my">— ကျေးဇူးတင်လွှာ</span></h3>
+    <p><strong><a href="https://huggingface.co/datasets/DatarrX/myanmar-word-glyphs">DatarrX
+    — Myanmar Word Glyphs (MWG)</a></strong>, CC BY 4.0. 12,450 real Burmese
+    words, published as an open community asset. A font can be measured
+    against invented test strings all day and still meet its first real
+    sentence unprepared; this dataset is why every claim on this page is
+    about words people actually write. It is also how the ကွှု and ဋ္ဌ
+    defects were found.</p>
+    <p><strong><a href="https://my.wiktionary.org/">မြန်မာ ဝစ်ရှင်နရီ /
+    Myanmar Wiktionary</a></strong> contributors, CC BY-SA — the volunteers
+    who assembled that vocabulary word by word, unpaid and mostly
+    unthanked. The Burmese-language web exists because people like this
+    built it.</p>
+    <p><strong><a href="https://software.sil.org/padauk/">SIL
+    Padauk</a></strong>, OFL — bundled unmodified as the tracing guide and
+    the comparison reference throughout this page. Where this font is
+    right about Myanmar shaping, Padauk is usually why.</p>
+  </div>
   <p id="provenance"></p>
-  <p>Padauk © SIL International, used here unmodified as the comparison
-  reference under the OFL. Word list from the
-  <a href="https://huggingface.co/datasets/DatarrX/myanmar-word-glyphs">DatarrX
-  Myanmar Word Glyphs</a> dataset (CC BY 4.0), vocabulary from
-  <a href="https://my.wiktionary.org/">Myanmar Wiktionary</a> (CC BY-SA).</p>
 </footer>
 
 <script src="data/showcase.js"></script>
+<script src="data/vocabulary.js"></script>
 <script>
 (function () {
   "use strict";
@@ -358,6 +394,84 @@
   document.getElementById("pangramLabel").textContent = S.font.family;
   document.getElementById("pangramRefLabel").textContent =
     S.reference ? S.reference.family : "reference";
+
+  // --- the whole vocabulary -----------------------------------------------
+  var vocabHost = document.getElementById("vocab");
+  var vocabStatus = document.getElementById("vocabStatus");
+  var VOCAB = window.MWG_VOCABULARY || [];
+
+  function report(msg) { vocabStatus.textContent = msg; }
+
+  // 12,450 spans at once locks the main thread for long enough to feel
+  // broken on a phone. Paint them a slice per frame instead: the list is
+  // usable immediately and fills in while the reader is still scrolling
+  // the tables above it.
+  (function paint(i) {
+    if (i >= VOCAB.length) {
+      report(VOCAB.length.toLocaleString() + " words rendered in " +
+             S.font.family);
+      return;
+    }
+    var frag = document.createDocumentFragment();
+    for (var n = 0; n < 600 && i + n < VOCAB.length; n++) {
+      frag.appendChild(el("span", null, VOCAB[i + n]));
+    }
+    vocabHost.appendChild(frag);
+    report("rendering… " + (i + n).toLocaleString() + " / " +
+           VOCAB.length.toLocaleString());
+    requestAnimationFrame(function () { paint(i + n); });
+  }(0));
+
+  if (!VOCAB.length) {
+    report("data/vocabulary.js not generated — run " +
+           "pipeline/fetch_vocab.py then pipeline/make_showcase.py");
+  }
+
+  // The bundled copy is only worth anything if it still matches the source.
+  // Five random pages is enough to catch a stale or mangled list, and is
+  // polite to an API that rate-limits long before 498 sequential requests
+  // would finish.
+  var checkBtn = document.getElementById("checkLive");
+  checkBtn.addEventListener("click", function () {
+    checkBtn.disabled = true;
+    var API = "https://datasets-server.huggingface.co/rows" +
+              "?dataset=DatarrX%2Fmyanmar-word-glyphs" +
+              "&config=default&split=train&length=100&offset=";
+    var have = Object.create(null);
+    VOCAB.forEach(function (w) { have[w] = 1; });
+
+    var offsets = [];
+    for (var i = 0; i < 5; i++) offsets.push(Math.floor(Math.random() * 497) * 100);
+    report("checking " + offsets.length + " random pages against Hugging Face…");
+
+    Promise.all(offsets.map(function (o) {
+      return fetch(API + o).then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      });
+    })).then(function (pages) {
+      var checked = 0, missing = [];
+      pages.forEach(function (d) {
+        (d.rows || []).forEach(function (r) {
+          var w = r.row && r.row.text;
+          if (!w) return;
+          checked++;
+          if (!have[w]) missing.push(w);
+        });
+      });
+      report(missing.length
+        ? checked + " live rows checked — " + missing.length +
+          " not in the bundled list (e.g. " + missing.slice(0, 3).join(", ") +
+          "). Re-run fetch_vocab.py."
+        : checked + " live rows checked, every one present in the " +
+          VOCAB.length.toLocaleString() + " rendered above.");
+      checkBtn.disabled = false;
+    }).catch(function (err) {
+      report("could not reach Hugging Face (" + err.message +
+             ") — the words above are bundled with the page and unaffected.");
+      checkBtn.disabled = false;
+    });
+  });
 
   var flagged = 0, total = 0;
   S.families.forEach(function (f) {
