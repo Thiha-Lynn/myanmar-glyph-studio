@@ -21,6 +21,21 @@ can make a font: the studio shows each Myanmar character (and the combined
 forms like stacked consonants) as a dimmed guide, you trace your own style
 over it, and the toolchain turns your sketches into a working font.
 
+<p align="center">
+  <img src="docs/images/studio-desktop.png"
+       alt="The studio on a desktop: glyph inventory, vector tools, and ka traced over its dimmed guide, with live shaped Burmese text below"
+       width="720">
+  <img src="docs/images/studio-phone.png"
+       alt="The same studio on a phone: compact toolbar, thumb bar, and the full drawing canvas"
+       width="180">
+</p>
+
+It is built phone-first, because that is the device the community actually
+has: finger and stylus drawing with palm rejection and pressure support,
+two-finger pan & zoom, multi-finger tap for undo/redo, a thumb bar for
+one-handed use, and the whole studio installs as an offline app (PWA) —
+or as a [desktop app](docs/DESKTOP.md).
+
 > ဖောင့်တစ်လုံး ဖန်တီးဖို့ စာလုံးတိုင်းကို ရေးဆွဲစရာမလိုပါ —
 > အခြေခံစာလုံး ~၁၅၀ နဲ့ ပုံစံကွဲအချို့ကိုသာ ရေးဆွဲပြီး
 > ကျန်တာကို OpenType shaping စနစ်က ပေါင်းစပ်ပေးပါတယ်။
