@@ -10,6 +10,12 @@ on:
   workflow_dispatch:
   release:
     types: [published]
+  # PRs that touch the desktop shell build all three platforms as a
+  # non-required check — path-filtered so ordinary PRs never wait on it.
+  pull_request:
+    paths:
+      - "desktop/**"
+      - ".github/workflows/desktop.yml"
 
 permissions:
   contents: write
