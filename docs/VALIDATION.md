@@ -46,20 +46,25 @@ is why CI still gates on the small offline one.
 
 ## Result summary
 
-**0 FAIL and 0 WARN findings in all six fonts, on all three corpora** —
-every cluster shapes and positions inside the measured
-bands with full clearances, in every weight. For calibration,
-the identical harness was run over the fonts the big platforms render
-Myanmar with. Ours is the only one that clears both corpora clean:
+**0 FAIL in every shipped font, on all four corpora.** WARNs are no longer
+zero, and saying so is the point: the `neighbour` check added on
+2026-08-17 measures something nothing here measured before — whether one
+syllable's ink runs into the next — and Padauk trips it too. A WARN count
+that only ever reads zero is a check that has stopped asking anything.
 
-| Font (engine context) | Spec corpus | Word corpus | Full 12 450-word vocabulary |
-| :--- | :--- | :--- | :--- |
-| **Myanmar Glyph Sans** (all weights + VF) | **0 FAIL, 0 WARN** | **0 FAIL, 0 WARN** | **0 FAIL, 0 WARN** |
-| **Glyph Studio Sample** (Regular + VF) | **0 FAIL, 0 WARN** | **0 FAIL, 0 WARN** | **0 FAIL, 0 WARN** |
-| Padauk 6.000 (SIL reference) | 7 FAIL — 5 mark collisions in ြ+ှ clusters, 2 unattached tone dots after ဌ | 1 FAIL | 5 FAIL |
-| Noto Sans Myanmar (Google Docs/Android family) | 4 FAIL | 0 FAIL | not run — font not on the test machine |
-| Myanmar Text 1.10 (Microsoft Word/Windows font) | 7 FAIL | 4 FAIL | not run — font not on the test machine |
-| PDA18-Stone (legacy PUA-ligature font) | 267 FAIL | 142 FAIL | 2 219 FAIL |
+| Font (engine context) | Spec (1 486) | Word (711) | Jātaka (556) | Vocabulary (12 450) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Myanmar Glyph Sans** (all weights + VF) | **0 FAIL**, 3 WARN | **0 FAIL**, 3 WARN | **0 FAIL**, 72 WARN | **0 FAIL**, 12 WARN |
+| **Bagan Display Bold** (display weight) | **0 FAIL**, 6 WARN | **0 FAIL**, 10 WARN | **0 FAIL**, 180 WARN | **0 FAIL**, 30 WARN |
+| **Glyph Studio Sample** (Regular + VF) | **0 FAIL**, 3 WARN | **0 FAIL**, 3 WARN | **0 FAIL**, 21 WARN | **0 FAIL**, 12 WARN |
+| Padauk 6.000 (SIL reference) | 5 FAIL | 1 FAIL | **61 FAIL** | 5 FAIL |
+| Noto Sans Myanmar (Google Docs/Android family) | 4 FAIL | 0 FAIL | not run — font not on the test machine | not run |
+| Myanmar Text 1.10 (Microsoft Word/Windows font) | 7 FAIL | 4 FAIL | not run — font not on the test machine | not run |
+| PDA18-Stone (legacy PUA-ligature font) | 267 FAIL | 142 FAIL | not run | 2 219 FAIL |
+
+Bagan Display carries more WARNs than the text faces because it is a
+display weight: fatter ink sits closer to its neighbours and higher above
+the design ascender. Nothing in it is clipped.
 
 Benchmark numbers use each font's own OS/2 clipping metrics and are
 read with the caveat that some checks (attachment distance, wrap
@@ -248,6 +253,22 @@ So the fix is traced artwork plus a GSUB ligature, exactly the pattern
 already used for the wrap+u forms. A leg-avoidance scan for the stack
 anchor was written, measured, and reverted when it turned out to move the
 glyph by almost nothing.
+
+### Below-vowels sat at five different depths
+
+Reported from a screenshot of the vocabulary list, which is the only way
+it could have been: every automated check passed the whole time, because
+each vowel was individually well-attached, well-clear and inside the
+band. What no per-cluster check can see is that ု hung at −418 under ခ
+and −463 under ရ — a 45-unit wobble that reads, across a line of text, as
+the row of vowels sagging under some letters and not others.
+
+Padauk lands every below-vowel at −439…−93 under **every** letter it
+has. Ours derived the depth from each base's own ink
+(`max(min(y_min, 0), −50) − 40`), which gave deep-descender bases 40 units
+more than shallow ones. It is now the constant `BOTTOM_ANCHOR_Y = −73`,
+putting every vowel at −444…−93 — Padauk's row, within five units, on
+all thirty-three consonants.
 
 ## Letterform parity: တစ်ချောင်းငင် by context
 
