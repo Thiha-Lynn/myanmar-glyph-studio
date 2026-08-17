@@ -72,6 +72,35 @@ versions are git tags with installable font zips on the
   one that shifts the rest of the cluster along, is still reported.
 
 ### Fixed
+- **One syllable was drawn through the next, in 50 of the 12,450
+  vocabulary words.** Reported by a reader looking at rendered Burmese,
+  not by any test here — every geometry check measured a cluster against
+  itself, so nothing that happened across a cluster boundary was visible.
+  Down to **11, against Padauk's 7** on the same corpus, and four of the
+  eleven are words Padauk fails on too. Two causes:
+  - **ဉ had no narrow form.** 838 units of ink inside a 555 advance, so
+    its tail ran into whatever followed (`စဉ်ကြယ်`, `ငါးရှဉ့်ပုန်း`).
+    Padauk swaps in **uni1025** before the asat, a below-vowel or a
+    subjoined letter and leaves ဉွ ဉျ ဉံ ဉီ alone; we now do the same,
+    and the glyph was already drawn. It needs a lookup of its own because
+    its triggers include the asat, and na's swap has to fire *across* an
+    asat (ကျွန်ုပ်) — putting asat in the shared filtering set makes it
+    visible and blocks that match. 27 of the 50 were this.
+  - **အောက်မြစ် reserved no room.** The dot sits *beside* its cluster's
+    ink, so on a narrow letter it lands past the advance, and the next
+    syllable's ြ brings its under-sweep down into exactly that band
+    (`မျှု့ကြ`, `ဖြုံ့ဖြုံ့`, `ရွှေ့ပြောင်း`). Padauk answers with the
+    `dist` feature; we had no `dist` at all. Ours is now generated with
+    the number **derived rather than copied** — place the dot on each
+    base's own bottom anchor, and on the `side` anchor of every below-mark
+    it might chain onto (that chain is what carries it out in ဖြုံ့), then
+    ask for the overshoot back plus the 50-unit protocol. Per weight, so
+    Bold gets more than Light. The advance cannot go on the dot itself:
+    HarfBuzz zeroes the advance of GDEF marks.
+- **`validate_spec.py` now checks across cluster boundaries** —
+  a `neighbour` finding at **WARN**, because Padauk trips it too (3 spec
+  rows, 1 word row, 7 of the vocabulary) and a gate here would fail the
+  reference implementation.
 - **The two variable fonts were shipping the pre-2026-08-16 build.** Every
   anchor fix from that day landed in the static TTFs and in neither VF,
   and they stayed committed that way for three days: stacks sinking past

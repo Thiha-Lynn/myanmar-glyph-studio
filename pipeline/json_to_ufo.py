@@ -30,6 +30,7 @@ import math
 import re
 import sys
 import unicodedata
+from collections import defaultdict
 from pathlib import Path
 
 try:
@@ -181,6 +182,10 @@ SIGN_LSB = 60  # left sidebearing given to re-aligned spacing signs
 # own _top anchor, so 60 here reproduces that gap — and keeps stacked
 # above-marks inside the +900 ascender.
 TOP_CLEARANCE = 60
+# The shaping spec's minimum separation between two pieces of ink
+# (docs/SHAPING_SPEC.md §6). Used here for the gap the `dist` feature has
+# to open up between a cluster's အောက်မြစ် and the next syllable's wrap.
+MIN_INK_CLEARANCE = 50
 # Deepest a subjoined letter may hang from, whatever the base's leg does.
 # Same floor the below-vowels use: Padauk's subjoined band is −440…−80.
 STACK_FLOOR = -50
@@ -1043,7 +1048,8 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
     font.features.text = generate_features(
         set(drawn), wide_bases=measure_wide_bases(base_glyphs, ink_right,
                                                   advances),
-        bases=base_glyphs)
+        bases=base_glyphs,
+        dot_advances=measure_dot_advances(font, set(drawn)))
 
     # PostScript production names: the friendly source names carry hyphens,
     # which are not valid in shipped glyph names. ufo2ft renames at compile
@@ -1112,7 +1118,69 @@ def measure_wide_bases(base_glyphs, ink_right, advances):
                   if base_start + ink_right.get(name, 0) > wrap_reach + 100)
 
 
-def generate_features(drawn, wide_bases=None, bases=None):
+def measure_dot_advances(font, drawn, clearance=MIN_INK_CLEARANCE):
+    """How much advance each base needs so a following ြ clears its dot.
+
+    အောက်မြစ် is placed BESIDE the ink it belongs to, not under it, so on
+    a narrow letter it ends up past the cluster's advance — the letter
+    stops at 571 and the dot's ink runs to 784. Nothing notices until the
+    next syllable begins with a medial-ra wrap, whose under-sweep comes
+    down into exactly that band and draws straight through the dot.
+
+    Padauk answers this with the `dist` feature, widening the glyph that
+    carries the dot when a wrap follows (its uni102F goes 144 → 409). Do
+    the same, but derive the number instead of copying it: place the dot
+    on each base's own bottom anchor, see how far past the advance its ink
+    lands, and ask for that much back plus the clearance protocol.
+
+    Returns {glyph_name: extra_advance}, only for glyphs that need one.
+    """
+    dot = font["dotBelow-myanmar"] if "dotBelow-myanmar" in drawn else None
+    wrap = font["medialRa-myanmar"] if "medialRa-myanmar" in drawn else None
+    if dot is None or wrap is None:
+        return {}
+    dot_attach = {a.name: a for a in dot.anchors}.get("_bottom")
+    dot_box = dot.getBounds(font)
+    wrap_box = wrap.getBounds(font)
+    if dot_attach is None or dot_box is None or wrap_box is None:
+        return {}
+
+    # Where the wrap's own ink starts relative to its origin: that is the
+    # space the dot is allowed to occupy past the advance before the two
+    # collide.
+    room = wrap_box.xMin
+
+    # The dot does not always hang off the base. Below-marks carry `side`
+    # anchors so that a second mark lands BESIDE the first rather than
+    # under it, and the dot is usually that second mark — in ဖြုံ့ it
+    # chains onto the wrap's u-ghost and ends up 164 units past the
+    # advance, nowhere near where the base alone would put it. So walk one
+    # link of that chain for every below-mark that offers a `side`, and
+    # size the base's allowance by the furthest right the dot can end up.
+    dot_side = {a.name: a for a in dot.anchors}.get("_side")
+    chains = []
+    for name in sorted(drawn):
+        mark = font[name]
+        anchors = {a.name: a for a in mark.anchors}
+        if "_bottom" in anchors and "side" in anchors and dot_side is not None:
+            chains.append(anchors["side"].x - anchors["_bottom"].x)
+
+    out = {}
+    for name in sorted(drawn):
+        glyph = font[name]
+        bottom = {a.name: a for a in glyph.anchors}.get("bottom")
+        if bottom is None or glyph.width <= 0:
+            continue
+        reach = [bottom.x - dot_attach.x + dot_box.xMax]
+        reach += [bottom.x + step - dot_side.x + dot_box.xMax
+                  for step in chains]
+        extra = round(max(reach) + clearance - glyph.width - room)
+        if extra > 0:
+            out[name] = extra
+    return out
+
+
+def generate_features(drawn, wide_bases=None, bases=None, dot_advances=None):
     """Emit only rules whose glyphs were actually drawn.
 
     Rules are written before any script statement so they register under
@@ -1287,29 +1355,48 @@ def generate_features(drawn, wide_bases=None, bases=None):
     # the swap looks straight through an intervening ha — Padauk's ရှု is
     # ra.alt + its ha+u ligature. In the shared lookup ha must stay
     # visible (နှ swaps ON the ha itself), which would block ရှု.
+    # ဉ is the fourth of these and the odd one out twice over. Its side
+    # form is not a `.alt` variant but a DIFFERENT LETTER already in the
+    # font — Padauk swaps uni1009 for uni1025, and so do we, because ဉ's
+    # long tail is 838 units of ink inside a 555 advance and it runs
+    # straight into whatever follows. And its triggers include the ASAT,
+    # which the shared lookup must never see: na's swap has to fire
+    # *across* an asat (ကျွန်ုပ်), and a filtering set that contains asat
+    # makes it visible and blocks that match. So ဉ gets its own lookup,
+    # for the same reason ra has one.
     side_specs = (
         ("na-myanmar", ("u-myanmar", "uu-myanmar", "medialWa-myanmar",
                         "medialHa-myanmar", "medialWa-myanmar.ha",
                         "medialYa-myanmar", "medialYa-myanmar.beforewa")
-         + stack_trigs, "na"),
+         + stack_trigs, "na", None),
         ("nnya-myanmar", ("u-myanmar", "uu-myanmar", "medialWa-myanmar",
                           "medialHa-myanmar", "medialWa-myanmar.ha")
-         + stack_trigs, "na"),
+         + stack_trigs, "na", None),
         ("ra-myanmar", ("u-myanmar", "uu-myanmar", "medialWa-myanmar.ha",
-                        "medialHa-myanmar.u", "medialHa-myanmar.uu"), "ra"),
+                        "medialHa-myanmar.u", "medialHa-myanmar.uu"),
+         "ra", None),
+        # Measured against Padauk, which swaps before asat, below-vowel and
+        # subjoined letter — and leaves ဉွ ဉျ ဉံ ဉီ on the plain letter.
+        ("nya-myanmar", ("asat-myanmar", "u-myanmar", "uu-myanmar")
+         + stack_trigs, "nya", "u.indep-myanmar"),
     )
     side_rules = []
     side_filter = set()
     ra_side_rules = []
     ra_side_filter = set()
-    for side_base, trigger_names, group in side_specs:
-        alt = f"{side_base}.alt"
+    nya_side_rules = []
+    nya_side_filter = set()
+    for side_base, trigger_names, group, replacement in side_specs:
+        alt = replacement or f"{side_base}.alt"
         trigs = [t for t in trigger_names if t in drawn]
         if alt in drawn and side_base in drawn and trigs:
             rule = f"    sub {side_base}' [{' '.join(trigs)}] by {alt};"
             if group == "ra":
                 ra_side_rules.append(rule)
                 ra_side_filter.update(trigs)
+            elif group == "nya":
+                nya_side_rules.append(rule)
+                nya_side_filter.update(trigs)
             else:
                 side_rules.append(rule)
                 side_filter.update(t for t in trigs
@@ -1349,7 +1436,8 @@ def generate_features(drawn, wide_bases=None, bases=None):
             medial_rules.append(
                 f"    sub [{' '.join(medial_ctx)}] {base_v}' by {alt_v};")
             medial_filter.add(base_v)
-    if blws_rules or side_rules or ra_side_rules or medial_rules:
+    if (blws_rules or side_rules or ra_side_rules or nya_side_rules
+            or medial_rules):
         lines.append("feature blws {")
         if blws_rules:
             lines.append("  lookup desc_vowels {")
@@ -1375,6 +1463,12 @@ def generate_features(drawn, wide_bases=None, bases=None):
                          f"[{' '.join(sorted(ra_side_filter))}];")
             lines.extend(ra_side_rules)
             lines.append("  } side_bases_ra;")
+        if nya_side_rules:
+            lines.append("  lookup side_bases_nya {")
+            lines.append("    lookupflag UseMarkFilteringSet "
+                         f"[{' '.join(sorted(nya_side_filter))}];")
+            lines.extend(nya_side_rules)
+            lines.append("  } side_bases_nya;")
         lines.append("} blws;")
         lines.append("")
 
@@ -1478,6 +1572,37 @@ def generate_features(drawn, wide_bases=None, bases=None):
                          "by uu-myanmar.alt;")
         lines.append("} psts;")
         lines.append("")
+
+    # dist: reserve room for the အောက်မြစ် when the next syllable opens with
+    # a ြ wrap. The dot itself cannot carry the advance — HarfBuzz zeroes
+    # the advance of GDEF marks — so the widening goes on the last SPACING
+    # glyph of the cluster, which is what Padauk does too. The filtering set
+    # holds only the dot, so any marks stacked between the letter and the
+    # dot are invisible and the three-glyph context still matches.
+    # EVERY wrap, not just the four plain ones: a cluster that begins with
+    # a fused wrap+u (ဖြုံ့ဖြုံ့) collides exactly the same way, and
+    # leaving `.u`/`.wa` out of the context is how five of these survived
+    # the first attempt at this fix.
+    all_wraps = sorted(n for n in drawn
+                       if n == "medialRa-myanmar"
+                       or n.startswith("medialRa-myanmar."))
+    if dot_advances and all_wraps and "dotBelow-myanmar" in drawn:
+        by_value = defaultdict(list)
+        for glyph_name, extra in sorted(dot_advances.items()):
+            if glyph_name in drawn:
+                by_value[extra].append(glyph_name)
+        if by_value:
+            lines.append("feature dist {")
+            lines.append("  lookup dot_before_wrap {")
+            lines.append("    lookupflag UseMarkFilteringSet "
+                         "[dotBelow-myanmar];")
+            for extra, names in sorted(by_value.items()):
+                lines.append(
+                    f"    pos [{' '.join(names)}]' <0 0 {extra} 0> "
+                    f"dotBelow-myanmar [{' '.join(all_wraps)}];")
+            lines.append("  } dot_before_wrap;")
+            lines.append("} dist;")
+            lines.append("")
 
     # mark/mkmk GPOS is generated automatically by ufo2ft's MarkFeatureWriter
     # from the top/bottom/side anchors placed on each glyph.

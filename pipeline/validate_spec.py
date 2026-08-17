@@ -643,6 +643,45 @@ def check_case(font, case, glyphs, total_advance):
                     f"{gi.name}/{gj.name} clear by only {clearance:.0f} units "
                     f"(spec minimum {MIN_MARK_CLEARANCE})"))
 
+    # -- one syllable running into the next ---------------------------------
+    # Everything above measures a cluster against itself, which is how a
+    # whole class of defect stayed invisible: အောက်မြစ် is placed BESIDE
+    # the ink it belongs to, so on a narrow letter it lands past the
+    # cluster's advance and the NEXT syllable's ြ wrap — whose under-sweep
+    # comes down into exactly that band — is drawn straight through it.
+    # Inside its own cluster nothing is wrong; the damage is entirely
+    # across the boundary.
+    #
+    # WARN, not FAIL. Padauk does this too (3 rows of the spec corpus, 1 of
+    # the word corpus, 7 of the 12,450-word vocabulary): a little overlap
+    # between neighbouring syllables is a normal consequence of marks that
+    # legitimately overhang, and a gate here would fail the reference
+    # implementation. What matters is that the count stays near it.
+    cluster_boxes = {}
+    for g, box in base_boxes + mark_boxes:
+        acc = cluster_boxes.setdefault(g.cluster, [box[0], box[2], []])
+        acc[0] = min(acc[0], box[0])
+        acc[1] = max(acc[1], box[2])
+        acc[2].append(g)
+    for left, right in zip(sorted(cluster_boxes), sorted(cluster_boxes)[1:]):
+        a, b = cluster_boxes[left], cluster_boxes[right]
+        if a[1] <= b[0]:                       # no horizontal overlap at all
+            continue
+        for ga in a[2]:
+            for gb in b[2]:
+                if ink_clearance(_translated(font.outline(ga.name), ga.x, ga.y),
+                                 _translated(font.outline(gb.name),
+                                             gb.x, gb.y)) != 0.0:
+                    continue
+                findings.append(Finding(
+                    "WARN", "neighbour",
+                    f"{ga.name} overlaps {gb.name} in the next syllable — "
+                    "ink escaping the cluster's advance"))
+                break
+            else:
+                continue
+            break
+
     # -- pre-base reordering ----------------------------------------------
     # ေ is stored AFTER its consonant and must render BEFORE it. Compare
     # inside one cluster only: in a sentence the e of the second syllable

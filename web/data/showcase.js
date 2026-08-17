@@ -3288,11 +3288,11 @@
     "uni101B",
     "uni1038"
    ],
-   "advance": 6135,
+   "advance": 6325,
    "ink": [
     63,
     -442,
-    6086,
+    6276,
     923
    ],
    "ref": {
@@ -3323,15 +3323,15 @@
      6285,
      933
     ],
-    "dAdvance": -193,
+    "dAdvance": -3,
     "dInk": [
      9,
      -3,
-     -199,
+     -9,
      -10
     ],
-    "worst": 199,
-    "notable": true
+    "worst": 10,
+    "notable": false
    }
   }
  ],

@@ -641,6 +641,72 @@ def test_fused_wa_ha_still_triggers_the_tall_vowel(tmp_path):
     assert "medialHa-myanmar" not in flag.replace("medialWa-myanmar.ha", "")
 
 
+def test_nya_swaps_to_its_narrow_form_but_not_in_its_own_lookup(tmp_path):
+    """ဉ် ဉု ဉ္စ take uni1025; ဉွ ဉျ ဉံ keep the plain letter.
+
+    ဉ carries 838 units of ink in a 555 advance, so its tail runs into
+    whatever follows. Padauk swaps in uni1025 — a different letter already
+    in the font, not a `.alt` variant — before the asat, a below-vowel or
+    a subjoined letter, and leaves it alone elsewhere.
+
+    The asat is why this cannot join the shared side-base lookup: na's
+    swap has to fire *across* an asat (ကျွန်ုပ်), and a filtering set
+    containing asat makes it visible and blocks that match.
+    """
+    font, drawn = build(tmp_path, {
+        "nya-myanmar": {"advance": None, "strokes": [BOX]},
+        "u.indep-myanmar": {"advance": None, "strokes": [BOX]},
+        "na-myanmar": {"advance": None, "strokes": [BOX]},
+        "na-myanmar.alt": {"advance": None, "strokes": [BOX]},
+        "asat-myanmar": {"advance": None,
+                         "strokes": [stroke([[80, 500], [200, 560]], 40)]},
+        "u-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, -150], [350, -150]], 40)]},
+    })
+    fea = font.features.text
+    nya = fea.split("lookup side_bases_nya")[1].split("} side_bases_nya")[0]
+    assert "by u.indep-myanmar;" in nya
+    assert "asat-myanmar" in nya.split("UseMarkFilteringSet")[1].split(";")[0]
+    # …and the shared lookup must NOT have gained the asat
+    shared = fea.split("lookup side_bases ")[1].split("} side_bases;")[0]
+    assert "asat-myanmar" not in shared.split(
+        "UseMarkFilteringSet")[1].split(";")[0]
+
+
+def test_dot_reserves_room_for_a_following_wrap(tmp_path):
+    """အောက်မြစ် hangs past the advance; the next ြ must not sit on it.
+
+    The dot is placed beside its cluster's ink rather than under it, so on
+    a narrow base it ends up outside the advance and the following
+    syllable's wrap — whose under-sweep occupies the same band — is drawn
+    through it. The advance cannot go on the dot itself: HarfBuzz zeroes
+    the advance of GDEF marks. It goes on the last spacing glyph, which is
+    what Padauk's `dist` feature does.
+    """
+    font, drawn = build(tmp_path, {
+        "ka-myanmar": {"advance": None, "strokes": [BOX]},
+        "medialRa-myanmar": RA_WRAP,
+        # a below-vowel for the dot to chain sideways onto — that chain is
+        # what carries it past the advance in real words (ဖြုံ့)
+        "u-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, -150], [420, -150]], 40)]},
+        "dotBelow-myanmar": {"advance": None,
+                             "strokes": [stroke([[300, -260], [430, -260]], 60)]},
+    })
+    fea = font.features.text
+    assert "feature dist" in fea, "no dist feature was emitted"
+    dist = fea.split("feature dist")[1].split("} dist;")[0]
+    # the dot must be the only visible mark, or intervening marks block it
+    assert "UseMarkFilteringSet [dotBelow-myanmar]" in dist
+    # every wrap variant present has to be in the context, fused ones too
+    assert "medialRa-myanmar" in dist
+    # a positive advance, applied to a spacing glyph and not to the dot
+    import re
+    values = [int(m) for m in re.findall(r"<0 0 (\d+) 0>", dist)]
+    assert values and all(v > 0 for v in values)
+    assert "pos [dotBelow-myanmar]'" not in dist
+
+
 def test_wrap_vowels_take_stroke_and_tall_forms(tmp_path):
     """ကြု: inside the wrap the u is the synthesized straight stroke
     hanging from the under-sweep (Padauk's fused uni103C102F); ကြူ: the

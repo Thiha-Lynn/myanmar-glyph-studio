@@ -190,6 +190,65 @@ both introduced when the fused medials were traced:
 Now regression-tested on both halves, and the full ျ/ွ/ှ × ု/ူ matrix —
 14 combinations — agrees with Padauk on which form each takes.
 
+### One syllable running into the next
+
+Every check above measures a cluster against itself, and that is how a
+whole class of defect stayed invisible: **50 of the 12,450 vocabulary
+words had one syllable's ink drawn through the next one's.** Reported by
+a reader looking at rendered words, not by any test here.
+
+Two causes, both now fixed, and the count is down to **11 against
+Padauk's 7** — four of our eleven being words Padauk fails on too
+(ဂန္ထန္တရ, ဉက္ကာပျံ, ရွှံ့ဗွက်, ဝင်္ကန္တဉာဏ်):
+
+1. **ဉ had no narrow form.** The letter carries 838 units of ink inside a
+   555 advance, so its tail simply ran into whatever followed —
+   `စဉ်ကြယ်`, `ငါးရှဉ့်ပုန်း`. Padauk swaps in **uni1025** before the
+   asat, a below-vowel or a subjoined letter, and leaves ဉွ ဉျ ဉံ ဉီ on
+   the plain letter. We now do the same, and the glyph was already drawn.
+   It needs its own lookup rather than joining the shared side-base one:
+   its trigger list includes the **asat**, and na's swap has to fire
+   *across* an asat (ကျွန်ုပ်) — a filtering set containing asat makes it
+   visible and blocks that match. 27 of the 50 were this.
+2. **အောက်မြစ် reserved no room.** The dot is placed *beside* its
+   cluster's ink, not under it, so on a narrow letter it lands past the
+   advance — and the next syllable's ြ wrap brings its under-sweep down
+   into exactly that band. `မျှု့ကြ`, `ဖြုံ့ဖြုံ့`, `ရွှေ့ပြောင်း`.
+   Padauk answers with the `dist` feature, widening the glyph that
+   carries the dot (its uni102F goes 144 → 409); we had no `dist` at all.
+   Ours is now generated, with the number *derived* rather than copied:
+   place the dot on each base's own bottom anchor — and on the `side`
+   anchor of every below-mark it might chain onto, which is what carries
+   it out in ဖြုံ့ — and ask for the overshoot back plus the 50-unit
+   protocol. Per weight, so Bold gets more than Light.
+
+   The advance cannot go on the dot itself: HarfBuzz zeroes the advance
+   of GDEF marks, the same trap that governs the medial-ra wrap.
+
+`validate_spec.py` now checks this as a **neighbour** finding — WARN, not
+FAIL, because Padauk trips it too (3 spec rows, 1 word row, 7 of the
+vocabulary) and a gate here would fail the reference implementation. What
+matters is that our count stays beside its count.
+
+### Still open: the ဋ္ဌ stack needs artwork
+
+`ကမ္မဋ္ဌာန်း`, `ကိလိဋ္ဌဒေါသ` and the rest of the ဋ ဌ ဍ ဠ family still
+render as a tangle, and **no anchor change can fix it**:
+
+* ဋ descends to −431 and ဌ to −436 across the letter's *whole width* —
+  the bowl is the descender, so there is no clear column to slide a
+  subjoined form into at any probe width.
+* A subjoined letter is ~340 units tall. Below a tail at −436 it would
+  need −821. `usWinDescent` is −750. It does not fit vertically either.
+* Padauk's answer is `uni100B100C`: ဋ္ဌ **drawn as one fused glyph, 458
+  units wide** — the footprint of a single letter, not a base with
+  something hanging off it.
+
+So the fix is traced artwork plus a GSUB ligature, exactly the pattern
+already used for the wrap+u forms. A leg-avoidance scan for the stack
+anchor was written, measured, and reverted when it turned out to move the
+glyph by almost nothing.
+
 ## Letterform parity: တစ်ချောင်းငင် by context
 
 A user report against the rendered output caught a *form* gap the
