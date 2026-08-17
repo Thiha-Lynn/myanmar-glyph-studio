@@ -8,6 +8,28 @@ versions are git tags with installable font zips on the
 ## [Unreleased]
 
 ### Added
+- **Desktop apps** ([desktop/](desktop/), [docs/DESKTOP.md](docs/DESKTOP.md)):
+  the studio as a macOS DMG, Windows installer and Linux AppImage/deb,
+  for people who prefer a downloadable application to a browser tab. The
+  shell is ~150 lines of Electron serving the unchanged `web/` directory
+  over a private `app://` scheme — what ships is byte-for-byte what the
+  website serves, offline, sandboxed, nothing sent anywhere. Built by CI
+  for all three platforms and attached to every published release. The
+  binaries are unsigned and the documentation says so before the download
+  link, with the PWA install as the zero-download alternative.
+- **The vocabulary as an atlas, and every glyph on one page**
+  ([web/showcase.html](web/showcase.html)): the 12,450-word MWG
+  vocabulary now renders as a dictionary — one group per initial letter,
+  a sticky letter rail with counts, substring search across the whole
+  list, and a tap on any word drops it into the type-your-own box.
+  Above it, the studio's complete inventory (282 entries: the whole
+  Myanmar block, Ext-A/B, and the shaping variants) rendered by the
+  generated font; a tofu cell is an undrawn glyph, and its ✎ link opens
+  exactly that glyph in the studio.
+- **A repository map** ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)):
+  the data flow from browser sketch to validated font, every module's
+  job, which files are generated, the pairs of files that must change
+  together, and where to start as a designer, translator or developer.
 - **A type specimen** ([web/specimen.html](web/specimen.html)): the full
   set of plates a foundry publishes — masthead, the 33 consonants and
   every sign as a grid, a waterfall from 84px to 15px, running text in
