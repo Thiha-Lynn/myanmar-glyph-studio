@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Contribute · Myanmar Glyph Studio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Four standing invitations to help build free Myanmar fonts — draw letters, draw digits, translate the studio, or judge a font by eye. No experience required.">
+<meta name="theme-color" content="#a8352f">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Contribute to Myanmar Glyph Studio">
+<meta property="og:description" content="Four standing invitations. Five drawn letters is already a real contribution.">
+<meta property="og:image" content="https://thiha-lynn.github.io/myanmar-glyph-studio/icons/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root {
+    --bg: #faf7f2; --card: #fff; --ink: #241d18; --muted: #6b5e4c;
+    --line: #e2d9c8; --accent: #a8352f; --gold: #a97722;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1a1512; --card: #241d18; --ink: #ede3d2; --muted: #a8977f;
+      --line: #3a3128; --accent: #e0705c; --gold: #d2a544;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.65 ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+    padding: 1.6rem 1.1rem 4rem;
+  }
+  header, main, footer { max-width: 64rem; margin: 0 auto; }
+  h1 { font-size: clamp(1.7rem, 4.5vw, 2.5rem); margin: .2rem 0 .5rem; line-height: 1.2; }
+  h2 { font-size: 1.15rem; margin: 0 0 .3rem; }
+  .my { font-family: Padauk, "Myanmar MN", "Noto Sans Myanmar", sans-serif; }
+  .lede { color: var(--muted); max-width: 46rem; margin: 0 0 .4rem; }
+  .cards { display: grid; gap: 1rem; margin: 1.8rem 0 2.4rem;
+           grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
+  .card { background: var(--card); border: 1px solid var(--line);
+          border-radius: 12px; padding: 1.1rem 1.15rem 1.25rem;
+          display: flex; flex-direction: column; }
+  .card .tag { font-size: .74rem; letter-spacing: .09em; text-transform: uppercase;
+               color: var(--gold); font-weight: 700; margin-bottom: .5rem; }
+  .card p { margin: 0 0 .7rem; color: var(--muted); font-size: .95rem; }
+  .card .go { margin-top: auto; display: flex; flex-wrap: wrap; gap: .45rem; }
+  a.btn { display: inline-flex; align-items: center; gap: .35rem;
+          background: var(--accent); color: #fff; text-decoration: none;
+          padding: .5rem .85rem; border-radius: 8px; font-size: .9rem;
+          font-weight: 600; min-height: 44px; }
+  a.btn.ghost { background: transparent; color: var(--accent);
+                border: 1px solid var(--line); font-weight: 500; }
+  a.btn:hover { filter: brightness(1.08); }
+  .note { border-left: 3px solid var(--gold); background: var(--card);
+          padding: .85rem 1rem; border-radius: 0 8px 8px 0; margin: 1.6rem 0;
+          font-size: .95rem; }
+  .note strong { color: var(--ink); }
+  ol { padding-left: 1.2rem; color: var(--muted); }
+  ol li { margin: .35rem 0; }
+  code { background: var(--card); border: 1px solid var(--line);
+         padding: .1rem .35rem; border-radius: .3rem; font-size: .87em; }
+  footer { color: var(--muted); font-size: .88rem; margin-top: 2.5rem;
+           border-top: 1px solid var(--line); padding-top: 1rem; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Help make Myanmar fonts <span class="my">— လက်တွဲပါ</span></h1>
+  <p class="lede">Four invitations that stay open. Take any of them at any
+  time: nothing to claim, nobody to ask, and partial work is welcome on
+  every one. Five letters drawn in a consistent hand is already a real
+  contribution.</p>
+  <nav data-sitenav></nav>
+</header>
+
+<main>
+  <div class="cards">
+
+    <section class="card">
+      <div class="tag">Invitation A</div>
+      <h2>Draw the 34 consonants <span class="my">ကကြီး–အ</span></h2>
+      <p>The consonants set a font's whole personality. The families here
+      carry one hand — this invitation is for yours. Trace the dimmed
+      guides, press Save, and open a pull request with your project file.</p>
+      <div class="go">
+        <a class="btn" href="index.html#g=ka-myanmar">Start with က</a>
+        <a class="btn ghost" href="showcase.html#inventoryH">See what's undrawn</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="tag">Invitation B</div>
+      <h2>Draw the digits <span class="my">၀–၉</span> and <span class="my">၊ ။</span></h2>
+      <p>Twelve drawings, an evening's work, a complete contribution. Myanmar
+      digits are tabular — every figure takes the same width — and the build
+      enforces that for you, so draw freely and let the pipeline space them.</p>
+      <div class="go">
+        <a class="btn" href="index.html#g=zero-myanmar">Start with ၀</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="tag">Invitation C</div>
+      <h2>Translate the studio <span class="my">ဘာသာပြန်ပါ</span></h2>
+      <p>The one thing no single maintainer can do. The interface speaks
+      English and Burmese; Shan, Mon and S'gaw Karen are wanted, as are
+      corrections to the Burmese typography wording. A language is one file,
+      and partial translations work — untranslated strings fall back to
+      English, so twenty lines help immediately.</p>
+      <div class="go">
+        <a class="btn" href="https://github.com/Thiha-Lynn/myanmar-glyph-studio/blob/main/docs/TRANSLATING.md">How to translate</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="tag">Invitation D</div>
+      <h2>Judge a font by eye <span class="my">ကြည့်ပြီး ဝေဖန်ပါ</span></h2>
+      <p>Three shaping engines are verified in software, which proves they
+      draw what the font asks for. It does not prove that what the font asks
+      for looks right to someone who reads Burmese. That judgement is the
+      contribution — and it needs no tools beyond your eyes.</p>
+      <div class="go">
+        <a class="btn" href="devicetest.html">Test on this device</a>
+        <a class="btn ghost" href="gallery.html">Install a font first</a>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="note">
+    <strong>No experience with fonts is needed for A, B or D.</strong> If you
+    can trace a letter on a phone, or read Burmese and say "that looks
+    wrong", you can contribute something this project cannot produce on its
+    own. The hard parts — OpenType shaping rules, mark positioning, the
+    build — are already automated.
+  </div>
+
+  <h2>What happens after you send something</h2>
+  <ol>
+    <li>Continuous integration builds your font and checks its shaping
+      against 1,486 test clusters and 711 real Burmese words automatically —
+      you do not need to run anything locally.</li>
+    <li>You get specific feedback, not a silent queue. If a mark sits two
+      units off, the report says which glyph and by how much.</li>
+    <li>Your name goes in the font's own credits, and fonts are released
+      under the SIL Open Font License — free for anyone, forever.</li>
+  </ol>
+
+  <div class="note">
+    The full detail for all four lives in
+    <a href="https://github.com/Thiha-Lynn/myanmar-glyph-studio/blob/main/CONTRIBUTING.md#where-to-start--four-standing-invitations">CONTRIBUTING.md</a>,
+    which is the canonical version — this page is the short way in. Questions
+    in Burmese are welcome in
+    <a href="https://github.com/Thiha-Lynn/myanmar-glyph-studio/discussions">Discussions</a>.
+  </div>
+</main>
+
+<footer>
+  Myanmar Glyph Studio — toolkit under MIT, fonts under the
+  <a href="https://openfontlicense.org">SIL Open Font License 1.1</a>.
+  Guide font: <a href="https://software.sil.org/padauk/">SIL Padauk</a>.
+</footer>
+
+<script src="js/sitenav.js" defer></script>
+</body>
+</html>
