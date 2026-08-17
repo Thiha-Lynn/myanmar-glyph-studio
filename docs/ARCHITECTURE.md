@@ -99,8 +99,9 @@ travel inside the wheel so `mgs-validate` works anywhere.
 
 One folder per family, each holding the project JSON (the source of truth),
 `OFL.txt`, and the committed builds: `sample/` (the pipeline demo),
-`myanmar-glyph-sans/` (468 glyphs, Light/Regular/Bold + VF, whole Myanmar
-block + Ext-A/B + Latin-1), `bagan-display/` (squircle display face).
+`myanmar-glyph-sans/` (480 drawn glyphs → 492 in the built font,
+Light/Regular/Bold + VF, whole Myanmar block + Ext-A/B + Latin-1),
+`bagan-display/` (squircle display face, same inventory).
 
 **When any shaping rule changes, rebuild every project's statics and VF via
 `make_variable.py` and copy all four files out of `dist/<name>/variable/`** —

@@ -1,276 +1,299 @@
 # Claude for Open Source — application material
 
-Prepared answers for <https://claude.com/contact-sales/claude-for-oss>.
-Copy the sections you need into the form; keep every claim linked to
-something public. Update the numbers (marked `‹…›`) on the day you submit.
+Everything needed to submit to <https://claude.com/contact-sales/claude-for-oss>,
+with every number re-measured on **2026-08-17** against the GitHub API and,
+where it is an engineering claim, re-run rather than quoted.
 
 **Repository:** <https://github.com/Thiha-Lynn/myanmar-glyph-studio>
 **Live tool:** <https://thiha-lynn.github.io/myanmar-glyph-studio/>
 **Gallery:** <https://thiha-lynn.github.io/myanmar-glyph-studio/gallery.html>
-**Maintainer:** Thiha Lynn (GitHub `@Thiha-Lynn`)
-**Licenses:** MIT (toolkit) · SIL OFL 1.1 (all fonts produced)
+**Maintainer:** Thiha Lynn (GitHub `@Thiha-Lynn`) · koshanlay1994@gmail.com
+**Licenses:** MIT (toolkit) · SIL OFL 1.1 (every font produced)
 
-## Which category do you fit?
+---
 
-The program's five lanes, re-verified against the program page and
-against this repo's own API on **2026-08-17**. It offers 6 months of
-Claude Max 20x. Every "us today" number below was measured, not
-estimated:
+## 1. The submit-tonight pack
 
-| Lane | Bar | Us today (2026-08-17) | Fit? |
+The form authenticates with GitHub, then asks for your email, a short
+statement of how you would use Claude, and a qualification explanation
+capped at **500 words**. Paste-ready answers follow. Everything in them
+is true as of today and checkable from public links.
+
+### Field: repository / project
+
+```
+Myanmar Glyph Studio — https://github.com/Thiha-Lynn/myanmar-glyph-studio
+Live: https://thiha-lynn.github.io/myanmar-glyph-studio/
+```
+
+### Field: qualification explanation (468 words — under the 500 cap)
+
+> I maintain Myanmar Glyph Studio, a browser-based font-creation toolkit
+> for the Myanmar script — the writing system of Burmese, Mon, Shan,
+> S'gaw and Pwo Karen, Kayah, Palaung, Khamti and Aiton, read by roughly
+> 40 million people.
+>
+> Let me be straight about the numeric lanes: I meet none of them. The
+> repository is four days old, has no stars, and no external contributors
+> yet. I am applying under "if you maintain something the ecosystem
+> quietly depends on, apply anyway and tell us about it" — with the
+> honest amendment that nothing depends on it *yet*. What I can offer
+> instead is a checkable claim about the gap it fills and the standard it
+> is built to.
+>
+> Myanmar is a complex script. A font is not a set of pictures but parts
+> plus OpenType rules — contextual substitutions and mark positioning
+> (blwf, rphf, pres, blws, GPOS mark/mkmk) — and nothing renders
+> correctly until those are right. That expertise is why a community of
+> 40 million readers has only a handful of free Unicode fonts, and why
+> the Zawgyi/Unicode split took over a decade to recover from. Browser
+> tools (Calligraphr, Glyphr Studio, FontStruct) cannot produce
+> complex-script shaping at all; desktop tools (FontForge, Glyphs,
+> FontLab) demand exactly the expertise that is missing. I could not find
+> any browser-based tool, for any complex script, that generates its own
+> shaping rules. This one does: you trace about 150 glyph parts over
+> dimmed guides on a phone, tablet or desktop, and the toolchain emits
+> the shaping rules, mark anchors and UFO sources, compiling through the
+> standard stack (fontmake, fontTools, fontbakery).
+>
+> The part worth checking is the engineering, because it is public and
+> reproducible in ten minutes:
+>
+> - A written shaping specification (docs/SHAPING_SPEC.md) that a program
+>   checks: 1,486 synthetic clusters, plus 711 real Burmese words chosen
+>   to cover all 1,213 syllable clusters in a 12,450-word vocabulary.
+> - All three shaping engines diffed automatically: HarfBuzz in CI, Apple
+>   CoreText via a Swift shaper, Microsoft DirectWrite via a C++ shaper on
+>   a Windows runner. 6,363 cluster comparisons per engine, zero
+>   rendering differences.
+> - The same harness run over the fonts the platforms ship reports
+>   defects in each of them (Padauk 7, Noto Sans Myanmar 4, Microsoft
+>   Myanmar Text 7); mine clear both corpora at zero.
+> - Defects found in my own shipped fonts are written up in
+>   docs/VALIDATION.md rather than quietly fixed.
+>
+> Everything produced is SIL OFL; the toolkit is MIT.
+>
+> What I would do with Claude: the remaining work is expert OpenType
+> (Myanmar Extended-C, per-language shaping for Mon, Shan and Karen),
+> reviewing community font submissions fast enough that first-time
+> contributors do not drift away, and writing Burmese-language
+> documentation for font-making, which barely exists. I am one person
+> doing this beside a job, and the binding constraint is review-and-
+> explain time. That is precisely what this would buy.
+
+### Field: how you would use Claude (short version, 81 words)
+
+> Three things. First, the expert OpenType work that gates coverage:
+> Myanmar Extended-C, GDEF mark classes, and per-language shaping tests
+> for Mon, Shan and S'gaw Karen. Second, reviewing community font
+> submissions — reading proof sheets and fontbakery output to give a
+> first-time contributor specific, kind feedback the same day, because a
+> slow first review is the main reason new contributors disappear. Third,
+> Burmese-language documentation and tutorials for font-making, which
+> barely exist in Burmese. I am one maintainer; the constraint is
+> review-and-explain time.
+
+---
+
+## 2. The lane table — measured, not estimated
+
+| Lane | Bar | Measured 2026-08-17 | Fit |
 |---|---|---|---|
-| Maintainers / library authors | 500+ dependent repos, 100+ dependent packages, or 200k+ monthly downloads | Not published: `pypi.org/pypi/myanmar-glyph-studio` returns 404 | ✗ |
+| Maintainers / library authors | 500+ dependent repos, 100+ dependent packages, or 200k+ monthly downloads | Not on PyPI (`pypi.org/pypi/myanmar-glyph-studio` → **404**); 1 release-asset download total | ✗ |
 | Core contributors | Committer on CPython/Rust/Node/Apache/CNCF-class projects | No | ✗ |
-| Active contributors | 100+ merged PRs into repos you don't own, 12 mo | **0** (`author:Thiha-Lynn is:merged -user:Thiha-Lynn` → 0; 9 merged PRs total, all in this repo) | ✗ |
-| Community builders | 20+ unique external contributors merged, 12 mo | **0** — merged-PR authors are `Thiha-Lynn` and `dependabot[bot]` | ✗ |
-| Critical infrastructure | OpenSSF criticality ≥ 0.4 | Repo created 2026-08-13; 0 stars, 0 forks, 0 watchers, 0 dependents → score ≈ 0 | ✗ |
+| Active contributors | 100+ PRs merged into repos you don't own, 12 mo | **0** (`author:Thiha-Lynn is:merged -user:Thiha-Lynn` → 0; 14 merged PRs total, all in this repo) | ✗ |
+| Community builders | 20+ unique external contributors merged, 12 mo | **0** | ✗ |
+| Critical infrastructure | OpenSSF criticality ≥ 0.4 | Created 2026-08-13; 0 stars, 0 forks, 0 watchers, 0 dependents → ≈ 0 | ✗ |
 
-**Nought for five, and not narrowly.** The honest reading is that this
-project is four days old and has not yet been used by anyone outside it:
-4 unique visitors in the last fortnight, and the 102 unique cloners are
-mostly CI. That is a statement about *age and reach*, not about quality —
-the engineering evidence below is real and checkable — but the lanes
-measure reach, and reach is what is missing.
+**Nought for five, and not narrowly.** Reach in the last fortnight: 58
+views from 4 unique visitors. (293 clones from 102 "uniques" is almost
+entirely CI — do not quote it as human interest; a reviewer will know.)
 
-The program does add, verbatim: *"If you maintain something the ecosystem
-quietly depends on, apply anyway and tell us about it."* Read it
-carefully before leaning on it. The operative phrase is **"the ecosystem
-quietly depends on"** — present tense, about existing dependents. A repo
-with no external users does not qualify under it yet, and an application
-that stretches it invites the reviewer to check, find nothing, and
-conclude the rest of the claims are stretched too. The engineering record
-here is strong enough that it should never be spent buying credibility
-for a reach claim it cannot support.
+That is a statement about *age and reach*, not about quality. The
+engineering below is real and reproducible. But the lanes measure reach,
+and reach is what is missing — so the application must be written from
+the engineering and must say the stage out loud. An application that
+stretches "quietly depended on" into a claim of existing dependents
+invites the reviewer to check, find nothing, and discount everything
+else. The record here is strong enough that it should never be spent
+buying credibility for a reach claim it cannot support.
 
-**Recommendation: do not submit yet.** Submit when at least one lane is
-genuinely met, or when "quietly depended on" is defensible with evidence
-— see *When to submit* at the bottom.
+---
 
-Do **not** claim the download/dependent-count lanes, and do not describe
-the toolkit as pip-installable until it is actually on PyPI.
+## 3. Three things only you can do before submitting
 
-## One-paragraph pitch
+1. **Publish to PyPI — the one lane you could actually move tonight.**
+   The package is built and PEP 621-complete; it has simply never been
+   uploaded, and `pip install myanmar-glyph-studio` currently 404s. This
+   needs your PyPI account and API token, so it is yours to run, not
+   something automation should do with your credentials:
 
-> Myanmar Glyph Studio is the only browser-based font-creation tool for
-> the Myanmar script. Myanmar script serves roughly 40 million readers
-> across Burmese, Mon, Shan, S'gaw and Pwo Karen, Kayah, Pa'O, Palaung,
-> Khamti and Aiton, yet the community has only a handful of free Unicode
-> fonts and is still recovering from the Zawgyi/Unicode split that
-> fragmented Burmese digital text for over a decade. Making a Myanmar
-> font normally demands expert OpenType knowledge — the script needs
-> contextual substitutions and mark positioning (`blwf`, `rphf`, `pres`,
-> `blws`, GPOS `mark`/`mkmk`) before a single syllable renders correctly.
-> This project removes that barrier: contributors trace ~150 glyph parts
-> over dimmed guides in a browser (phone, tablet with Apple Pencil, or
-> desktop), and the toolchain generates the shaping rules, mark anchors
-> and UFO sources automatically, compiling with the same industry
-> standard stack Google Fonts expects (fontmake, fontTools, fontbakery,
-> HarfBuzz-verified proofs). Every font ships under the SIL Open Font
-> License, so the output is permanently free for the whole community.
+   ```bash
+   python3 -m pip install --upgrade build twine
+   python3 -m build
+   python3 -m twine upload dist/*
+   ```
 
-## Why it matters / who depends on it
+   It will not hit 200k monthly downloads by tonight — but it turns
+   "installable software" from an assertion into a link, and it starts a
+   counter that only goes up. Until it is uploaded, **do not describe the
+   toolkit as pip-installable** anywhere in the application.
 
-* **An underserved writing system.** Compare ecosystem support: Latin has
-  thousands of free fonts; Myanmar script has a handful (Padauk, Noto
-  Myanmar, Pyidaungsu). Ethnic-minority languages of Myanmar are worse
-  served still — this tool covers the entire Myanmar Unicode block plus
-  Extended-A/B, so Shan, Mon, Karen, Kayah and Khamti communities can
-  make their own typefaces.
-* **No alternative exists.** Browser font editors (Glyphr Studio,
-  FontStruct, Calligraphr) cannot produce complex-script shaping;
-  professional tools (FontForge, Glyphs, FontLab) require expert
-  OpenType work and desktop installs. Fontra is a strong browser editor
-  but needs a local server and does not generate shaping rules.
-* **Digital sovereignty.** Fonts are infrastructure: without them,
-  publishing, education, and government material in these languages
-  depend on a small number of foreign-maintained families.
+2. **Decide what to say about the commit history.** GitHub's Insights →
+   Contributors currently shows three identities: `uit-shinnthantkyaw`
+   (31 commits), `Thiha-Lynn` (14) and `dependabot[bot]` (8). The
+   `uit-*` commits date from before the repository-local git identity was
+   set. A reviewer opens Insights first and will see two human-looking
+   accounts. If that is your other account, say so in one line — it reads
+   as ordinary, and silence reads as an uncounted contributor. If it is a
+   different person, credit them. Either is fine; the mismatch is what
+   costs you.
 
-## Engineering evidence (all public and linkable)
+3. **Say the stage plainly, in your own words.** Four days old, one
+   maintainer, built to fill a gap you hit yourself. The programme
+   explicitly invites this case. The age is only fatal if you hide it.
+
+**Do not** pad the history to look busier — no synthetic commits, no
+commits authored under other people's accounts, no issues closed without
+the work behind them. Manufactured activity is easy to spot and fatal to
+the honest case above.
+
+---
+
+## 4. Engineering evidence (all public, all linkable)
 
 * **A written shaping specification, machine-checked.**
   [`docs/SHAPING_SPEC.md`](SHAPING_SPEC.md) states the model — anchor
   formulas with coordinates, glyph classes, GSUB order, a 50-unit
   collision protocol — and `pipeline/validate_spec.py` *measures* a font
-  against it: two corpora, **1,486 synthetic clusters** (every consonant ×
-  vowel × medial, stacks, kinzi, tall-aa, torture text, Mon/Shan/Karen)
-  and **711 real Burmese words covering all 1,213 syllable clusters** in a
-  12,451-word Wiktionary vocabulary. Findings are graded so a malformed
+  against it: **1,486 synthetic clusters** (every consonant × vowel ×
+  medial, stacks, kinzi, tall-aa, torture text, Mon/Shan/Karen) and
+  **711 real Burmese words covering all 1,213 syllable clusters** in a
+  12,450-word Wiktionary vocabulary. Findings are graded so a malformed
   test string can never mask a real defect. Results:
   [`docs/VALIDATION.md`](VALIDATION.md).
 * **Verified on every shaping engine that matters, automatically.**
   Myanmar is composed by the text engine, not the font, so the same file
-  can render differently on each platform. All three are now diffed
-  against each other in software: HarfBuzz in CI (Android, Chrome, Linux);
-  **CoreText** via a Swift shaper that runs as a test on any Mac
-  (`pipeline/coretext/`); and **DirectWrite** via a C++ shaper calling
-  `IDWriteTextAnalyzer` on a `windows-latest` runner, so Windows is
-  covered on every pull request (`pipeline/directwrite/`). Chromium/Skia
-  is checked through the browser. Current result: **6,363 cluster
-  comparisons against Apple's engine and 6,363 against Microsoft's, zero
-  rendering differences either way.** What is left for a person is
-  judgement, not geometry — whether it *looks* right to a reader of
-  Burmese — and the repo ships a
+  can render differently per platform. All three are diffed in software:
+  HarfBuzz in CI (Android, Chrome, Linux); **CoreText** via a Swift
+  shaper that runs as a test on any Mac (`pipeline/coretext/`); and
+  **DirectWrite** via a C++ shaper calling `IDWriteTextAnalyzer` on a
+  `windows-latest` runner, so Windows is covered on every pull request
+  (`pipeline/directwrite/`). Current result, re-measured 2026-08-17:
+  **6,363 cluster comparisons against Apple's engine and 6,363 against
+  Microsoft's, zero rendering differences either way** (1,410 spec
+  clusters + 711 words, × 3 weights). What is left for a person is
+  judgement, not geometry — and the repo ships a
   [device-test page](https://thiha-lynn.github.io/myanmar-glyph-studio/devicetest.html)
   that walks anyone through it and writes the report.
-* **Automated quality gates on every push and PR:** 69 tests
-  (`pipeline/tests/`), both shaping corpora against *every* shipped font
-  file (discovered by glob, so a font cannot ship untested), a HarfBuzz
-  regression that fails the build if the reference font drops any glyph,
-  and fontbakery's universal profile gated on FAIL. See the
+* **Automated quality gates on every push and PR:** **81 tests**
+  (`pipeline/tests/`, 80 passing + 1 platform-skipped, 20s), both shaping
+  corpora against *every* shipped font file — discovered by glob, so a
+  font cannot ship untested — a HarfBuzz regression that fails the build
+  if the reference font drops any glyph, and fontbakery's universal
+  profile gated on FAIL. See the
   [Actions tab](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions).
 * **Validated against the whole of a real vocabulary.** Beyond the
   711-word CI corpus, `pipeline/fetch_vocab.py` runs all **12,450** words
   of the [DatarrX Myanmar Word Glyphs](https://huggingface.co/datasets/DatarrX/myanmar-word-glyphs)
-  vocabulary through the same checker: 0 FAIL, 0 WARN in all six shipped
-  fonts. The wide sweep exists to test the *cover*, and has never found
+  vocabulary through the same checker: 0 FAIL, 0 WARN in every shipped
+  font. The wide sweep exists to test the *cover*, and has never found
   anything the 711 words miss — a result about corpus design, published
   rather than assumed.
-* **A showcase that shows its work.**
+* **A second corpus built from literature.** `pipeline/make_reference.py`
+  segments a whole Wikisource category into syllable clusters and greedily
+  selects the fewest passages covering every one: on the 538-story Jātaka
+  cycle (3.66M characters) that is **1,605 distinct clusters**, a third
+  more than the vocabulary holds. It found two real defects on its first
+  run.
+* **Showcases that show their work.**
   [showcase.html](https://thiha-lynn.github.io/myanmar-glyph-studio/showcase.html)
   renders 60 hard clusters beside the reference font with the glyphs the
-  shaper produced and the ink distance between them, then renders all
-  12,450 vocabulary words in the generated webfont. It is also a working
-  QA instrument: it found a contextual-form bug (ကွှု) that both corpora
-  score as passing, because a vowel in the wrong shape is still perfectly
-  positioned.
+  shaper produced and the ink distance between them, then the complete
+  glyph inventory, then all 12,450 vocabulary words as a browsable atlas.
+  It is also a working QA instrument: it found a contextual-form bug
+  (ကွှု) that both corpora score as passing, because a vowel in the wrong
+  shape is still perfectly positioned.
 * **Real font engineering, not a wrapper:** stroke→outline expansion
   mirrored in JS and Python, generated `mym2` feature code, automatic
   mark anchors with in-browser anchor editing, virama synthesis,
-  production glyph names, smart-dropout hinting, WOFF2 output.
-* **Reproducible reference font:** `projects/sample/` is generated by
-  skeletonizing Padauk through the same stroke pipeline a human uses —
-  it proves stacks, kinzi, medial wraps and mark positioning end to end,
-  with a committed proof sheet.
-* **Letterform parity with the reference implementation.** Fifteen fused
-  forms are traced from Padauk and driven by contextual rules, so the
-  clusters Myanmar actually writes as one shape are drawn as one shape —
-  wrap+vowel, wrap+wa, wa+ha, ha+vowel, the ja ligatures and the
-  ja+wa+ha triple. Sixteen reference clusters now match Padauk's shaped
-  structure glyph for glyph, verified by measurement rather than by eye.
-* **Benchmarked, not self-graded.** The same harness run over the fonts
-  the major platforms ship reports findings in each of them — Padauk 7,
-  Noto Sans Myanmar 4, Microsoft's Myanmar Text 7 — while the fonts here
-  clear both corpora at **0 FAIL, 0 WARN in every weight**. The corpus is
-  strict enough to catch real defects in professional fonts.
+  production glyph names, kerning measured from the drawn outlines
+  (with tabular figures correctly excluded), smart-dropout hinting,
+  WOFF2 output.
+* **One drawing, many faces.** Sketches are centre-lines plus a pen, so
+  the pipeline derives a whole `wght` axis from a single drawing, and a
+  superellipse nib plus a skeleton warp produce genuinely different
+  faces from the same source — demonstrated live at
+  [styles.html](https://thiha-lynn.github.io/myanmar-glyph-studio/styles.html)
+  and shipped as **Bagan Display**, a squircle display face.
+* **Benchmarked, not self-graded.** The same harness over the fonts the
+  major platforms ship reports findings in each — Padauk 7, Noto Sans
+  Myanmar 4, Microsoft's Myanmar Text 7 — while the fonts here clear both
+  corpora at **0 FAIL, 0 WARN in every weight**.
+* **Runs as an application too:** macOS DMG, Windows installer, Linux
+  AppImage/deb, built by CI for every release — the same `web/` directory
+  served over a private scheme, offline and sandboxed
+  ([docs/DESKTOP.md](DESKTOP.md)). Unsigned, and the documentation says
+  so before the download link.
 * **Community-ready:** Code of Conduct, security policy with private
-  reporting, Dependabot (grouped weekly updates), four issue templates
-  (bug, shaping report, glyph claim, feature request), PR template,
-  contributor guide, a full Burmese README (`README.my.md`), SUPPORT.md,
-  CHANGELOG.md, CITATION.cff, per-family OFL compliance, topical labels,
-  and tagged releases with installable font zips — GitHub community
-  profile at 100%.
-* **Installable software, not a folder of scripts:** `pip install
-  myanmar-glyph-studio` gives ten command-line tools (build, variable
-  build, proof, validate, CoreText diff, kerning, i18n check, …) with
-  PEP 621 metadata and an SPDX licence expression; both corpora ship
-  inside the wheel, so any font anywhere can be audited with one command.
+  reporting, Dependabot, four issue templates, PR template, contributor
+  guide, a full Burmese README (`README.my.md`), SUPPORT.md, CHANGELOG.md,
+  CITATION.cff, a repository map ([ARCHITECTURE.md](ARCHITECTURE.md)),
+  per-family OFL compliance, topical labels, tagged releases with
+  installable font zips — GitHub community profile at 100%, and four
+  `good first issue` tasks standing open as contributor on-ramps.
+* **Installable from a checkout:** `pip install -e ".[dev]"` gives
+  fifteen command-line tools (build, variable build, proof, validate,
+  CoreText diff, kerning, showcase, gallery, book, PDF, i18n check, …)
+  with PEP 621 metadata and an SPDX licence expression; both corpora ship
+  inside the wheel, so any Myanmar font anywhere can be audited with one
+  command. *(Not yet on PyPI — see §3.1.)*
 * **A real editor, not a toy:** the studio ships professional vector
   tools (Bézier pen with permanently editable paths, selection with
   transform handles, node editing, cross-glyph copy/paste, snapping,
-  partial eraser) in vanilla JS with no build step, fully translated
-  into Burmese, working offline as a PWA on phones and tablets.
+  partial eraser) in vanilla JS with no build step, fully translated into
+  Burmese, working offline as a PWA on phones and tablets.
 
-## How Claude would be used
+---
 
-* Extending shaping coverage to the remaining scripts and features that
-  need expert OpenType work: GDEF mark classes, Myanmar Extended-C, and
-  per-language shaping tests for Mon/Shan/Karen. (Kerning is done —
-  measured from the drawn outlines, with tabular figures correctly
-  excluded.)
-* Reviewing community font submissions — reading proof sheets and
-  fontbakery output to give contributors specific, kind feedback quickly
-  (slow first-PR review is the main reason new contributors disappear).
-* Writing Burmese-language documentation and tutorials; font-making
-  education in Burmese barely exists.
-* Building the accessibility and testing work the ecosystem needs:
-  variable-font support, automated visual regression of glyph rendering.
+## 5. What a reviewer can verify in ten minutes
 
-## Metrics to fill in on submission day
+| Claim | How they check it |
+|---|---|
+| It actually works in a browser | Open the studio, trace a letter, press Export font |
+| The fonts are real and shaped | Download from the gallery, type ကျွန်ုပ်တို့ |
+| Three engines agree | `docs/VALIDATION.md`, then the Actions tab (DirectWrite job) |
+| The tests exist and pass | `pip install -e ".[dev]" && pytest` → 80 passed, 1 skipped |
+| The benchmark is honest | `mgs-validate` any Myanmar font on their own machine |
+| The defects are disclosed | `docs/VALIDATION.md` — including bugs in our own fonts |
+| Nothing is padded | Insights → Contributors, Commits, Actions history |
 
-| Metric | Where to read it | Value |
-|---|---|---|
-| Unique external contributors (12 mo) | Insights → Contributors | ‹…› |
-| Merged PRs from non-owners | `is:pr is:merged -author:Thiha-Lynn` | ‹…› |
-| Stars / forks / watchers | repo header | ‹…› |
-| Fonts published in the gallery | `projects/` | ‹…› |
-| Repository collaborators | Settings → Collaborators | ‹…› |
-| Cluster comparisons passing, 3 engines | `docs/VALIDATION.md` | 6,363 / 6,363 |
-| Release downloads | Releases page | ‹…› |
-| Your own merged PRs to other repos (12 mo) | `is:pr is:merged author:Thiha-Lynn` | ‹…› |
+Rough check before hitting submit: could a reviewer verify every claim
+from public links in ten minutes, and would every one come back true? If
+a claim needs them to take your word for it, cut it — what is left is
+stronger than what you removed.
 
-## Before you submit — strengthen the application
+---
 
-1. ~~**Ship the first release**~~ ✅ Done — v0.1.0 … v0.4.0 tagged with
-   installable font zips.
-2. **Get external contributors.** The single highest-value action: run a
-   glyph drive (see [LAUNCH.md](LAUNCH.md) §5). Even 3–5 merged glyph PRs
-   from strangers changes the story from "personal project" to
-   "community infrastructure"; 20 puts you in the Community-builder lane
-   outright. **This is the main open gap — 4 `good first issue` tasks
-   (#11–14) are staged and waiting for the visibility push.**
-3. **Show usage:** a second community font family in the gallery, or a
-   real product/site using a font made with the tool, is worth more than
-   any adjective in the pitch. (Myanmar Glyph Sans exists but is
-   maintainer-made — a font by someone else is the proof.)
+## 6. If the answer is no
 
-   **Write the application from the engineering, not from the counters.**
-   The verifiable claims are the strong part: a written specification a
-   machine checks, two corpora totalling 2,195 clusters, three shaping
-   engines in agreement, parity with the reference implementation
-   measured cluster by cluster, and benchmark numbers that are better
-   than the fonts the major platforms ship. None of that depends on
-   star counts, and a reviewer can reproduce every one of them from a
-   clean checkout in about five minutes.
+It is a rolling programme with a hard cap, and a decline is not a verdict
+on the work. The record gets stronger every week without any change of
+strategy, and the routes that would flip a lane are already written down:
 
-   Do **not** pad the history to look busier — no synthetic commits, no
-   commits authored under other people's accounts, no issues closed
-   without the work behind them. A reviewer opens Insights first, and
-   manufactured activity is both easy to spot and fatal to the honest
-   case above. The repo's real weakness (young, one maintainer) is one
-   the program explicitly invites you to state plainly; a padded history
-   turns a candid application into a discredited one.
-4. **Be candid about stage.** Say plainly that the project is days old,
-   that you built it to fill a gap you personally hit, and what you will
-   do with the support. The program explicitly invites this case — the
-   age is only fatal if you hide it.
-5. **Let the repo age a few weeks with visible activity** (merged PRs,
-   answered Discussions, gallery growth) before submitting: every
-   reviewer will open the Insights tab first.
-
-## When to submit — a test you can actually apply
-
-The temptation with a programme like this is to submit early "in case".
-Resist it. There is no partial credit for a near miss, an application is
-a first impression you get once, and the record here gets stronger every
-week without any change of strategy. Concretely, submit when **any one**
-of these is true:
-
-* **A lane is genuinely met.** In practice that means the
-  Community-builder lane: 20 unique external contributors with merged
-  PRs in 12 months. From 0 today, the glyph drive in
-  [LAUNCH.md](LAUNCH.md) §5 is the only realistic route.
-* **"Quietly depended on" is defensible with evidence.** Not "it could
-  be useful to 40 million readers" — that is a market, not a dependency.
-  Evidence looks like: a font made with this tool shipping in something
-  real; another project vendoring the pipeline; a Myanmar organisation
-  or localisation team using it in a documented workflow; the fonts
-  packaged somewhere downstream. One of those, linkable, changes the
-  sentence from aspiration to fact.
-* **A third party has validated the work.** An accepted PR to
-  awesome-myanmar-unicode, a ScriptSource entry, a mention from SIL or
-  the Noto/Google Fonts community, a write-up by someone who is not the
-  maintainer.
-
-Rough check before hitting submit: could a reviewer verify every claim in
-your application from public links in ten minutes, and would every one
-come back true? If any claim needs them to take your word for it, cut the
-claim — what is left is stronger than what you removed.
-
-**What is already application-grade** and needs nothing further: the
-specification and its machine checker, three engines diffed with zero
-differences, the benchmark table, the full-vocabulary sweep, the
-[rendering showcase](https://thiha-lynn.github.io/myanmar-glyph-studio/showcase.html),
-and the defect record in [VALIDATION.md](VALIDATION.md) — including the
-bugs this project found in its *own* shipped fonts and wrote up rather
-than quietly fixing. That last one is unusual and worth pointing at: it
-demonstrates the engineering culture the programme is trying to fund.
+* **Community-builder lane (0 → 20 external contributors):** the glyph
+  drive in [LAUNCH.md](LAUNCH.md) §5. Four `good first issue` tasks
+  (#11–#14) are staged and waiting for the visibility push. Even three
+  merged glyph PRs from strangers change the story from "personal
+  project" to "community infrastructure".
+* **Downloads lane:** publish to PyPI (§3.1), then the fonts to Google
+  Fonts / a package repository.
+* **Third-party validation:** an accepted PR to awesome-myanmar-unicode,
+  a ScriptSource entry, a mention from SIL or the Noto community, or a
+  write-up by anyone who is not the maintainer.
+* **Evidence of dependency:** a font made with this tool shipping in
+  something real; a Myanmar organisation or localisation team using it in
+  a documented workflow. One of those, linkable, turns the sentence in
+  §1 from aspiration into fact — and that is the version of this
+  application that wins on the merits rather than on candour.
