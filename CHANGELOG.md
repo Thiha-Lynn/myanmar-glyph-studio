@@ -175,6 +175,22 @@ versions are git tags with installable font zips on the
   no U+25CC glyph. Both are gated so that a blank replacing real ink, or
   one that shifts the rest of the cluster along, is still reported.
 
+### Changed
+- **The Claude for Open Source application material was re-verified end
+  to end** ([docs/OSS_APPLICATION.md](docs/OSS_APPLICATION.md)): every
+  metric re-measured against the GitHub API on 2026-08-17, the three
+  engine-comparison totals re-run rather than quoted (6,363 confirmed by
+  measurement: 1,410 spec clusters + 711 words × 3 weights), and the
+  document restructured into paste-ready answers for each form field.
+  It also **removes a false claim** — the material stated that
+  `pip install myanmar-glyph-studio` works, when the package has never
+  been uploaded and PyPI returns 404. Corrected to `pip install -e .`
+  from a checkout, with publishing flagged as an outstanding maintainer
+  action.
+- Corrected the glyph count in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md):
+  Myanmar Glyph Sans is 480 drawn glyphs producing 492 in the built font,
+  not the 468 recorded from an earlier build.
+
 ### Fixed
 - **Below-vowels sat at five different depths.** ု hung at −418 under ခ
   and −463 under ရ, because the bottom anchor was derived from each base's
