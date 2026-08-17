@@ -7,6 +7,19 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
+### Added
+- **PyPI publishing, wired and tokenless**
+  (`.github/workflows/publish.yml`): the package has been PEP 621-complete
+  since 0.3.0 but never uploaded, so `pip install myanmar-glyph-studio`
+  404s — an external review rightly called that the single cheapest gap
+  to close. The workflow uses PyPI Trusted Publishing (OIDC), so no API
+  token is stored anywhere; after a one-time pending-publisher form on
+  pypi.org, every published release uploads itself and a "Run workflow"
+  button publishes the version on main. Both artifacts were rebuilt and
+  pass `twine check --strict`; the corpora ship inside the wheel. Until
+  the maintainer files that form, the package remains un-uploaded and the
+  documentation keeps saying so.
+
 ## [0.5.0] — 2026-08-17
 
 ### Added

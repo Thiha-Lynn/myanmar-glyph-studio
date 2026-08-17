@@ -1,0 +1,71 @@
+# Publish the pipeline to PyPI — https://pypi.org/project/myanmar-glyph-studio/
+#
+# Uses PyPI Trusted Publishing (OIDC): no API token exists in this
+# repository, its secrets, or anywhere else. One-time setup on the
+# maintainer's pypi.org account (about a minute):
+#
+#   pypi.org → Account settings → Publishing → Add a new pending publisher
+#     PyPI project name : myanmar-glyph-studio
+#     Owner             : Thiha-Lynn
+#     Repository name   : myanmar-glyph-studio
+#     Workflow name     : publish.yml
+#     Environment name  : pypi
+#
+# After that, every published GitHub release uploads itself, and the
+# "Run workflow" button publishes whatever version is on main. PyPI
+# refuses to overwrite an existing version, so neither path can
+# double-publish.
+#
+# On pull requests that touch packaging, only the build-and-check half
+# runs — nothing is uploaded.
+
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "pyproject.toml"
+      - ".github/workflows/publish.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Build sdist and wheel
+        run: |
+          python -m pip install --upgrade build twine
+          python -m build
+          python -m twine check --strict dist/*
+      - name: Show what would ship
+        run: ls -l dist/
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    if: github.event_name != 'pull_request'
+    needs: package
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/myanmar-glyph-studio
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+      - name: Publish to PyPI (trusted publishing)
+        uses: pypa/gh-action-pypi-publish@release/v1
