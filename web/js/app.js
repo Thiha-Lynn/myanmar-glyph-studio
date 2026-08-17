@@ -588,6 +588,18 @@
       toast("Stylus detected — fingers now pan & zoom, the pen draws. Re-enable “Finger draws” to change.");
     };
 
+    // The canvas-corner gesture tip is hidden on phones (no room), so the
+    // gestures were undiscoverable exactly where they matter most. Once,
+    // on the first finger ever, say what two fingers can do.
+    window.Editor.onTouchSeen = function () {
+      var KEY = "mgs-gesture-hint";
+      try {
+        if (localStorage.getItem(KEY)) return;
+        localStorage.setItem(KEY, "1");
+      } catch (err) { /* private mode: show it every session, fine */ }
+      toast("Two fingers pan & zoom · two-finger tap undoes · three-finger tap redoes");
+    };
+
     document.addEventListener("keydown", function (e) {
       if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" ||
           e.target.tagName === "SELECT") return;

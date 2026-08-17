@@ -213,6 +213,7 @@ button { touch-action: manipulation; }
   background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
   padding: 0.3rem 0.55rem; margin-bottom: 0.45rem; flex-shrink: 0;
   min-height: 46px;
+  touch-action: manipulation;
 }
 .opt-group { display: none; gap: 0.35rem; align-items: center; flex-wrap: wrap; }
 .opt-group.show, .opt-group.opt-global { display: flex; }
@@ -247,6 +248,8 @@ button { touch-action: manipulation; }
   background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
   padding: 0.35rem 0.3rem; flex-shrink: 0; overflow-y: auto;
   scrollbar-width: none;
+  /* scrollable toolbars: keep native panning, drop double-tap-zoom delay */
+  touch-action: manipulation;
 }
 .tool-rail::-webkit-scrollbar { display: none; }
 .rail-btn {

@@ -65,8 +65,11 @@
     stabilizer: 3,     // 0 (off) … 10 (heavy)
     touchDraws: true,  // flips off automatically once a stylus is detected
     penSeen: false,
+    touchSeen: false,  // first finger on the canvas (gesture-hint hook)
     liveStroke: null,
     _stabPoint: null,
+    _rect: null,       // cached canvas rect: cleared on resize, refreshed per stroke
+    _rafPending: false,
     pointers: {},      // pointerId -> {type, x, y} (screen px)
     gesture: null,     // {dist, mid:[px,py], startZoom, startOx, startOy}
     _multi: null,      // multi-finger tap tracking: {max, t0, moved}
@@ -74,6 +77,7 @@
     redoStack: [],
     onInkChange: null, // callback(glyphName)
     onViewChange: null,
+    onTouchSeen: null,
 
     init: function (canvas) {
       this.canvas = canvas;
@@ -81,6 +85,15 @@
       this.resize();
       var self = this;
       window.addEventListener("resize", function () { self.resize(); });
+      // Re-fit when the surrounding layout changes size without a window
+      // resize: soft keyboard, rotation, panels opening. Observing the
+      // parent (not the canvas, whose inline px size we set ourselves)
+      // avoids a feedback loop.
+      if (window.ResizeObserver) {
+        new ResizeObserver(function () { self.resize(); })
+          .observe(canvas.parentElement);
+      }
+      window.addEventListener("scroll", function () { self._rect = null; }, true);
 
       canvas.addEventListener("pointerdown", function (e) { self.down(e); });
       canvas.addEventListener("pointermove", function (e) { self.move(e); });
@@ -143,6 +156,7 @@
     },
 
     resize: function () {
+      this._rect = null;
       var box = this.canvas.parentElement.getBoundingClientRect();
       var w = Math.max(280, box.width);
       var h = Math.max(240, box.height || 0);
@@ -198,7 +212,12 @@
       return [this.ox + px / this.s(), this.oy - py / this.s()];
     },
     toScreen: function (e) {
-      var rect = this.canvas.getBoundingClientRect();
+      // Cached: getBoundingClientRect forces layout, and this runs once per
+      // coalesced sample — up to 240 Hz under a stylus. The cache is cleared
+      // on resize/scroll and refreshed at every pointerdown, and the canvas
+      // cannot move mid-stroke (touch-action none, no page scroll).
+      var rect = this._rect ||
+        (this._rect = this.canvas.getBoundingClientRect());
       return [e.clientX - rect.left, e.clientY - rect.top];
     },
     toUnits: function (e) {
@@ -224,8 +243,20 @@
       this.ox += before[0] - after[0];
       this.oy += before[1] - after[1];
       this.clampView();
-      this.render();
+      this.requestRender();
       if (this.onViewChange) this.onViewChange();
+    },
+
+    /* Collapse per-pointer-sample renders into one per animation frame —
+       wheel spins and pinches arrive far faster than the screen refreshes. */
+    requestRender: function () {
+      if (this._rafPending) return;
+      this._rafPending = true;
+      var self = this;
+      window.requestAnimationFrame(function () {
+        self._rafPending = false;
+        self.render();
+      });
     },
 
     zoomStep: function (factor) {
@@ -265,6 +296,7 @@
     down: function (e) {
       if (!this.glyph) return;
       e.preventDefault();
+      this._rect = this.canvas.getBoundingClientRect(); // fresh per stroke
       var scr = this.toScreen(e);
       // Register the pointer BEFORE capturing: setPointerCapture throws if the
       // browser no longer considers the pointer active, and losing the record
@@ -278,6 +310,10 @@
         this.penSeen = true;
         this.touchDraws = false;
         if (this.onPenDetected) this.onPenDetected();
+      }
+      if (e.pointerType === "touch" && !this.touchSeen) {
+        this.touchSeen = true;
+        if (this.onTouchSeen) this.onTouchSeen();
       }
 
       // middle mouse button or held Space: temporary hand tool
@@ -293,8 +329,29 @@
         this._multi.max = Math.max(this._multi.max, touches.length);
       }
       if (e.pointerType === "touch" && touches.length >= 2) {
-        // more than one finger: abandon any live stroke or vector drag,
-        // pinch/pan instead
+        // A second finger means pinch/pan — but never at the cost of work.
+        // A brush stroke that was genuinely underway (not the split-second
+        // start of a two-finger gesture) is committed rather than destroyed:
+        // a resting palm or thumb used to eat it. A two-finger tap right
+        // after still cancels it — the tap's undo removes what we commit.
+        if (this.tool === "brush" && this.liveStroke && this._multi &&
+            this.liveStroke.points.length >= 2 &&
+            (e.timeStamp - this._multi.t0 > 250 ||
+             this.strokeLength(this.liveStroke.points) > 120)) {
+          this.pushUndo();
+          window.Store.getGlyph(this.glyph.name).strokes.push(this.liveStroke);
+          window.Store.emit();
+          if (this.onInkChange) this.onInkChange(this.glyph.name);
+        }
+        // A part-done erase has already mutated the ink; seal it as an undo
+        // step instead of dropping the snapshot (which left the deletion in
+        // the store with no history entry).
+        if (this._eraseGesture && this._eraseGesture.changed) {
+          this._preSnapshot = this._eraseGesture.snap;
+          this.pushUndo();
+          window.Store.emit();
+          if (this.onInkChange) this.onInkChange(this.glyph.name);
+        }
         this.liveStroke = null;
         this._stabPoint = null;
         this._eraseGesture = null;
@@ -375,6 +432,14 @@
       return pts;
     },
 
+    strokeLength: function (pts) {
+      var L = 0;
+      for (var i = 1; i < pts.length; i++) {
+        L += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+      }
+      return L;
+    },
+
     inputPoint: function (e, unitP) {
       // stabilize: exponential pull toward the raw point
       var raw = unitP || this.toUnits(e);
@@ -424,7 +489,7 @@
           this.clampView();
           this.gesture.dist = dist;
           this.gesture.mid = mid;
-          this.render();
+          this.requestRender();
         }
         return;
       }
@@ -436,7 +501,7 @@
         this.oy += (scr[1] - rec.y) / sc;
         rec.x = scr[0]; rec.y = scr[1];
         this.clampView();
-        this.render();
+        this.requestRender();
         return;
       }
 
@@ -461,7 +526,7 @@
         // ring cursor follows the pointer even when hovering
         this.hoverScr = scr;
         if (e.buttons && this._eraseGesture) this.eraseAt(p);
-        else this.render();
+        else this.requestRender();
         return;
       }
       if (!this.liveStroke) return;
@@ -510,7 +575,7 @@
         var dx = pt[0] - q[0], dy = pt[1] - q[1];
         if (dx * dx + dy * dy > minDist2) pts.push(pt);
       }
-      this.render();
+      this.requestRender();
     },
 
     up: function (e) {
