@@ -1,6 +1,6 @@
 /* Offline cache for the Glyph Studio (PWA).
  * Bump VERSION whenever any cached file changes. */
-var VERSION = "v26";
+var VERSION = "v27";
 var CACHE = "glyph-studio-" + VERSION;
 var ASSETS = [
   ".",
@@ -10,6 +10,7 @@ var ASSETS = [
   "showcase.html",
   "book.html",
   "specimen.html",
+  "styles.html",
   "css/app.css",
   "data/showcase.js",
   "data/vocabulary.js",
