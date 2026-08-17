@@ -132,6 +132,10 @@ button { touch-action: manipulation; }
 .btn {
   background: var(--surface-2); border: 1px solid var(--line); border-radius: 7px;
   padding: 0.35rem 0.7rem; cursor: pointer; min-height: 34px;
+  /* Anchors styled as buttons used to keep the browser's blue link colour.
+     Invisible while their content was emoji (which ignore colour); the
+     moment an SVG inherits currentColor it turns the icon blue. */
+  color: inherit; text-decoration: none;
 }
 .btn:hover { border-color: var(--gold); }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }

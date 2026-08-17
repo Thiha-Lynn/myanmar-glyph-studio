@@ -108,6 +108,12 @@
            min-height: 3em; }
   #typed.flash { outline: 2px solid var(--accent); transition: outline .15s; }
 
+  /* Wide comparison tables scroll inside their own box; the page itself
+     must never scroll sideways on a phone. */
+  .tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch;
+               margin: .9rem 0 1.4rem; }
+  .tablewrap table { margin: 0; }
+
   /* Every glyph: the studio inventory as a grid of cells. */
   .invgrid { display: grid; gap: .5rem; margin: .6rem 0 1.4rem;
              grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
@@ -180,15 +186,7 @@
   <p class="lede">Each row carries its own evidence: the glyphs the shaper
   actually produced, and how far the result sits from the reference in
   units of a 1000-unit em. Nothing here is judged by eye.</p>
-  <nav>
-    <a href="index.html">← Studio</a>
-    <a href="gallery.html">Font gallery</a>
-    <a href="specimen.html">Type specimen</a>
-    <a href="styles.html">Font styles</a>
-    <a href="book.html">Reading proof</a>
-    <a href="devicetest.html">Device test</a>
-    <a href="https://github.com/Thiha-Lynn/myanmar-glyph-studio">Source</a>
-  </nav>
+  <nav data-sitenav></nav>
 </header>
 
 <main>
@@ -451,7 +449,12 @@
     var tbody = el("tbody");
     fam.rows.forEach(function (r) { tbody.appendChild(rowNode(r)); });
     table.appendChild(tbody);
-    host.appendChild(table);
+    // Four columns of Myanmar text cannot shrink to a phone: unwrapped,
+    // the table's min-content width made the whole PAGE scroll sideways.
+    // Wrapped, the table scrolls inside its own box and the page does not.
+    var wrap = el("div", "tablewrap");
+    wrap.appendChild(table);
+    host.appendChild(wrap);
   });
 
   var words = document.getElementById("words");
@@ -756,5 +759,6 @@
   });
 }());
 </script>
+<script src="js/sitenav.js" defer></script>
 </body>
 </html>

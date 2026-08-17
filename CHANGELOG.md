@@ -7,7 +7,34 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
+### Added
+- **One navigation, every page** (`web/js/sitenav.js`): each page used to
+  hand-write its own nav, and they had drifted — the same page was
+  "Rendering showcase" on three pages and "Measured showcase" on a
+  fourth, the order differed everywhere, the nav sat above the title on
+  one page and below two paragraphs on another, and **devicetest.html
+  was reachable from exactly one page in the whole site with no way back
+  out**. One shared component now renders the same eight destinations,
+  in the same order, on all seven pages, marking the current one; adding
+  a page adds it everywhere. `styles.html` and `devicetest.html` were
+  also missing from `sitemap.xml`.
+- **Icons are SVG, not emoji** — suggested by a reader, Chan Nyein.
+  Emoji render differently on every platform and several of the ones in
+  use (✦ 🖊 🫧) fall back to something else entirely or to tofu, which
+  is a poor look for a project about correct rendering. The nav icons
+  are now inline SVG inheriting `currentColor`, matching the drawing
+  tool rail already in the studio (24×24, stroke 1.6).
+
 ### Fixed
+- **The showcase scrolled sideways on phones** (`web/showcase.html`):
+  its four-column comparison tables cannot shrink to a phone, so their
+  min-content width dragged the whole page with them — 524px of content
+  in a 390px viewport. The tables now scroll inside their own box and
+  the page does not. All seven pages verified clean at 390px and 768px.
+- **Anchors styled as buttons kept the browser's blue link colour**
+  (`web/css/app.css`): invisible while their content was emoji, which
+  ignore colour — the moment an SVG inherited `currentColor` the studio
+  toolbar turned blue. `.btn` now sets `color: inherit`.
 - **The README's images will survive the trip to PyPI** (`README.md`,
   `README.my.md`): PyPI renders this file as the project description and,
   unlike GitHub, does not rewrite relative paths — so `docs/images/…`
