@@ -106,6 +106,49 @@
            margin-top: 2.5rem; }
   #typed { width: 100%; font-size: var(--size, 42px); line-height: 1.8;
            min-height: 3em; }
+  #typed.flash { outline: 2px solid var(--accent); transition: outline .15s; }
+
+  /* Every glyph: the studio inventory as a grid of cells. */
+  .invgrid { display: grid; gap: .5rem; margin: .6rem 0 1.4rem;
+             grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+  .cell { background: var(--card); border: 1px solid var(--line);
+          border-radius: .5rem; padding: .45rem .3rem .4rem;
+          text-align: center; cursor: pointer; }
+  .cell:hover { border-color: var(--accent); }
+  .cell .g { font-size: calc(var(--size, 42px) * 1.0); line-height: 1.5;
+             display: block; min-height: 1.5em; }
+  .cell .id { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+              font-size: .62rem; color: var(--muted); display: block;
+              overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cell a.edit { font-size: .62rem; color: var(--accent);
+                 text-decoration: none; }
+  h3.invh { font-size: 15px; margin: 1.4rem 0 .1rem; }
+  h3.invh .my { font-weight: 400; color: var(--muted); font-size: 13px; }
+  h3.invh .n { color: var(--muted); font-weight: 400; font-size: .8rem; }
+
+  /* The vocabulary atlas: a dictionary laid out inside one scrollable
+     panel — sticky letter rail on top, one group per initial letter. */
+  .vpanel { position: relative; max-height: 72vh; overflow: auto;
+            background: var(--card); border: 1px solid var(--line);
+            border-radius: .6rem; padding: 0 1rem 1rem; margin-top: .8rem; }
+  .rail { position: sticky; top: 0; z-index: 3; display: flex; gap: .3rem;
+          overflow-x: auto; padding: .55rem 0 .5rem; margin: 0 -1rem;
+          background: var(--card); border-bottom: 1px solid var(--line);
+          padding-left: 1rem; padding-right: 1rem; }
+  .rail button { flex: 0 0 auto; border-radius: 2rem; line-height: 1.2;
+                 padding: .15rem .6rem .25rem; }
+  .rail button .n { font-size: .6rem; color: var(--muted); display: block; }
+  .rail button.active { background: var(--accent); border-color: var(--accent);
+                        color: #fff; }
+  .rail button.active .n { color: #f6d9d7; }
+  .vgroup h3 { font-size: 1.1rem; margin: 1.2rem 0 .2rem;
+               display: flex; align-items: baseline; gap: .6rem; }
+  .vgroup h3 .letter { font-size: calc(var(--size, 42px) * .9); }
+  .vgroup h3 .n { color: var(--muted); font-weight: 400; font-size: .78rem; }
+  .words span { cursor: pointer; border-radius: .3rem; }
+  .words span:hover { background: var(--accent-soft); }
+  #vsearch { min-width: 14rem; }
+  .morenote { color: var(--muted); font-size: .85rem; margin-top: .6rem; }
 
   /* Phones: the comparison is the point, so keep the two faces stacked
      and drop the evidence columns into the card body. */
@@ -162,6 +205,15 @@
 
   <section id="families"></section>
 
+  <h2 id="inventoryH">Every glyph <span class="my">— အက္ခရာ အားလုံး</span></h2>
+  <p class="lede" id="inventoryLede">The studio's complete inventory — the
+  whole Myanmar Unicode block plus Extended-A and Extended-B, and the
+  unencoded shaping variants a real font needs — rendered by the generated
+  font. A tofu box means that glyph has not been drawn yet: click ✎ to open
+  it in the studio and draw it yourself. Click any cell to try it in the
+  type-your-own box below.</p>
+  <section id="inventory"></section>
+
   <h2>Real words <span class="my">— အသုံးများသော စကားလုံးများ</span></h2>
   <p class="lede">Ordinary vocabulary, not torture tests. These come from the
   same word list the font is validated against.</p>
@@ -183,10 +235,19 @@
   of them shapes with zero failures; if any looks wrong to you, that is a bug
   report worth more than the whole test suite.</p>
   <div class="bar">
+    <input id="vsearch" type="text" spellcheck="false"
+           placeholder="Search the vocabulary — ရှာရန် စာရိုက်ပါ">
     <button id="checkLive" type="button" class="primary">Spot-check against the live dataset</button>
     <span class="cp" id="vocabStatus"></span>
   </div>
-  <div class="panel"><div class="words mine" id="vocab"></div></div>
+  <div class="vpanel" id="vpanel">
+    <nav class="rail" id="rail" aria-label="Jump to initial letter"></nav>
+    <div id="atlas"></div>
+    <div id="results" hidden>
+      <div class="words mine" id="hitwords"></div>
+      <p class="morenote" id="morenote" hidden></p>
+    </div>
+  </div>
 
   <h2>Type your own</h2>
   <p class="lede">Anything you paste here is rendered by the generated font.
@@ -220,6 +281,9 @@
 
 <script src="data/showcase.js"></script>
 <script src="data/vocabulary.js"></script>
+<script src="data/glyphs.js"></script>
+<script src="data/glyphs-extended.js"></script>
+<script src="data/glyphs-extended-ab.js"></script>
 <script>
 (function () {
   "use strict";
@@ -397,32 +461,217 @@
   document.getElementById("pangramRefLabel").textContent =
     S.reference ? S.reference.family : "reference";
 
-  // --- the whole vocabulary -----------------------------------------------
-  var vocabHost = document.getElementById("vocab");
+  // --- type-your-own helper -----------------------------------------------
+  var typed = document.getElementById("typed");
+  function tryInTyped(text) {
+    typed.value = text;
+    typed.scrollIntoView({ block: "center" });
+    typed.classList.add("flash");
+    setTimeout(function () { typed.classList.remove("flash"); }, 600);
+  }
+
+  // --- every glyph ----------------------------------------------------------
+  // The same inventory files the studio's sidebar is built from, rendered by
+  // the font under test. A cell that shows tofu is a glyph nobody has drawn
+  // yet — the ✎ link opens exactly that glyph in the studio.
+  (function inventory() {
+    var host = document.getElementById("inventory");
+    var groups = window.GLYPH_GROUPS, glyphs = window.GLYPHS;
+    if (!groups || !glyphs) {
+      document.getElementById("inventoryLede").textContent =
+        "data/glyphs.js failed to load — the inventory cannot be shown.";
+      return;
+    }
+    var byGroup = Object.create(null);
+    glyphs.forEach(function (g) {
+      (byGroup[g.group] = byGroup[g.group] || []).push(g);
+    });
+    var encoded = 0, variants = 0;
+    glyphs.forEach(function (g) { if (g.cp == null) variants++; else encoded++; });
+
+    groups.forEach(function (grp) {
+      var list = byGroup[grp.key];
+      if (!list || !list.length) return;
+      var h = el("h3", "invh", grp.en + " ");
+      h.appendChild(el("span", "my", "— " + grp.my + " "));
+      h.appendChild(el("span", "n", "· " + list.length));
+      host.appendChild(h);
+
+      var grid = el("div", "invgrid");
+      list.forEach(function (g) {
+        var cell = el("div", "cell");
+        cell.title = g.hint || g.name;
+        var glyph = el("span", "g mine", g.guide || g.label);
+        cell.appendChild(glyph);
+        var id = el("span", "id",
+          g.cp != null
+            ? "U+" + g.cp.toString(16).toUpperCase()
+            : g.name);
+        id.title = g.name;
+        cell.appendChild(id);
+        var edit = el("a", "edit", "✎ studio");
+        edit.href = "index.html#g=" + encodeURIComponent(g.name);
+        edit.title = "Open " + g.name + " in the studio and draw it";
+        edit.addEventListener("click", function (ev) { ev.stopPropagation(); });
+        cell.appendChild(edit);
+        cell.addEventListener("click", function () {
+          tryInTyped(g.guide || g.label);
+        });
+        grid.appendChild(cell);
+      });
+      host.appendChild(grid);
+    });
+
+    var lede = document.getElementById("inventoryLede");
+    lede.appendChild(document.createTextNode(
+      " " + glyphs.length.toLocaleString() + " entries: " +
+      encoded.toLocaleString() + " encoded characters and " +
+      variants + " shaping variants."));
+  }());
+
+  // --- the whole vocabulary, as an atlas ------------------------------------
   var vocabStatus = document.getElementById("vocabStatus");
   var VOCAB = window.MWG_VOCABULARY || [];
 
   function report(msg) { vocabStatus.textContent = msg; }
 
+  // One group per initial letter. The list ships sorted, so insertion
+  // order is already dictionary order and a single pass builds the atlas.
+  var atlas = document.getElementById("atlas");
+  var rail = document.getElementById("rail");
+  var vpanel = document.getElementById("vpanel");
+  var GROUPS = [];               // { letter, words, host, heading, chip }
+  (function groupWords() {
+    var current = null;
+    VOCAB.forEach(function (w) {
+      var letter = w.charAt(0);
+      if (!current || current.letter !== letter) {
+        current = { letter: letter, words: [] };
+        GROUPS.push(current);
+      }
+      current.words.push(w);
+    });
+  }());
+
+  // Shells first — headings and rail exist immediately, so the letter
+  // navigation works while the 12,450 spans are still streaming in.
+  GROUPS.forEach(function (g, gi) {
+    var sec = el("div", "vgroup");
+    sec.id = "atlas-" + gi;
+    var h = el("h3");
+    h.appendChild(el("span", "letter mine", g.letter));
+    h.appendChild(el("span", "n", g.words.length.toLocaleString() + " words"));
+    sec.appendChild(h);
+    g.heading = h;
+    g.host = el("div", "words mine");
+    sec.appendChild(g.host);
+    atlas.appendChild(sec);
+
+    var chip = el("button");
+    chip.type = "button";
+    chip.appendChild(el("span", "mine", g.letter));
+    chip.appendChild(el("span", "n", g.words.length.toLocaleString()));
+    chip.addEventListener("click", function () {
+      vpanel.scrollTop = h.offsetTop - rail.offsetHeight - 6;
+    });
+    g.chip = chip;
+    rail.appendChild(chip);
+  });
+
   // 12,450 spans at once locks the main thread for long enough to feel
-  // broken on a phone. Paint them a slice per frame instead: the list is
+  // broken on a phone. Paint them a slice per frame instead: the atlas is
   // usable immediately and fills in while the reader is still scrolling
-  // the tables above it.
-  (function paint(i) {
-    if (i >= VOCAB.length) {
-      report(VOCAB.length.toLocaleString() + " words rendered in " +
-             S.font.family);
+  // the tables above it. rAF never fires in a hidden tab, so fall back to
+  // a timer there — the atlas is complete by the time the tab is fronted.
+  function schedule(fn) {
+    if (document.hidden) setTimeout(fn, 32);
+    else requestAnimationFrame(fn);
+  }
+  (function paint(gi, wi, done) {
+    if (gi >= GROUPS.length) {
+      report(VOCAB.length.toLocaleString() + " words in " + GROUPS.length +
+             " letter groups, rendered in " + S.font.family);
       return;
     }
-    var frag = document.createDocumentFragment();
-    for (var n = 0; n < 600 && i + n < VOCAB.length; n++) {
-      frag.appendChild(el("span", null, VOCAB[i + n]));
+    var g = GROUPS[gi], budget = 600;
+    while (budget > 0 && gi < GROUPS.length) {
+      g = GROUPS[gi];
+      var frag = document.createDocumentFragment();
+      for (; wi < g.words.length && budget > 0; wi++, budget--, done++) {
+        var span = el("span", null, g.words[wi]);
+        frag.appendChild(span);
+      }
+      g.host.appendChild(frag);
+      if (wi >= g.words.length) { gi++; wi = 0; }
     }
-    vocabHost.appendChild(frag);
-    report("rendering… " + (i + n).toLocaleString() + " / " +
+    report("rendering… " + done.toLocaleString() + " / " +
            VOCAB.length.toLocaleString());
-    requestAnimationFrame(function () { paint(i + n); });
-  }(0));
+    schedule(function () { paint(gi, wi, done); });
+  }(0, 0, 0));
+
+  // A tap on any word drops it into the type-your-own box — the shortest
+  // path from "that looks wrong" to a copy-pasteable bug report.
+  atlas.addEventListener("click", function (ev) {
+    if (ev.target.tagName === "SPAN" && ev.target.parentNode.className
+        .indexOf("words") === 0) tryInTyped(ev.target.textContent);
+  });
+  document.getElementById("hitwords").addEventListener("click", function (ev) {
+    if (ev.target.tagName === "SPAN") tryInTyped(ev.target.textContent);
+  });
+
+  // Scroll-spy: mark the rail chip of the group under the rail.
+  vpanel.addEventListener("scroll", function () {
+    requestAnimationFrame(function () {
+      var y = vpanel.scrollTop + rail.offsetHeight + 10, active = GROUPS[0];
+      for (var i = 0; i < GROUPS.length; i++) {
+        if (GROUPS[i].heading.offsetTop <= y) active = GROUPS[i];
+        else break;
+      }
+      GROUPS.forEach(function (g) {
+        g.chip.className = g === active ? "active" : "";
+      });
+    });
+  });
+
+  // Search: any substring, across all 12,450 words.
+  var vsearch = document.getElementById("vsearch");
+  var results = document.getElementById("results");
+  var hitwords = document.getElementById("hitwords");
+  var morenote = document.getElementById("morenote");
+  var HIT_CAP = 600, searchTimer = null;
+
+  function runSearch() {
+    var term = vsearch.value.trim();
+    if (!term) {
+      results.hidden = true; atlas.hidden = false; rail.hidden = false;
+      report(VOCAB.length.toLocaleString() + " words in " + GROUPS.length +
+             " letter groups, rendered in " + S.font.family);
+      return;
+    }
+    var hits = [];
+    for (var i = 0; i < VOCAB.length && hits.length < VOCAB.length; i++) {
+      if (VOCAB[i].indexOf(term) !== -1) hits.push(VOCAB[i]);
+    }
+    hitwords.textContent = "";
+    var frag = document.createDocumentFragment();
+    hits.slice(0, HIT_CAP).forEach(function (w) {
+      frag.appendChild(el("span", null, w));
+    });
+    hitwords.appendChild(frag);
+    morenote.hidden = hits.length <= HIT_CAP;
+    if (hits.length > HIT_CAP) {
+      morenote.textContent = "Showing the first " + HIT_CAP +
+        " of " + hits.length.toLocaleString() + " matches — keep typing.";
+    }
+    atlas.hidden = true; rail.hidden = true; results.hidden = false;
+    vpanel.scrollTop = 0;
+    report(hits.length.toLocaleString() + " of " +
+           VOCAB.length.toLocaleString() + " words match");
+  }
+  vsearch.addEventListener("input", function () {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(runSearch, 150);
+  });
 
   if (!VOCAB.length) {
     report("data/vocabulary.js not generated — run " +
