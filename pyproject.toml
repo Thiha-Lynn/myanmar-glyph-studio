@@ -14,7 +14,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "myanmar-glyph-studio"
-version = "0.6.0"
+version = "0.6.1"
 description = "Draw Myanmar fonts in the browser; build them into shaping-capable OpenType with generated mym2 GSUB/GPOS."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -32,7 +32,10 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: End Users/Desktop",
     # no License classifier: superseded by the SPDX expression above (PEP 639)
-    "Natural Language :: Burmese",
+    # PyPI's classifier list has no Burmese or Myanmar entry — it was
+    # rejected at upload with 400. The script is named in the keywords and
+    # the description instead; tests/test_packaging.py checks every
+    # classifier against the real list so this cannot reach PyPI again.
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
@@ -55,6 +58,8 @@ dev = [
     "pillow>=12.3.0",
     "fontbakery>=1.1.0",
     "pytest>=9.1.1",
+    # the same classifier list PyPI validates against, checked offline
+    "trove-classifiers>=2025.1.1",
 ]
 
 [project.urls]

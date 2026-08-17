@@ -82,6 +82,28 @@ def test_repo_tools_guard_before_touching_the_filesystem(module):
         f"repo_root() — installed, it will write into site-packages")
 
 
+def test_every_classifier_is_one_pypi_accepts():
+    """PyPI rejects an unknown classifier with 400 at upload time.
+
+    It cost a release: "Natural Language :: Burmese" looks entirely
+    reasonable and is not on the list (PyPI has no Burmese or Myanmar
+    entry at all), and `twine check --strict` does not catch it — the
+    first thing that noticed was the upload itself. trove-classifiers is
+    the same list PyPI validates against, so this check is offline.
+    """
+    tomllib = pytest.importorskip("tomllib")   # 3.11+; CI runs 3.12
+    trove = pytest.importorskip("trove_classifiers")
+
+    with open(ROOT / "pyproject.toml", "rb") as fh:
+        classifiers = tomllib.load(fh)["project"]["classifiers"]
+
+    assert classifiers, "classifiers disappeared from pyproject.toml"
+    unknown = [c for c in classifiers if c not in trove.classifiers]
+    assert not unknown, (
+        f"PyPI will reject the upload with 400: {unknown}. "
+        f"Check https://pypi.org/classifiers/ for the accepted spelling.")
+
+
 @pytest.mark.parametrize("module", ["gen_inventory", "postbuild", "json_to_ufo"])
 def test_help_is_not_read_as_a_filename(module):
     # These take positional paths and no options, so without the guard
