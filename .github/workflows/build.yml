@@ -52,7 +52,15 @@ jobs:
             name=$(basename "$(dirname "$project")")
             echo "::group::Variable $name"
             python3 pipeline/make_variable.py "$project" "dist/$name/variable"
-            python3 pipeline/postbuild.py dist/$name/variable/*.ttf
+            # A single-weight face (meta.variable false) produces no TTFs
+            # here, and postbuild with no arguments exits on its usage
+            # message — so only run it when there is something to fix up.
+            built=(dist/$name/variable/*.ttf)
+            if [ ${#built[@]} -gt 0 ]; then
+              python3 pipeline/postbuild.py "${built[@]}"
+            else
+              echo "no variable build for $name — nothing to post-process"
+            fi
             echo "::endgroup::"
           done
 
