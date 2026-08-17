@@ -72,6 +72,28 @@ never open a repository.
   recording of drawing က and exporting a font on a phone.
 * Reach out to design/CS departments and calligraphy communities: one
   workshop = many first glyphs.
+* Publish the pipeline to PyPI. The workflow is wired
+  (`.github/workflows/publish.yml`, trusted publishing — no token
+  anywhere); what remains is the one-time pending-publisher form on
+  pypi.org described in its header. A `pip install myanmar-glyph-studio`
+  that works is a distribution channel, a dependents counter, and the
+  first numeric signal any support program can check — and it lets
+  anyone audit *any* Myanmar font with one command, which is its own
+  kind of advertising.
+* Take the validation findings upstream. The harness measures findings
+  in the fonts the platforms ship
+  ([VALIDATION.md](VALIDATION.md): Padauk 7, Noto Sans Myanmar 4,
+  Microsoft Myanmar Text 7 — each carrying the calibration caveat).
+  Re-verify one by hand first — the harness is calibrated to this
+  project's conventions, and an upstream report must survive their
+  scrutiny, not ours — then file it on
+  [notofonts/myanmar](https://github.com/notofonts/myanmar) or the
+  [Padauk tracker](https://github.com/silnrsi/font-padauk) with the
+  cluster, the measurement and a rendering. One accepted upstream
+  report is worth more than any self-reported number: it is the
+  contributes-to-repos-they-don't-own signal every OSS program reads,
+  and it puts the toolkit's name in front of the people who maintain
+  Myanmar text rendering for everyone.
 
 ## 5. Grow real contributors (the metric that matters)
 

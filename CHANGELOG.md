@@ -43,6 +43,13 @@ versions are git tags with installable font zips on the
   true remainder: PyPI publishing is a one-time pypi.org form now that
   the workflow exists, and the commit-history explanation ships in the
   repo rather than waiting on a decision.
+- **The launch playbook learns two routes** (`docs/LAUNCH.md` §4):
+  publishing the pipeline to PyPI as a visibility step in its own right,
+  and taking the harness's measured findings in the platform fonts
+  upstream — re-verified by hand first, because the harness is
+  calibrated to this project's conventions — to the Noto Myanmar and
+  Padauk trackers, where one accepted report is worth more than any
+  self-reported number.
 
 ## [0.5.0] — 2026-08-17
 
