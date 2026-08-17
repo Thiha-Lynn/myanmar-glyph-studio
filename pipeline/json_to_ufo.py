@@ -33,6 +33,9 @@ import unicodedata
 from collections import defaultdict
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repo_paths import help_if_asked  # noqa: E402
+
 try:
     import ufoLib2
 except ImportError:
@@ -1706,6 +1709,7 @@ def generate_features(drawn, wide_bases=None, bases=None, dot_advances=None):
 
 
 def main():
+    help_if_asked(__doc__)
     if len(sys.argv) != 3:
         sys.exit(__doc__)
     project_path = Path(sys.argv[1])

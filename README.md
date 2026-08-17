@@ -233,7 +233,20 @@ mgs-build MyFont.glyphstudio.json build/      # project file -> UFO + features
 mgs-variable MyFont.glyphstudio.json build/   # …plus weight masters and a VF
 mgs-proof build/MyFont-Regular.ttf "ကျွန်ုပ်" proof.png
 mgs-validate build/MyFont-Regular.ttf         # 1,486-cluster shaping audit
-mgs-fetch-vocab                               # …or sweep all 12,450 real words
+mgs-kerning build/MyFont-Regular.ttf          # measure kerning from the outlines
+mgs-postbuild build/MyFont-Regular.ttf        # smart-dropout hinting prep
+```
+
+Those work on any font, anywhere — `mgs-validate` will audit a Myanmar
+font you did not make, which is how the benchmark numbers in
+[docs/VALIDATION.md](docs/VALIDATION.md) were produced. A second family
+regenerates this repository's own data (the gallery, the glyph
+inventory, the showcase, the book, the reference corpus) and therefore
+needs a clone rather than an installed package — run from a checkout:
+
+```bash
+mgs-fetch-vocab                               # sweep all 12,450 real words
+mgs-gallery                                   # rebuild the gallery webfonts
 mgs-book                                      # page a book for the reading proof
 mgs-i18n-check                                # what a translation is missing
 ```

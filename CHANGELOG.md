@@ -8,6 +8,20 @@ versions are git tags with installable font zips on the
 ## [Unreleased]
 
 ### Fixed
+- **The installed package behaves like one** (`pipeline/repo_paths.py`):
+  building the wheel and running every console script from a clean venv
+  outside the checkout — the state the first `pip install` user is in —
+  found four commands misbehaving. `mgs-gallery` and `mgs-inventory`
+  died with a FileNotFoundError naming a path *inside site-packages*,
+  `mgs-reference` with a HarfBuzz error on the same, and `mgs-book`
+  was worse than any of them: it created `web/data/` inside
+  site-packages and reported success. These are repository maintenance
+  commands — they regenerate this repo's data — and they now say so in
+  one line, naming the commands that do work anywhere. `--help` is also
+  no longer read as a filename by `mgs-build`, `mgs-inventory` and
+  `mgs-postbuild`, which used to answer it with a traceback. Twelve new
+  tests (`pipeline/tests/test_packaging.py`) pin all of it, including a
+  guard that fails if a repo tool ever forgets to check.
 - **A second finger no longer eats your stroke** (`web/js/editor.js`):
   landing a second finger mid-stroke used to silently discard everything
   drawn so far — which is exactly what a resting palm or thumb does on a

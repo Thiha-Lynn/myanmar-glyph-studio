@@ -26,6 +26,9 @@ import sys
 import zlib
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repo_paths import repo_root  # noqa: E402
+
 try:
     import uharfbuzz as hb
     from fontTools.pens.basePen import BasePen
@@ -269,6 +272,7 @@ def main():
     ap.add_argument("--pages", type=int, default=None,
                     help="only the first N pages of the source")
     args = ap.parse_args()
+    repo_root("mgs-pdf")   # renders the book data generated into web/data/
 
     if not args.font.is_file():
         sys.exit(f"font not found: {args.font}")

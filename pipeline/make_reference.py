@@ -45,6 +45,9 @@ try:
 except ImportError:                                         # pragma: no cover
     sys.exit("uharfbuzz is required:  pip install -r requirements.txt")
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repo_paths import repo_root  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 API = "https://my.wikisource.org/w/api.php"
 UA = ("myanmar-glyph-studio/0.4 (font rendering test; "
@@ -161,6 +164,7 @@ def main():
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
     ap.add_argument("--block", default="J", help="corpus block letter")
     args = ap.parse_args()
+    repo_root("mgs-reference")   # segments with the bundled guide font
 
     print(f"category: {args.category}")
     titles = category_members(args.category, args.limit)
