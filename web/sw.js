@@ -1,6 +1,6 @@
 /* Offline cache for the Glyph Studio (PWA).
  * Bump VERSION whenever any cached file changes. */
-var VERSION = "v31";
+var VERSION = "v32";
 var CACHE = "glyph-studio-" + VERSION;
 var ASSETS = [
   ".",
@@ -34,6 +34,7 @@ var ASSETS = [
   "js/app.js",
   "js/install.js",
   "js/sitenav.js",
+  "js/savefile.js",
   "js/gallery.js",
   "vendor/opentype.min.js",
   "manifest.webmanifest",

@@ -1,0 +1,99 @@
+# Build the phone apps — the same web/ directory as a real Android APK
+# and a real iOS app.
+#
+# The native projects are NOT committed (see docs/MOBILE.md): `cap add`
+# regenerates them, the same way web/gallery-data/ is regenerated. So
+# every run starts from the configuration in mobile/ and proves that
+# still works, rather than proving a checked-in project still compiles.
+#
+# On a published release the Android APK is attached, so there is an
+# installable file for people who cannot or will not use a store. iOS is
+# built but not attached: an .app that is not signed with an Apple
+# Developer identity cannot be installed on a real device, and shipping
+# one would be a download that does nothing.
+
+name: Mobile apps
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "mobile/**"
+      - "web/**"
+      - ".github/workflows/mobile.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+      - uses: actions/setup-java@v5
+        with:
+          # Gradle cannot read Java 25 class files (major version 69).
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+      - name: Install and add the Android platform
+        working-directory: mobile
+        run: |
+          npm install
+          npx cap add android
+          npx cap sync android
+      - name: Build APK
+        working-directory: mobile/android
+        run: ./gradlew assembleDebug --console=plain
+      - name: Name it after the release
+        id: apk
+        run: |
+          src=mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          out="myanmar-glyph-studio-${GITHUB_REF_NAME:-dev}.apk"
+          cp "$src" "$out"
+          ls -l "$out"
+          echo "path=$out" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: android-apk
+          path: ${{ steps.apk.outputs.path }}
+      - name: Attach to the release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v3
+        with:
+          files: ${{ steps.apk.outputs.path }}
+
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+      - name: Install and add the iOS platform
+        working-directory: mobile
+        run: |
+          npm install
+          npx cap add ios
+          npx cap sync ios
+      - name: Build for the simulator
+        working-directory: mobile
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App \
+            -sdk iphonesimulator -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO build
+      - name: Prove the studio is actually inside the bundle
+        working-directory: mobile
+        run: |
+          # A build can succeed with an empty web directory; the app would
+          # then launch to a white screen, which is how this first shipped.
+          test -f ios/App/App/public/index.html
+          test -f ios/App/App/public/js/savefile.js
+          test -d ios/App/App/public/fonts
+          echo "web assets present in the iOS bundle"

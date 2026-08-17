@@ -110,12 +110,9 @@
     downloadTTF: function () {
       var font = buildFont();
       var buf = font.toArrayBuffer();
-      var blob = new Blob([buf], { type: "font/ttf" });
-      var a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = (window.Store.meta.fontName || "MyMyanmarFont") + "-Draft.ttf";
-      a.click();
-      URL.revokeObjectURL(a.href);
+      window.SaveFile.binary(
+        (window.Store.meta.fontName || "MyMyanmarFont") + "-Draft.ttf",
+        buf, "font/ttf");
       return font.glyphs.length;
     },
 
@@ -142,12 +139,7 @@
       var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vb +
         '" data-glyphstudio-units="font"><path d="' + d +
         '" fill="currentColor" fill-rule="nonzero"/></svg>\n';
-      var blob = new Blob([svg], { type: "image/svg+xml" });
-      var a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = glyphMeta.name + ".svg";
-      a.click();
-      URL.revokeObjectURL(a.href);
+      window.SaveFile.text(glyphMeta.name + ".svg", svg, "image/svg+xml");
     },
 
     /*

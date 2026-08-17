@@ -115,13 +115,9 @@
     },
 
     exportFile: function () {
-      var blob = new Blob([JSON.stringify(this.toJSON(), null, 1)],
-        { type: "application/json" });
-      var a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = (this.meta.fontName || "project") + ".glyphstudio.json";
-      a.click();
-      URL.revokeObjectURL(a.href);
+      window.SaveFile.text(
+        (this.meta.fontName || "project") + ".glyphstudio.json",
+        JSON.stringify(this.toJSON(), null, 1), "application/json");
     },
 
     importFile: function (file, done) {
