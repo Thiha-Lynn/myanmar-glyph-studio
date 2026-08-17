@@ -25,6 +25,9 @@ import json
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repo_paths import repo_root  # noqa: E402
+
 try:
     import uharfbuzz as hb
     from fontTools.pens.boundsPen import BoundsPen
@@ -371,6 +374,7 @@ def main():
     ap.add_argument("--vocab-out", type=Path, default=DEFAULT_VOCAB_OUT,
                     help="where to write the bundled word list")
     args = ap.parse_args()
+    repo_root("mgs-showcase")   # generates web/data/showcase.js
 
     if not args.font.is_file():
         sys.exit(f"font not found: {args.font}")

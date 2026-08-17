@@ -10,6 +10,10 @@ extra dependency.
 """
 
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repo_paths import help_if_asked  # noqa: E402
 
 from fontTools.ttLib import TTFont, newTable
 from fontTools.ttLib.tables.ttProgram import Program
@@ -32,6 +36,7 @@ def fix(path):
 
 
 def main():
+    help_if_asked(__doc__)
     if len(sys.argv) < 2:
         sys.exit(__doc__)
     for path in sys.argv[1:]:

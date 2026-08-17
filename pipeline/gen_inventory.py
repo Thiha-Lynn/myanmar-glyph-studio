@@ -26,6 +26,9 @@ import sys
 import unicodedata
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repo_paths import help_if_asked, repo_root  # noqa: E402
+
 BLOCKS = [
     {
         "range": (0xA9E0, 0xA9FF),
@@ -162,9 +165,9 @@ def write_latin_extra(out_path):
 
 
 def main():
+    help_if_asked(__doc__)
     out_path = Path(sys.argv[1]) if len(sys.argv) > 1 else (
-        Path(__file__).resolve().parent.parent
-        / "web" / "data" / "glyphs-extended-ab.js")
+        repo_root("mgs-inventory") / "web" / "data" / "glyphs-extended-ab.js")
     write_latin_extra(out_path.parent / "glyphs-latin-extra.js")
 
     records, skipped = [], 0

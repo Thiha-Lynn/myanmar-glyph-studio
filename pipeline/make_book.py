@@ -35,6 +35,9 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repo_paths import repo_root  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_OUT = ROOT / "web" / "data" / "book.js"
 API = "https://my.wikisource.org/w/api.php"
@@ -133,6 +136,7 @@ def main():
     ap.add_argument("--chars-per-page", type=int, default=820)
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = ap.parse_args()
+    repo_root("mgs-book")   # writes into web/data/ — needs a checkout
 
     paragraphs = to_text(fetch(args.title))
     pages = paginate(paragraphs, args.chars_per_page)

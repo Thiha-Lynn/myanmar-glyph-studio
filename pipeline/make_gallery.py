@@ -23,6 +23,9 @@ try:
 except ImportError:  # metadata falls back to the project JSON
     TTFont = None
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repo_paths import help_if_asked, repo_root  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -145,12 +148,14 @@ def font_record(project_dir, out_dir):
 
 
 def main():
+    help_if_asked(__doc__)
+    root = repo_root("mgs-gallery")
     out_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else (
-        ROOT / "web" / "gallery-data")
+        root / "web" / "gallery-data")
     out_dir.mkdir(parents=True, exist_ok=True)
 
     fonts = []
-    for project_dir in sorted((ROOT / "projects").iterdir()):
+    for project_dir in sorted((root / "projects").iterdir()):
         if not project_dir.is_dir():
             continue
         rec = font_record(project_dir, out_dir)
