@@ -8,6 +8,17 @@ versions are git tags with installable font zips on the
 ## [Unreleased]
 
 ### Added
+- **A way in, on the website** (`web/contribute.html`): the four standing
+  invitations existed only in `CONTRIBUTING.md` — visible to somebody who
+  had already found the repository, which is the audience least in need
+  of an invitation. The people using the studio never saw them. The page
+  states all four with live entry points: deep links straight into the
+  studio at က and ၀, the every-glyph grid as a visual to-do list, the
+  device test, and the translation guide. It also says what happens
+  after you send something, because a silent queue is why first-time
+  contributors do not come back. `CONTRIBUTING.md` stays canonical and
+  the page says so — the site version is deliberately short, so there is
+  little surface to drift.
 - **One navigation, every page** (`web/js/sitenav.js`): each page used to
   hand-write its own nav, and they had drifted — the same page was
   "Rendering showcase" on three pages and "Measured showcase" on a
