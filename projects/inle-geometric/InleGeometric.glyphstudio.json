@@ -7,7 +7,8 @@
   "author": "Myanmar Glyph Studio",
   "license": "OFL-1.1",
   "notes": "Skeletons squared with a superellipse n=6 warp.",
-  "pen": 4
+  "pen": 4,
+  "variable": false
  },
  "glyphs": {
   "ka-myanmar": {

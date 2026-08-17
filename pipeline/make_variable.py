@@ -159,6 +159,20 @@ def main():
         weights = [int(w) for w in args.weights.split(",") if w.strip()]
     except ValueError:
         sys.exit("--weights takes numbers, e.g. 300,400,700")
+    # A project can declare itself single-weight. Deriving an axis works by
+    # scaling the pen, and past a certain weight the ink changes enough that
+    # a glyph picks a DIFFERENT anchor branch at one end of the axis than
+    # the other — masters with different anchors are not interpolatable, and
+    # fontmake fails the compatibility check. That is a real property of a
+    # display face, not a bug to paper over: a Light derived from a black
+    # face is just the same skeletons with a thinner pen, which is a
+    # separate family, not an axis.
+    meta = json.loads(args.project.read_text(encoding="utf-8")).get("meta", {})
+    if meta.get("variable") is False:
+        print(f"{args.project.name}: meta.variable is false — single-weight "
+              f"face, skipping the weight axis.")
+        return
+
     build(args.project, args.out_dir, weights, not args.no_compile)
 
 
