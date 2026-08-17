@@ -14,6 +14,7 @@ Myanmar Glyph Sans, the typeface this toolkit built.</em></p>
 [![Deploy studio](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/pages.yml/badge.svg)](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/pages.yml)
 [![Studio](https://img.shields.io/badge/studio-draw%20in%20your%20browser-a8352f)](https://thiha-lynn.github.io/myanmar-glyph-studio/)
 [![License: MIT + OFL](https://img.shields.io/badge/license-MIT%20%2B%20OFL--1.1-blue)](LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/myanmar-glyph-studio)](https://pypi.org/project/myanmar-glyph-studio/)
 [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-7057ff)](CONTRIBUTING.md#where-to-start--four-standing-invitations)
 
 **Sketch your own Myanmar font, glyph by glyph, over dimmed guide characters — then build a real, installable, Unicode-correct font.**
@@ -237,7 +238,8 @@ The studio needs nothing but a browser. The build pipeline is a normal
 Python package:
 
 ```bash
-pip install -e ".[dev]"                 # from a clone — not on PyPI yet
+pip install myanmar-glyph-studio        # from PyPI
+pip install -e ".[dev]"                 # …or from a clone, for development
 
 mgs-build MyFont.glyphstudio.json build/      # project file -> UFO + features
 mgs-variable MyFont.glyphstudio.json build/   # …plus weight masters and a VF

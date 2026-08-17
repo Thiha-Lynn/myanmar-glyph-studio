@@ -100,7 +100,7 @@ Live: https://thiha-lynn.github.io/myanmar-glyph-studio/
 
 | Lane | Bar | Measured 2026-08-17 | Fit |
 |---|---|---|---|
-| Maintainers / library authors | 500+ dependent repos, 100+ dependent packages, or 200k+ monthly downloads | Not on PyPI (`pypi.org/pypi/myanmar-glyph-studio` → **404**); publishing is now wired as a tokenless workflow and waits only on §3.1's one-time form. Five tagged releases; v0.5.0 ships three font families and desktop installers for macOS/Windows/Linux, but downloads to date are ~1 | ✗ |
+| Maintainers / library authors | 500+ dependent repos, 100+ dependent packages, or 200k+ monthly downloads | **Published to PyPI 2026-08-17** — [`pip install myanmar-glyph-studio`](https://pypi.org/project/myanmar-glyph-studio/) (0.6.1, via GitHub OIDC trusted publishing, no API token). That makes the software installable rather than merely installable-in-principle; it does **not** approach the bar — zero dependents, and downloads are the publish itself. Seven tagged releases; v0.6.1 ships three font families plus desktop installers for macOS/Windows/Linux | ✗ |
 | Core contributors | Committer on CPython/Rust/Node/Apache/CNCF-class projects | No | ✗ |
 | Active contributors | 100+ PRs merged into repos you don't own, 12 mo | **0** (`author:Thiha-Lynn is:merged -user:Thiha-Lynn` → 0; 26 merged PRs total, all in this repo) | ✗ |
 | Community builders | 20+ unique external contributors merged, 12 mo | **0** | ✗ |
@@ -123,20 +123,26 @@ buying credibility for a reach claim it cannot support.
 
 ## 3. Three things only you can do before submitting
 
-1. **Publish to PyPI — now one form and one click.** Publishing is
-   wired as [`publish.yml`](../.github/workflows/publish.yml) using PyPI
-   Trusted Publishing: no API token is stored anywhere, the artifacts
-   pass `twine check --strict`, and both corpora ship inside the wheel.
-   The step only you can do — because it authenticates your PyPI
-   account — is the one-time *pending publisher* form: pypi.org →
-   Account settings → Publishing (the workflow's header comment lists
-   the five exact values to enter). Then press **Run workflow**, or
-   simply publish the next release, and the upload happens by itself.
+1. **Publish to PyPI — done, 2026-08-17.**
+   [`pip install myanmar-glyph-studio`](https://pypi.org/project/myanmar-glyph-studio/)
+   installs 0.6.1, uploaded by [`publish.yml`](../.github/workflows/publish.yml)
+   over GitHub OIDC trusted publishing: no API token exists in the
+   repository, its secrets, or on any machine. Verified by installing
+   from the real index into a clean virtualenv and running a console
+   script, not by trusting the workflow's green tick.
 
-   It will not hit 200k monthly downloads by tonight — but it turns
-   "installable software" from an assertion into a link, and it starts a
-   counter that only goes up. Until that form is filed, **do not
-   describe the toolkit as pip-installable** anywhere in the application.
+   It does not approach the downloads lane and the table above says so.
+   What it changes is that "installable software" is a link rather than
+   an assertion, and that anyone can now audit any Myanmar font with one
+   command from a fresh machine — which is the argument this project
+   makes, in a form a stranger can run.
+
+   *The first attempt failed and the reason is worth keeping: the upload
+   authenticated perfectly and was rejected `400` because
+   `Natural Language :: Burmese` is not a valid PyPI classifier — its
+   list has no Burmese or Myanmar entry at all. `twine check --strict`
+   does not validate classifiers, so nothing local caught it. A test now
+   checks every classifier against the list PyPI itself uses.*
 
 2. **The commit history now explains itself — one optional step left.**
    Resolved 2026-08-17: [`.mailmap`](../.mailmap) maps all three git
@@ -243,13 +249,16 @@ the honest case above.
   guide, a full Burmese README (`README.my.md`), SUPPORT.md, CHANGELOG.md,
   CITATION.cff, a repository map ([ARCHITECTURE.md](ARCHITECTURE.md)),
   per-family OFL compliance, topical labels, and tagged releases whose
-  assets are built by CI — v0.5.0 carries per-family font zips plus
+  assets are built by CI — v0.6.1 carries per-family font zips plus
   desktop installers for all three platforms. GitHub community profile
   at 100%, four standing invitations written out in
   [CONTRIBUTING.md](../CONTRIBUTING.md#where-to-start--four-standing-invitations)
-  as contributor on-ramps, and a [CLAUDE.md](../CLAUDE.md) briefing so
-  contributions made with a coding assistant do not trip the project's
-  invariants.
+  and surfaced on the site itself at
+  [contribute.html](https://thiha-lynn.github.io/myanmar-glyph-studio/contribute.html)
+  — where the people using the studio actually are, rather than only in a
+  markdown file a visitor has to go looking for — and a
+  [CLAUDE.md](../CLAUDE.md) briefing so contributions made with a coding
+  assistant do not trip the project's invariants.
 * **Installable from a checkout:** `pip install -e ".[dev]"` gives
   fifteen command-line tools (build, variable build, proof, validate,
   CoreText diff, kerning, showcase, gallery, book, PDF, i18n check, …)
