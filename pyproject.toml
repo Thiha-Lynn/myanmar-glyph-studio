@@ -14,7 +14,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "myanmar-glyph-studio"
-version = "0.6.1"
+version = "0.7.0"
 description = "Draw Myanmar fonts in the browser; build them into shaping-capable OpenType with generated mym2 GSUB/GPOS."
 readme = "README.md"
 requires-python = ">=3.10"
