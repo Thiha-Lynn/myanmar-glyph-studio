@@ -606,6 +606,58 @@ def test_vowels_take_tall_forms_after_ja_and_wa(tmp_path):
     assert "medialHa-myanmar" not in lookup
 
 
+def test_i_anusvara_does_not_ligate_after_a_kinzi(tmp_path):
+    """လင်္ဃိံ: after a kinzi, ိ and ံ must stay two marks.
+
+    The kinzi parks the next above-mark beside its hook with a gap sized
+    for one mark. ိံ is a single WIDE drawn ligature, so it lands on the
+    hook instead and the two overlap. Padauk dodges this by fusing the ိ
+    into its kinzi and leaving ံ separate; we suppress the ligature, and
+    the pair then chains along the side anchors that already work.
+
+    The mechanics matter as much as the rule: `ignore` only suppresses
+    inside its own lookup, and feaLib will not put a plain ligature rule
+    in the same lookup as a chain rule — so the ligature has to be
+    contextual too, or the ignore is emitted into a lookup of its own
+    where it does nothing at all. That was the first attempt, and it
+    compiled cleanly while changing nothing.
+    """
+    font, drawn = build(tmp_path, {
+        "ka-myanmar": {"advance": None, "strokes": [BOX]},
+        "nga-myanmar": {"advance": None, "strokes": [BOX]},
+        "i-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, 600], [350, 640]], 40)]},
+        "anusvara-myanmar": {"advance": None, "strokes": [[300, 700]]
+                             and [{"width": 60, "points": [[300, 700]]}]},
+        "iAnusvara-myanmar": {"advance": None,
+                              "strokes": [stroke([[250, 600], [420, 700]], 40)]},
+        "kinzi-myanmar": {"advance": None,
+                          "strokes": [stroke([[100, 620], [260, 700]], 40)]},
+    })
+    fea = font.features.text
+    assert "lookup iAnusvaraLigature" in fea, (
+        "the ligature must live in its own lookup so a contextual rule can "
+        "call it")
+    abvs = fea.split("feature abvs")[1].split("} abvs;")[0]
+    assert "ignore sub kinzi-myanmar i-myanmar' anusvara-myanmar';" in abvs
+    # the ligature is applied contextually, never as a bare rule in abvs
+    assert "sub i-myanmar' lookup iAnusvaraLigature anusvara-myanmar';" in abvs
+    assert "sub i-myanmar anusvara-myanmar by iAnusvara-myanmar;" not in abvs
+
+
+def test_repeated_mark_is_reported_as_a_source_defect():
+    """ကောာလိက and ကင်် are typos, and must not be graded as font bugs."""
+    import validate_spec as vs
+    assert vs.repeated_mark("ကောာလိက") == "ာ"
+    assert vs.repeated_mark("ဝက်ကင််ဂေါ") == "်"
+    # ordinary Burmese, including legitimately adjacent DIFFERENT marks
+    assert vs.repeated_mark("ကျွန်ုပ်တို့") is None
+    assert vs.repeated_mark("ရွှံ့") is None
+    assert vs.repeated_mark("ကိံ") is None
+    # a repeated BASE letter is normal (ကက္ကု, ဖြုံ့ဖြုံ့) — marks only
+    assert vs.repeated_mark("ကကတစ်") is None
+
+
 def test_round_nib_is_the_default_and_unchanged():
     """A round pen must still produce exactly the old circle.
 

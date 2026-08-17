@@ -468,11 +468,39 @@ def clusters_of(glyphs):
     return [groups[k] for k in sorted(groups)]
 
 
+def repeated_mark(text):
+    """The first mark this text writes twice in a row, if any.
+
+    Nobody writes ကောာလိက or ကင်် — they are transcription slips, and they
+    turn up the moment a corpus is drawn from real scanned text instead of
+    a hand-made list (12 of 556 passages in the Jātaka corpus; none at all
+    in the two hand-built ones). A font stacks the duplicate because that
+    is what a mark chain is for, and the second copy then rides above the
+    clipping metrics. That measures the typo, not the typeface.
+    """
+    for first, second in zip(text, text[1:]):
+        if first == second and unicodedata.category(first) in ("Mn", "Mc"):
+            return first
+    return None
+
+
 def check_case(font, case, glyphs, total_advance):
     """Every measurement for one shaped string. Returns [Finding, ...]."""
     findings = []
     text = case.text
     names = [g.name for g in glyphs]
+
+    doubled = repeated_mark(text)
+    if doubled is not None:
+        # Report and stop: every geometry check below would be measuring
+        # the consequences of the duplicate rather than the font.
+        return [Finding(
+            "SPEC", "repeated-mark",
+            f"{doubled} ({uplus(doubled)} "
+            f"{unicodedata.name(doubled, '?')}) appears twice in a row — "
+            "a transcription slip in the source, not something Burmese "
+            "writes; the shaper stacks the second copy because that is "
+            "what a mark chain does")]
 
     # -- coverage ---------------------------------------------------------
     missing = [ch for ch in text

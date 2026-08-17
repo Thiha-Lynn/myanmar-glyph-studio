@@ -1541,8 +1541,33 @@ def generate_features(drawn, wide_bases=None, bases=None, dot_advances=None):
     # the vowel then belongs to the ya and would overlap the kinzi's spot.
     abvs_rules = []
     if {"iAnusvara-myanmar", "i-myanmar", "anusvara-myanmar"} <= drawn:
-        abvs_rules.append(
-            "  sub i-myanmar anusvara-myanmar by iAnusvara-myanmar;")
+        # …but NOT after a kinzi. The kinzi parks the next above-mark
+        # beside its hook, with a gap sized for one mark; the ိံ ligature
+        # is a single wide glyph and lands on the hook instead
+        # (လင်္ဃိံ — found by the Jātaka corpus, and Padauk avoids it too
+        # by fusing the i INTO its kinzi and leaving ံ separate). Left
+        # unligated, ိ and ံ chain one after the other along the existing
+        # side anchors, which already handle exactly this.
+        if "kinzi-myanmar" in drawn:
+            # `ignore` only suppresses inside its OWN lookup, and a plain
+            # ligature rule cannot share one with a chain rule — feaLib
+            # splits them by GSUB type, so the ignore ends up alone in a
+            # lookup that does nothing and the ligature fires regardless.
+            # Making the ligature contextual too puts both in one GSUB6
+            # lookup, where the ignore actually bites.
+            lines.append("lookup iAnusvaraLigature {")
+            lines.append("  sub i-myanmar anusvara-myanmar "
+                         "by iAnusvara-myanmar;")
+            lines.append("} iAnusvaraLigature;")
+            lines.append("")
+            abvs_rules.append(
+                "  ignore sub kinzi-myanmar i-myanmar' anusvara-myanmar';")
+            abvs_rules.append(
+                "  sub i-myanmar' lookup iAnusvaraLigature "
+                "anusvara-myanmar';")
+        else:
+            abvs_rules.append(
+                "  sub i-myanmar anusvara-myanmar by iAnusvara-myanmar;")
     kinzi_ya = [n for n in ("medialYa-myanmar", "medialYa-myanmar.beforewa",
                             "medialYa-myanmar.wa", "medialYa-myanmar.ha")
                 if n in drawn]

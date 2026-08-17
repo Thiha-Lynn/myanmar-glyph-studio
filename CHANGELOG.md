@@ -8,6 +8,31 @@ versions are git tags with installable font zips on the
 ## [Unreleased]
 
 ### Added
+- **A reference corpus built from 538 Jātaka stories**
+  ([`pipeline/make_reference.py`](pipeline/make_reference.py),
+  `pipeline/jataka_corpus.txt`). `word_corpus.txt` was built once by hand
+  and nothing in the repository could reproduce it or point the same idea
+  somewhere else; this can. Give it a Wikisource category and it fetches
+  every page, segments them into syllable clusters exactly as HarfBuzz
+  does, and greedily selects the fewest passages that still contain every
+  cluster it saw.
+
+  On ကဏ္ဍ:ဇာတ်နိပါတ် — the Buddha's past-life cycle, 3.66 million
+  characters of classical narrative — that is **1,605 distinct clusters**,
+  a third more than the 1,213 in the DatarrX vocabulary, held by 556
+  passages (4.7% of the source). It found two real defects on its first
+  run, both fixed below. At 18s per font it is a deep sweep rather than a
+  CI gate; the fast regressions for what it caught are in the suite.
+- **A PDF typesetter** ([`pipeline/make_pdf.py`](pipeline/make_pdf.py),
+  `mgs-pdf`): the book as a real PDF, set in a generated font. A PDF
+  reader has no shaping engine — embed a Myanmar font and hand it a
+  string and you get storage order with no reordering or mark
+  positioning, the Zawgyi-era mess. So the producer shapes it: HarfBuzz
+  lays out every line and each positioned glyph goes into the page as a
+  filled vector path. Nothing to install, identical everywhere, prints.
+  Each glyph is a Form XObject defined once — inlining the outline at
+  every occurrence made a 26 MB file of the same ka drawn a few thousand
+  times; referencing it makes 323 KB.
 - **A second typeface, and the two knobs that shape it.** *Bagan Display* —
   bold, squircle, 480 glyphs ([projects/bagan-display/](projects/bagan-display/)).
   It exists because the pipeline could not previously make a font that
@@ -108,6 +133,26 @@ versions are git tags with installable font zips on the
   one that shifts the rest of the cluster along, is still reported.
 
 ### Fixed
+- **ိံ collided with the kinzi above it** (လင်္ဃိံ, ကင်္ကိံ, သင်္ခိံ).
+  The kinzi parks the next above-mark beside its hook with a gap sized
+  for one mark, and ိံ is a single wide drawn ligature, so it landed on
+  the hook. Suppressed after a kinzi — the pair then chains along the
+  side anchors that already work, which is close to Padauk's answer
+  (it fuses the ိ into its kinzi and leaves ံ separate). Found by the new
+  Jātaka corpus; invisible to the other three.
+
+  Worth recording how it had to be done: `ignore` only suppresses inside
+  its own lookup, and feaLib will not put a plain ligature rule in the
+  same lookup as a chain rule. The first fix compiled cleanly and changed
+  nothing, because the ignore was emitted into a lookup of its own. The
+  ligature had to become contextual too.
+- **A doubled mark was graded as a font bug.** Real transcribed text
+  contains slips — ကောာလိက, ကင်် — that nobody writes; 12 of the 556
+  Jātaka passages have one, and neither hand-built corpus has any. The
+  shaper stacks the duplicate because that is what a mark chain does, and
+  the second copy then rides past the clipping metrics. `validate_spec`
+  now reports `repeated-mark` as SPEC, which is what it is: a measurement
+  of the typo, not of the typeface.
 - **One syllable was drawn through the next, in 50 of the 12,450
   vocabulary words.** Reported by a reader looking at rendered Burmese,
   not by any test here — every geometry check measured a cluster against
