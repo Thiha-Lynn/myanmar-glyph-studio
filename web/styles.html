@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#a8352f">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<title>Font styles — one drawing, many faces</title>
+<meta name="description" content="Play with the pen that turns Myanmar Glyph Studio sketches into fonts: round sans, squircle display, slab — live, with the real outline code. တစ်ချက်ရေး၊ ဖောင့်မျိုးစုံရ။">
+<link rel="canonical" href="https://thiha-lynn.github.io/myanmar-glyph-studio/styles.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Myanmar Glyph Studio">
+<meta property="og:title" content="Font styles — one drawing, many faces">
+<meta property="og:description" content="The same sketch becomes a round sans, a squircle display face or a slab — drag the pen and watch. Every shipped face with its recipe.">
+<meta property="og:url" content="https://thiha-lynn.github.io/myanmar-glyph-studio/styles.html">
+<meta property="og:image" content="https://thiha-lynn.github.io/myanmar-glyph-studio/icons/icon-512.png">
+<meta name="twitter:card" content="summary">
+<style>
+  :root {
+    --bg: #faf7f2; --card: #ffffff; --ink: #26211c; --muted: #7a7168;
+    --line: #e4ddd2; --accent: #a8352f; --accent-soft: #f6e8e7;
+    --gold: #9a6410; --lacq: #201612; --lacq-ink: #f3d9a5;
+    --sketch: #4a6fa5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171412; --card: #211d1a; --ink: #ece6dd; --muted: #a1988d;
+      --line: #37312b; --accent: #e06a63; --accent-soft: #3a2422;
+      --gold: #e0b063; --lacq: #14100d; --lacq-ink: #f3d9a5;
+      --sketch: #8fb0dd;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  header, main, footer { max-width: 64rem; margin: 0 auto; padding: 0 22px; }
+  header { padding-top: 26px; }
+  nav a { color: var(--accent); margin-right: 1rem; }
+  a { color: var(--accent); }
+  h1 {
+    font-size: clamp(30px, 6vw, 46px); line-height: 1.25; margin: .4rem 0 .2rem;
+    background: linear-gradient(100deg, var(--accent), var(--gold));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .tagline { font-size: 17px; color: var(--muted); max-width: 46rem; }
+  h2 { font-size: 20px; margin: 2.6rem 0 .2rem; }
+  h2 .my { font-weight: 400; color: var(--muted); font-size: 16px; }
+  .lede { color: var(--muted); max-width: 46rem; }
+  code { background: var(--card); padding: .1rem .3rem; border-radius: .25rem;
+         font-size: .85em; }
+
+  .mmface { font-family: "Padauk", "Myanmar Text", "Noto Sans Myanmar",
+                         "Myanmar MN", sans-serif; }
+
+  /* ---- the playground ---- */
+  .play { display: grid; gap: 1rem; grid-template-columns: minmax(0, 3fr) minmax(15rem, 2fr);
+          background: var(--card); border: 1px solid var(--line);
+          border-radius: 1.1rem; padding: 1rem; margin-top: 1rem; }
+  @media (max-width: 46rem) { .play { grid-template-columns: 1fr; } }
+  #penCanvas { width: 100%; height: auto; display: block;
+               background: var(--bg); border: 1px dashed var(--line);
+               border-radius: .8rem; }
+  .knobs label { display: flex; align-items: center; gap: .6rem;
+                 margin: .7rem 0; font-weight: 600; }
+  .knobs input[type=range] { flex: 1; accent-color: var(--accent); }
+  .knobs .val { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                font-size: .8rem; color: var(--muted); min-width: 2.6rem;
+                text-align: right; }
+  .chips { display: flex; flex-wrap: wrap; gap: .45rem; margin: .6rem 0; }
+  .chips button {
+    font: inherit; cursor: pointer; border: 1px solid var(--line);
+    background: var(--bg); color: var(--ink); border-radius: 2rem;
+    padding: .3rem .8rem; transition: transform .08s ease;
+  }
+  .chips button:hover { transform: translateY(-2px) rotate(-1deg);
+                        border-color: var(--accent); }
+  .recipe { display: flex; gap: .5rem; align-items: center; margin-top: .6rem; }
+  .recipe code { flex: 1; overflow-x: auto; white-space: nowrap;
+                 padding: .45rem .6rem; border: 1px solid var(--line);
+                 border-radius: .5rem; }
+  .recipe button { font: inherit; cursor: pointer; border: 1px solid var(--line);
+                   border-radius: .5rem; background: var(--bg); color: var(--ink);
+                   padding: .4rem .7rem; }
+  .finePrint { font-size: .8rem; color: var(--muted); margin-top: .6rem; }
+
+  /* ---- the family cards ---- */
+  .cards { display: grid; gap: 1.1rem; margin-top: 1rem;
+           grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); }
+  .fcard { border: 1px solid var(--line); border-radius: 1.1rem;
+           padding: 1.1rem 1.2rem; background: var(--card);
+           display: flex; flex-direction: column; gap: .55rem;
+           transition: transform .12s ease, box-shadow .12s ease; }
+  .fcard:hover { transform: translateY(-4px) rotate(-.4deg);
+                 box-shadow: 0 10px 24px rgba(0,0,0,.08); }
+  .fcard h3 { margin: 0; font-size: 17px; display: flex;
+              justify-content: space-between; align-items: baseline; gap: .5rem; }
+  .fcard h3 .kind { font-size: .72rem; font-weight: 600; color: var(--muted);
+                    text-transform: uppercase; letter-spacing: .06em; }
+  .fcard .spec { font-size: 34px; line-height: 1.75; overflow-wrap: anywhere; }
+  .fcard .digits { font-size: 22px; line-height: 1.6; color: var(--muted); }
+  .fcard .meta { font-size: .78rem; color: var(--muted); }
+  .fcard .meta b { color: var(--ink); }
+  .fcard label { display: flex; align-items: center; gap: .5rem;
+                 font-size: .8rem; color: var(--muted); }
+  .fcard input[type=range] { flex: 1; accent-color: var(--accent); }
+  .fcard .rec { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                font-size: .72rem; color: var(--muted);
+                border-top: 1px dashed var(--line); padding-top: .55rem; }
+  /* per-family costumes */
+  .fcard.lacquer { background: var(--lacq); border-color: #3a2c1c;
+                   color: var(--lacq-ink); }
+  .fcard.lacquer h3 .kind, .fcard.lacquer .meta, .fcard.lacquer .digits,
+  .fcard.lacquer label, .fcard.lacquer .rec { color: #b99f78; }
+  .fcard.lacquer .meta b { color: var(--lacq-ink); }
+  .fcard.lacquer .spec { color: var(--lacq-ink); }
+  .fcard.sketch { border-style: dashed; border-color: var(--sketch); }
+  .fcard.sketch h3 .kind { color: var(--sketch); }
+
+  .note { background: var(--card); border-left: 3px solid var(--accent);
+          padding: .6rem .9rem; border-radius: 0 .4rem .4rem 0; margin: .9rem 0; }
+
+  /* ---- cook your own ---- */
+  .cook { background: var(--card); border: 1px solid var(--line);
+          border-radius: 1.1rem; padding: 1rem 1.2rem; margin-top: 1rem; }
+  .cook pre { overflow-x: auto; background: var(--bg); padding: .7rem .8rem;
+              border-radius: .6rem; border: 1px solid var(--line);
+              font-size: .8rem; line-height: 1.6; }
+  footer { color: var(--muted); font-size: .85rem; padding: 2rem 22px 3rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a href="index.html">← Studio</a>
+    <a href="gallery.html">Font gallery</a>
+    <a href="showcase.html">Rendering showcase</a>
+    <a href="specimen.html">Type specimen</a>
+    <a href="book.html">Reading proof</a>
+  </nav>
+  <h1>တစ်ချက်ရေး · ဖောင့်မျိုးစုံရ</h1>
+  <p class="tagline"><strong>Draw once, get many faces.</strong> A sketch in
+  the studio is stored as centre-lines plus a pen — so the same drawing can
+  come out as a round sans, a squircle display face, a slab, and a whole
+  weight axis. This page is that idea, live.</p>
+</header>
+
+<main>
+  <h2>🖊 The pen, in your hands <span class="my">— ကလောင်ကို စမ်းကြည့်ပါ</span></h2>
+  <p class="lede">This is the studio's <em>actual</em> outline code — the
+  same maths <code>pipeline/json_to_ufo.py</code> mirrors at build time —
+  expanding the sample font's real က around its skeleton. Drag the knobs.</p>
+
+  <div class="play">
+    <canvas id="penCanvas" width="900" height="620"></canvas>
+    <div class="knobs">
+      <label>✒️ Nib
+        <input id="kNib" type="range" min="2" max="12" step="0.5" value="2">
+        <span class="val" id="vNib">2</span></label>
+      <label>🏋️ Weight
+        <input id="kWeight" type="range" min="0.6" max="1.9" step="0.05" value="1">
+        <span class="val" id="vWeight">1.00×</span></label>
+      <label>🌀 Squircle warp
+        <input id="kWarp" type="range" min="2" max="8" step="0.5" value="2">
+        <span class="val" id="vWarp">off</span></label>
+
+      <div class="chips">
+        <button type="button" data-nib="2"  data-w="1"    data-warp="2">🫧 Round sans</button>
+        <button type="button" data-nib="4"  data-w="1.8"  data-warp="4">🏛 Bagan Display recipe</button>
+        <button type="button" data-nib="8"  data-w="1.15" data-warp="2">🧱 Slab</button>
+        <button type="button" data-nib="2"  data-w="0.65" data-warp="2">🪶 Featherweight</button>
+      </div>
+
+      <div class="recipe">
+        <code id="recipe">mgs-sample</code>
+        <button type="button" id="copyRecipe" title="Copy the command">Copy</button>
+      </div>
+      <p class="finePrint">A full build adds what a preview cannot: curve
+      fitting, overlap removal, generated shaping rules, kerning and the
+      validation suite. The nib and warp you see here are exactly what
+      <code>meta.pen</code> and <code>--squircle</code> do.</p>
+    </div>
+  </div>
+
+  <h2>👨‍👩‍👧 The faces we ship <span class="my">— ထုတ်ပြီးသား ဖောင့်များ</span></h2>
+  <p class="lede">Every one traced in the browser, built by the pipeline,
+  and validated to zero failures on 1,486 spec clusters and 12,450 real
+  words before it gets to sit here. Each card wears its own recipe.</p>
+  <div id="cardStatus"></div>
+  <div class="cards" id="cards"></div>
+
+  <h2>🍳 Cook your own <span class="my">— ကိုယ်ပိုင်စတိုင် ချက်ကြည့်ပါ</span></h2>
+  <div class="cook">
+    <p>The knobs above are ordinary command-line flags. From a checkout
+    (<code>pip install -e ".[dev]"</code>):</p>
+    <pre>
+# the whole inventory in your flavour — weight scales the pen,
+# --squircle warps the skeletons, meta.pen squares the nib
+mgs-sample --font-name "My Style" --weight 1.8 --squircle 4 out/
+
+# one drawing → Light / Regular / Bold masters + a variable font
+mgs-variable MyFont.glyphstudio.json build/
+
+# then prove it before you ship it
+mgs-validate build/MyFont-Regular.ttf</pre>
+    <p>The nib lives in your project file as <code>meta.pen</code>
+    (2 round · 4 squircle · 8 slab, anything 2–12) — the studio previews it
+    while you draw, the pipeline builds with it, and
+    <a href="https://github.com/Thiha-Lynn/myanmar-glyph-studio/blob/main/docs/ARCHITECTURE.md">docs/ARCHITECTURE.md</a>
+    maps where all of this lives.</p>
+  </div>
+</main>
+
+<footer>
+  <p>Fonts are OFL 1.1 (letterform skeletons extracted from
+  <a href="https://software.sil.org/padauk/">SIL Padauk</a>, credited in
+  each OFL.txt). Toolkit MIT. Preview runs
+  <code>web/js/outline.js</code> — the file the pipeline mirrors.</p>
+</footer>
+
+<script src="js/outline.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // ---- the sample font's real ka-myanmar, verbatim from
+  // projects/sample/GlyphStudioSample.glyphstudio.json (3 strokes) -------
+  var KA = [
+    {"width":45,"points":[[425,11],[469,79],[493,159],[493,291]]},
+    {"width":45,"points":[[665,15],[749,15],[789,27],[833,55],[877,103],[905,175],[905,263],[877,331],[833,379],[769,415],[681,423],[637,415],[589,391],[541,347],[517,303],[493,291]]},
+    {"width":45,"points":[[145,23],[89,123],[81,231],[85,263],[113,327],[165,383],[229,415],[281,423],[349,415],[417,379],[461,331],[473,303],[493,291]]}
+  ];
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  // ---- squircle skeleton warp: per stroke, about its own centre,
+  // (r, θ) → (r · k(θ), θ), then scaled back into the original bbox —
+  // the same transform make_sample --squircle applies. -------------------
+  function superK(theta, n) {
+    if (n <= 2.01) return 1;
+    var c = Math.abs(Math.cos(theta)), s = Math.abs(Math.sin(theta));
+    return Math.pow(Math.pow(c, n) + Math.pow(s, n), -1 / n);
+  }
+  function warpStroke(points, n) {
+    if (n <= 2.01) return points;
+    var xs = points.map(function (p) { return p[0]; });
+    var ys = points.map(function (p) { return p[1]; });
+    var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+    var y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+    var cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    var out = points.map(function (p) {
+      var dx = p[0] - cx, dy = p[1] - cy;
+      var r = Math.hypot(dx, dy), th = Math.atan2(dy, dx);
+      var k = superK(th, n);
+      var q = [cx + dx * k, cy + dy * k];
+      if (p.length > 2) q.push(p[2]);
+      return q;
+    });
+    // scale back so the warp changes character, not extents
+    var wxs = out.map(function (p) { return p[0]; });
+    var wys = out.map(function (p) { return p[1]; });
+    var wx0 = Math.min.apply(null, wxs), wx1 = Math.max.apply(null, wxs);
+    var wy0 = Math.min.apply(null, wys), wy1 = Math.max.apply(null, wys);
+    var sx = (x1 - x0) / Math.max(1e-6, wx1 - wx0);
+    var sy = (y1 - y0) / Math.max(1e-6, wy1 - wy0);
+    return out.map(function (p) {
+      var q = [cx + (p[0] - cx) * sx, cy + (p[1] - cy) * sy];
+      if (p.length > 2) q.push(p[2]);
+      return q;
+    });
+  }
+
+  // ---- playground ------------------------------------------------------
+  var canvas = document.getElementById("penCanvas");
+  var ctx = canvas.getContext("2d");
+  var kNib = document.getElementById("kNib");
+  var kWeight = document.getElementById("kWeight");
+  var kWarp = document.getElementById("kWarp");
+  var vNib = document.getElementById("vNib");
+  var vWeight = document.getElementById("vWeight");
+  var vWarp = document.getElementById("vWarp");
+  var recipeEl = document.getElementById("recipe");
+
+  function styleColor(name) {
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue(name).trim();
+  }
+
+  function draw() {
+    var nib = parseFloat(kNib.value);
+    var weight = parseFloat(kWeight.value);
+    var warp = parseFloat(kWarp.value);
+
+    vNib.textContent = nib;
+    vWeight.textContent = weight.toFixed(2) + "×";
+    vWarp.textContent = warp <= 2.01 ? "off" : warp;
+
+    Outline.setPen(nib);
+    var polys = [];
+    KA.forEach(function (s) {
+      var p = Outline.strokeToPolygon({
+        width: s.width * weight,
+        points: warpStroke(s.points, warp)
+      });
+      if (p) polys.push(p);
+    });
+    Outline.setPen(2); // leave the shared module as we found it
+
+    var b = Outline.bounds(polys);
+    if (!b) return;
+
+    var W = canvas.width, H = canvas.height, PAD = 70;
+    ctx.clearRect(0, 0, W, H);
+
+    var scale = Math.min((W - PAD * 2) / Math.max(1, b.xMax - b.xMin),
+                         (H - PAD * 2) / Math.max(1, b.yMax - b.yMin));
+    var ox = (W - (b.xMax - b.xMin) * scale) / 2 - b.xMin * scale;
+    var oy = (H + (b.yMax - b.yMin) * scale) / 2 + b.yMin * scale;
+
+    // guides: baseline 0 and the 550 body line, like the studio canvas
+    ctx.strokeStyle = styleColor("--line");
+    ctx.lineWidth = 1;
+    [0, 550].forEach(function (y) {
+      var cy = oy - y * scale;
+      if (cy < 8 || cy > H - 8) return;
+      ctx.beginPath(); ctx.moveTo(12, cy); ctx.lineTo(W - 12, cy); ctx.stroke();
+    });
+
+    ctx.fillStyle = styleColor("--ink");
+    ctx.beginPath();
+    polys.forEach(function (poly) {
+      ctx.moveTo(ox + poly[0][0] * scale, oy - poly[0][1] * scale);
+      for (var i = 1; i < poly.length; i++) {
+        ctx.lineTo(ox + poly[i][0] * scale, oy - poly[i][1] * scale);
+      }
+      ctx.closePath();
+    });
+    ctx.fill("nonzero");
+  }
+
+  function updateRecipe() {
+    var nib = parseFloat(kNib.value);
+    var weight = parseFloat(kWeight.value);
+    var warp = parseFloat(kWarp.value);
+    var cmd = "mgs-sample";
+    if (Math.abs(weight - 1) > 0.001) cmd += " --weight " + weight.toFixed(2);
+    if (warp > 2.01) cmd += " --squircle " + warp;
+    cmd += " out/";
+    if (nib > 2.01) cmd += "   # + \"pen\": " + nib + " in the project meta";
+    recipeEl.textContent = cmd;
+  }
+
+  function refresh() { draw(); updateRecipe(); }
+  [kNib, kWeight, kWarp].forEach(function (k) {
+    k.addEventListener("input", refresh);
+  });
+  document.querySelectorAll(".chips button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      kNib.value = b.dataset.nib;
+      kWeight.value = b.dataset.w;
+      kWarp.value = b.dataset.warp;
+      refresh();
+    });
+  });
+  document.getElementById("copyRecipe").addEventListener("click", function () {
+    var self = this;
+    navigator.clipboard.writeText(recipeEl.textContent).then(function () {
+      self.textContent = "Copied!";
+      setTimeout(function () { self.textContent = "Copy"; }, 1200);
+    }).catch(function () { /* clipboard unavailable — no drama */ });
+  });
+  if (window.matchMedia) {
+    window.matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", draw);
+  }
+  refresh();
+
+  // ---- the shipped faces ----------------------------------------------
+  var SPEC = "မြန်မာစာ မြန်မာစကား";
+  var CLUSTERS = "ကျွန်ုပ်တို့ · ရွှေ · မြို့ · ၀၁၂၃၄၅၆၇၈၉";
+  var RECIPES = {
+    "Myanmar Glyph Sans": { kind: "text sans", cls: "",
+      rec: "pen 2 · monolinear · Light/Regular/Bold + wght axis" },
+    "Bagan Display": { kind: "display", cls: "lacquer",
+      rec: "pen 4 · --weight 1.8 · --squircle 4 · y × 0.90" },
+    "Glyph Studio Sample": { kind: "pipeline demo", cls: "sketch",
+      rec: "pen 2 · the hand-sketched build-system test face" }
+  };
+
+  var cards = document.getElementById("cards");
+  var cardStatus = document.getElementById("cardStatus");
+
+  function faceOf(fam, url) {
+    var f = new FontFace(fam, "url(" + url + ")");
+    return f.load().then(function (loaded) {
+      document.fonts.add(loaded); return true;
+    }).catch(function () { return false; });
+  }
+
+  function card(font) {
+    var meta = RECIPES[font.family] ||
+      { kind: "community face", cls: "", rec: "" };
+    var c = el("div", "fcard " + meta.cls);
+    var h = el("h3", null, font.family + " ");
+    h.appendChild(el("span", "kind", meta.kind));
+    c.appendChild(h);
+
+    var famCss = "MGS Style " + font.family;
+    var spec = el("div", "spec mmface", SPEC);
+    var digits = el("div", "digits mmface", CLUSTERS);
+    c.appendChild(spec); c.appendChild(digits);
+
+    var m = el("p", "meta");
+    m.innerHTML = "<b>" + font.drawnGlyphs + "</b> glyphs drawn · OFL 1.1 · " +
+      Math.round(font.bytes / 1024) + " KB";
+    c.appendChild(m);
+
+    var vf = font.variable;
+    var url = "gallery-data/" +
+      (vf && (vf.woff2 || vf.file) || font.woff2 || font.file);
+    faceOf(famCss, url).then(function (ok) {
+      if (!ok) return;
+      spec.style.fontFamily = '"' + famCss + '", Padauk, sans-serif';
+      digits.style.fontFamily = spec.style.fontFamily;
+      var wght = vf && vf.axes && vf.axes.filter(function (a) {
+        return a.tag === "wght";
+      })[0];
+      if (wght) {
+        var lab = el("label", null, "Weight ");
+        var slider = document.createElement("input");
+        slider.type = "range";
+        slider.min = wght.min; slider.max = wght.max; slider.value = wght.default;
+        var out = el("span", "val", wght.default);
+        slider.addEventListener("input", function () {
+          spec.style.fontVariationSettings = '"wght" ' + slider.value;
+          digits.style.fontVariationSettings = spec.style.fontVariationSettings;
+          out.textContent = slider.value;
+        });
+        lab.appendChild(slider); lab.appendChild(out);
+        c.appendChild(lab);
+      }
+    });
+
+    if (meta.rec) c.appendChild(el("div", "rec", "recipe: " + meta.rec));
+    return c;
+  }
+
+  fetch("gallery-data/fonts.json")
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (manifest) {
+      if (!manifest || !manifest.fonts || !manifest.fonts.length) throw 0;
+      // one card per family — prefer the Regular row of each
+      var seen = Object.create(null);
+      manifest.fonts.forEach(function (f) {
+        if (seen[f.family]) return;
+        seen[f.family] = 1;
+        cards.appendChild(card(f));
+      });
+    })
+    .catch(function () {
+      var d = el("div", "note",
+        "The webfont kits are not built here — run pipeline/make_gallery.py " +
+        "locally, or view this page on the deployed site. The cards below " +
+        "would each load a built face.");
+      cardStatus.appendChild(d);
+      Object.keys(RECIPES).forEach(function (fam) {
+        cards.appendChild(card({ family: fam, drawnGlyphs: "—", bytes: 0,
+          file: "", woff2: "", variable: null }));
+      });
+    });
+}());
+</script>
+</body>
+</html>

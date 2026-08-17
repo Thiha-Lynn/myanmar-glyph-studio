@@ -8,6 +8,15 @@ versions are git tags with installable font zips on the
 ## [Unreleased]
 
 ### Added
+- **A font-styles page** ([web/styles.html](web/styles.html)): the
+  "draw once, get many faces" story, live. The studio's real outline
+  code expands the sample font's actual က while you drag the nib
+  (round → squircle → slab), the weight and the squircle warp — with the
+  exact `mgs-sample` command for whatever you dialled in, ready to copy.
+  Below it, every shipped family as a themed card wearing its own
+  recipe (Bagan Display's card is lacquered, as is proper), with live
+  variable-weight sliders, and a cook-your-own section with the real
+  commands. Linked from the studio toolbar (🎨) and every page's nav.
 - **Desktop apps** ([desktop/](desktop/), [docs/DESKTOP.md](docs/DESKTOP.md)):
   the studio as a macOS DMG, Windows installer and Linux AppImage/deb,
   for people who prefer a downloadable application to a browser tab. The
