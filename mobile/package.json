@@ -1,14 +1,14 @@
 {
-  "name": "mobile",
-  "version": "1.0.0",
-  "description": "",
+  "name": "myanmar-glyph-studio-mobile",
+  "version": "0.7.0",
+  "description": "Sketch your own Myanmar font \u2014 Android and iOS shells for the Glyph Studio",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "@capacitor/android": "^8.5.0",
@@ -17,5 +17,6 @@
     "@capacitor/filesystem": "^8.1.2",
     "@capacitor/ios": "^8.5.0",
     "@capacitor/share": "^8.0.1"
-  }
+  },
+  "private": true
 }

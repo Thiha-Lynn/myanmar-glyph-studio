@@ -7,6 +7,8 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-08-18
+
 ### Added
 - **The studio as phone apps** (`mobile/`, [docs/MOBILE.md](docs/MOBILE.md)):
   a real Android APK and a real iOS app, wrapping the unchanged `web/`
@@ -769,6 +771,7 @@ versions are git tags with installable font zips on the
 - Community health files, the contributor guide, the gallery site, and
   GitHub Pages deployment.
 
+[0.7.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.7.0
 [0.6.1]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.6.1
 [0.6.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.6.0
 [0.5.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.5.0
