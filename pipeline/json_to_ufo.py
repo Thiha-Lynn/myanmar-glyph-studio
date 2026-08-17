@@ -182,6 +182,14 @@ SIGN_LSB = 60  # left sidebearing given to re-aligned spacing signs
 # own _top anchor, so 60 here reproduces that gap — and keeps stacked
 # above-marks inside the +900 ascender.
 TOP_CLEARANCE = 60
+# Where a below-vowel hangs, on EVERY base. Padauk lands ု and ူ at
+# −439…−93 whatever letter they sit under — က, ခ, န, ရ, ည all identical —
+# because a reader scanning a line sees the vowels as one row, and a
+# vowel that drops 40 units further on န than on က reads as a wobble in
+# the baseline of the marks. Deriving it from each base's own ink gave us
+# exactly that wobble: −418 under ခ against −463 under ရ. This constant
+# reproduces Padauk's row to within 5 units.
+BOTTOM_ANCHOR_Y = -73
 # The shaping spec's minimum separation between two pieces of ink
 # (docs/SHAPING_SPEC.md §6). Used here for the gap the `dist` feature has
 # to open up between a cluster's အောက်မြစ် and the next syllable's wrap.
@@ -851,7 +859,7 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             # long stack-form .alt here (it is 868 units tall and belongs
             # under subjoined letters only). Stacks keep full ink depth.
             anchor("top", mark_x, top_anchor_y(ay_max))
-            anchor("bottom", bottom_x, max(min(ay_min, 0), -50) - 40)
+            anchor("bottom", bottom_x, BOTTOM_ANCHOR_Y)
             # …and the subjoined letter hangs from the same clamped depth:
             # Padauk lands every subjoined form in the −440…−80 band whatever
             # the base does (uni1014.alt + uni1014.med, uni101B + uni101B.med),
@@ -894,8 +902,7 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
                 # stroke at −135…−300.
                 anchor("bottom", ax_max + 110 + pen_pad, -115)
             else:
-                anchor("bottom", bottom_x + pen_pad,
-                       max(min(ay_min, 0), -50) - 40)
+                anchor("bottom", bottom_x + pen_pad, BOTTOM_ANCHOR_Y)
         elif name == "kinzi-myanmar":
             # A vowel after the kinzi lands BESIDE it, not on top of it:
             # stacking a second above-mark on the kinzi sends သင်္ကြီ's ii to

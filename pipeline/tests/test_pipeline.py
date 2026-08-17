@@ -460,12 +460,35 @@ def test_descender_base_keeps_plain_vowel_at_side_anchor(tmp_path):
     assert "na-myanmar" not in desc_class          # bases keep the plain vowel
     assert "ta-myanmar.sub" in desc_class          # stacks take the long form
     a = anchors_of(font, "na-myanmar")
-    assert a["bottom"][1] == -90                   # clamped, not -400
+    assert a["bottom"][1] == json_to_ufo.BOTTOM_ANCHOR_Y   # not -400
     # The subjoined letter is clamped to the same floor: following the leg
     # all the way down puts န္န's stack at −890, in the next line of text.
     # Padauk lands every subjoined form in the −440…−80 band whatever the
     # base does (uni1014.alt + uni1014.med).
     assert a["stack"][1] == -90
+
+
+def test_below_vowels_hang_at_one_depth_on_every_base(tmp_path):
+    """ကု and နု must put their vowel at the same height.
+
+    Padauk lands ု and ူ at −439…−93 under every letter it has, because a
+    reader scanning a line sees the vowels as a row and a vowel that drops
+    further under န than under က reads as a wobble. Deriving the depth
+    from each base's own ink produced exactly that: −418 under ခ against
+    −463 under ရ, a 45-unit spread nobody asked for.
+    """
+    shallow = stroke([[100, 0], [100, 550], [500, 550], [500, 0]])
+    deep = stroke([[250, 550], [250, -360]])
+    font, _ = build(tmp_path, {
+        "ka-myanmar": {"advance": None, "strokes": [shallow]},
+        "na-myanmar": {"advance": None, "strokes": [deep]},
+        "u-myanmar": {"advance": None,
+                      "strokes": [stroke([[250, -150], [350, -150]], 40)]},
+    })
+    ka = anchors_of(font, "ka-myanmar")["bottom"][1]
+    na = anchors_of(font, "na-myanmar")["bottom"][1]
+    assert ka == na == json_to_ufo.BOTTOM_ANCHOR_Y, (
+        f"below-vowel depth still varies with the base: ka={ka} na={na}")
 
 
 def test_long_alt_vowels_are_spacing_glyphs_beside_the_stack(tmp_path):
@@ -1072,7 +1095,7 @@ def test_leg_avoidance_moves_bottom_anchor_off_a_right_leg(tmp_path):
     # preferred 0.75 of ink ≈ x 710 — its ±50 band catches the leg; the
     # anchor slides to the nearest band that clears it (leg ink starts 720)
     assert a["bottom"][0] < 700
-    assert a["bottom"][1] == -90              # depth clamp still applies
+    assert a["bottom"][1] == json_to_ufo.BOTTOM_ANCHOR_Y
 
 
 def test_kerning_never_touches_tabular_digits(tmp_path):
