@@ -54,7 +54,15 @@ jobs:
         id: apk
         run: |
           src=mobile/android/app/build/outputs/apk/debug/app-debug.apk
-          out="myanmar-glyph-studio-${GITHUB_REF_NAME:-dev}.apk"
+          # On a pull_request, GITHUB_REF_NAME is "46/merge" — a slash, so
+          # naming the file after it makes cp try to write into a directory
+          # that does not exist. Only a release ref is a usable filename.
+          if [ "$GITHUB_EVENT_NAME" = "release" ]; then
+            version="$GITHUB_REF_NAME"
+          else
+            version="dev"
+          fi
+          out="myanmar-glyph-studio-${version}.apk"
           cp "$src" "$out"
           ls -l "$out"
           echo "path=$out" >> "$GITHUB_OUTPUT"
