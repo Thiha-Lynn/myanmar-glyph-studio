@@ -251,6 +251,13 @@ or [SUPPORT.md](SUPPORT.md) — Burmese welcome. We follow the
 [CHANGELOG.md](CHANGELOG.md), and academic users can cite the project via
 [CITATION.cff](CITATION.cff).
 
+One person maintains this project — [@Thiha-Lynn](https://github.com/Thiha-Lynn).
+Commits from the first days appear under two older git identities (a
+university account, `uit-shinnthantkyaw`, and a personal email) from
+before the repository's git identity was set on 2026-08-16;
+[`.mailmap`](.mailmap) maps them all to the same maintainer, so
+`git shortlog -sne` shows the real picture.
+
 Fonts produced with this toolkit are meant to be released under the
 [SIL Open Font License 1.1](https://openfontlicense.org) (each family
 folder carries the OFL text); the toolkit code is [MIT](LICENSE). Full
