@@ -8,6 +8,18 @@ versions are git tags with installable font zips on the
 ## [Unreleased]
 
 ### Added
+- **A type specimen** ([web/specimen.html](web/specimen.html)): the full
+  set of plates a foundry publishes — masthead, the 33 consonants and
+  every sign as a grid, a waterfall from 84px to 15px, running text in
+  three sizes, a display plate, and the clusters that break Myanmar
+  fonts — for any face in the gallery, with a weight slider where the
+  family has an axis.
+
+  Set in classical Burmese throughout, never filler. A specimen exists to
+  be judged by a reader, and a reader cannot judge texture from lorem
+  ipsum in a script they read. The palette is palm leaf and lacquer: the
+  two surfaces Burmese was written on for a thousand years, parchment and
+  iron-gall dark by day, lacquer black and leaf gold at night.
 - **A reference corpus built from 538 Jātaka stories**
   ([`pipeline/make_reference.py`](pipeline/make_reference.py),
   `pipeline/jataka_corpus.txt`). `word_corpus.txt` was built once by hand

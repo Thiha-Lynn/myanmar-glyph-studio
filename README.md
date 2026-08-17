@@ -11,6 +11,7 @@
 **✏️ Try it now — no install: <https://thiha-lynn.github.io/myanmar-glyph-studio/>**
 · **🖼 Font gallery: <https://thiha-lynn.github.io/myanmar-glyph-studio/gallery.html>**
 · **🔍 Rendering showcase: <https://thiha-lynn.github.io/myanmar-glyph-studio/showcase.html>**
+· **✦ Type specimen: <https://thiha-lynn.github.io/myanmar-glyph-studio/specimen.html>**
 · **📖 Reading proof: <https://thiha-lynn.github.io/myanmar-glyph-studio/book.html>**
 · **🇲🇲 မြန်မာဘာသာဖြင့် ဖတ်ရန် → [README.my.md](README.my.md)**
 

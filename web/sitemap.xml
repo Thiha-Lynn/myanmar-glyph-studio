@@ -16,4 +16,8 @@
     <loc>https://thiha-lynn.github.io/myanmar-glyph-studio/book.html</loc>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://thiha-lynn.github.io/myanmar-glyph-studio/specimen.html</loc>
+    <priority>0.8</priority>
+  </url>
 </urlset>
