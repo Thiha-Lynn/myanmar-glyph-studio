@@ -254,19 +254,63 @@ def _smooth(points, iterations=2):
     return points
 
 
-def _arc(cx, cy, r, a0, a1, out):
-    for i in range(CAP_SEGMENTS + 1):
-        a = a0 + (a1 - a0) * (i / CAP_SEGMENTS)
-        out.append([cx + r * math.cos(a), cy + r * math.sin(a)])
+# Pen shape. The nib is a superellipse |x|^n + |y|^n = r^n, so ONE number
+# spans the whole range a designer cares about: 2 is a circle (the classic
+# round-nib brush this pipeline has always drawn), 4 is a squircle — square
+# enough to read as geometric, round enough to stay warm — and 8 is a
+# near-square slab. Anything else in the file stays identical at n = 2, so
+# every existing project compiles byte-for-byte as before.
+DEFAULT_PEN = 2.0
+PEN_MIN, PEN_MAX = 2.0, 12.0
 
 
-def _circle(cx, cy, r):
-    n = CAP_SEGMENTS * 4
-    return [[cx + r * math.cos(2 * math.pi * i / n),
-             cy + r * math.sin(2 * math.pi * i / n)] for i in range(n)]
+def _pen_radius(theta, n):
+    """How far the unit nib reaches in direction `theta`.
+
+    Polar form, deliberately: the stroke sides are offset along the
+    NORMAL, so the cap has to be described in the same terms or the two
+    do not meet and the outline develops a notch at every terminal. At
+    n = 2 this is 1.0 everywhere and the maths collapses back to the
+    circle the pipeline drew before.
+    """
+    if n == 2.0:
+        return 1.0
+    c, s = abs(math.cos(theta)), abs(math.sin(theta))
+    return (c ** n + s ** n) ** (-1.0 / n)
 
 
-def stroke_to_polygon(stroke, width_scale=1.0):
+def _arc(cx, cy, r, a0, a1, out, pen=DEFAULT_PEN):
+    # A squared nib turns most of its corner over a few degrees, so it
+    # needs more samples than a circle or the corner reads as a chamfer.
+    steps = CAP_SEGMENTS if pen == DEFAULT_PEN else CAP_SEGMENTS * 3
+    for i in range(steps + 1):
+        a = a0 + (a1 - a0) * (i / steps)
+        rr = r * _pen_radius(a, pen)
+        out.append([cx + rr * math.cos(a), cy + rr * math.sin(a)])
+
+
+def _circle(cx, cy, r, pen=DEFAULT_PEN):
+    n = CAP_SEGMENTS * (4 if pen == DEFAULT_PEN else 8)
+    pts = []
+    for i in range(n):
+        a = 2 * math.pi * i / n
+        rr = r * _pen_radius(a, pen)
+        pts.append([cx + rr * math.cos(a), cy + rr * math.sin(a)])
+    return pts
+
+
+def pen_exponent(project):
+    """The nib shape for a project: meta.pen, clamped, default round."""
+    try:
+        value = float((project.get("meta") or {}).get("pen", DEFAULT_PEN))
+    except (TypeError, ValueError):
+        return DEFAULT_PEN
+    if not math.isfinite(value):
+        return DEFAULT_PEN
+    return min(PEN_MAX, max(PEN_MIN, value))
+
+
+def stroke_to_polygon(stroke, width_scale=1.0, pen=DEFAULT_PEN):
     """Points are [x, y] or [x, y, w] (per-point pressure width).
 
     A stroke marked "fill": true is already a closed contour (e.g. an
@@ -286,10 +330,16 @@ def stroke_to_polygon(stroke, width_scale=1.0):
         return None
     if len(pts) == 1:
         return _circle(pts[0][0], pts[0][1],
-                       _pt_width(pts[0], stroke["width"]) * width_scale / 2.0)
+                       _pt_width(pts[0], stroke["width"]) * width_scale / 2.0,
+                       pen)
     pts = _smooth(pts, 2)
 
-    radii, normals = [], []
+    # Each side is offset by the nib's reach in that normal direction, not
+    # by a bare radius. With a round nib the reach is the radius and this
+    # is the old code exactly; with a squared one the stroke fattens where
+    # the nib presents its flat and thins on the diagonals, which is what
+    # gives the letterform its modulation instead of a uniform sausage.
+    radii, normals, angles = [], [], []
     for i in range(len(pts)):
         radii.append(max(1.0, _pt_width(pts[i], stroke["width"])
                          * width_scale / 2.0))
@@ -297,28 +347,32 @@ def stroke_to_polygon(stroke, width_scale=1.0):
         b = pts[min(len(pts) - 1, i + 1)]
         dx, dy = b[0] - a[0], b[1] - a[1]
         length = math.hypot(dx, dy) or 1.0
-        normals.append([-dy / length, dx / length])
+        nx, ny = -dy / length, dx / length
+        normals.append([nx, ny])
+        angles.append(math.atan2(ny, nx))
 
-    left = [[p[0] + n[0] * r, p[1] + n[1] * r]
-            for p, n, r in zip(pts, normals, radii)]
-    right = [[p[0] - n[0] * r, p[1] - n[1] * r]
-             for p, n, r in zip(pts, normals, radii)]
+    left, right = [], []
+    for p, n, r, ang in zip(pts, normals, radii, angles):
+        out_r = r * _pen_radius(ang, pen)
+        back_r = r * _pen_radius(ang + math.pi, pen)
+        left.append([p[0] + n[0] * out_r, p[1] + n[1] * out_r])
+        right.append([p[0] - n[0] * back_r, p[1] - n[1] * back_r])
 
     poly = list(left)
-    pe, ne = pts[-1], normals[-1]
-    ae = math.atan2(ne[1], ne[0])
-    _arc(pe[0], pe[1], radii[-1], ae, ae - math.pi, poly)
+    pe = pts[-1]
+    ae = angles[-1]
+    _arc(pe[0], pe[1], radii[-1], ae, ae - math.pi, poly, pen)
     poly.extend(reversed(right))
-    ps, ns = pts[0], normals[0]
-    a_s = math.atan2(-ns[1], -ns[0])
-    _arc(ps[0], ps[1], radii[0], a_s, a_s - math.pi, poly)
+    ps = pts[0]
+    a_s = angles[0] + math.pi
+    _arc(ps[0], ps[1], radii[0], a_s, a_s - math.pi, poly, pen)
     return poly
 
 
-def polygons_for(glyph_data, width_scale=1.0):
+def polygons_for(glyph_data, width_scale=1.0, pen=DEFAULT_PEN):
     polys = []
     for stroke in glyph_data.get("strokes", []):
-        poly = stroke_to_polygon(stroke, width_scale)
+        poly = stroke_to_polygon(stroke, width_scale, pen)
         if poly:
             polys.append(poly)
     return polys
@@ -549,6 +603,7 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
     family = meta.get("fontName", "MyMyanmarFont")
     style = style_name or meta.get("styleName", "Regular")
     author = meta.get("author", "")
+    nib = pen_exponent(project)
 
     font = ufoLib2.Font()
     info = font.info
@@ -627,14 +682,15 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             # U+1039 is invisible in rendered Burmese — ignore any sketched
             # ink and let the synthesizer below emit the empty control glyph.
             continue
-        polys = polygons_for(data, width_scale)
+        polys = polygons_for(data, width_scale, nib)
         if not polys:
             continue
 
         # The contour plan is always taken from the drawing as sketched,
         # before any re-alignment below: every weight master must decide
         # the same points and corners or the masters cannot interpolate.
-        ref_polys = polygons_for(data, 1.0) if width_scale != 1.0 else polys
+        ref_polys = (polygons_for(data, 1.0, nib)
+                     if width_scale != 1.0 else polys)
 
         cp = name_to_codepoint(name)
 
@@ -1015,8 +1071,8 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         g = font.newGlyph(vname)
         path = {"width": 48, "points": [[0, -250], [0, -470], [5, -515],
                                         [28, -545], [70, -557]]}
-        bar = [stroke_to_polygon(path, width_scale)]
-        bar_ref = ([stroke_to_polygon(path, 1.0)]
+        bar = [stroke_to_polygon(path, width_scale, nib)]
+        bar_ref = ([stroke_to_polygon(path, 1.0, nib)]
                    if width_scale != 1.0 else bar)
         draw_glyph(g, bar, ref_polys=bar_ref)
         g.width = 0

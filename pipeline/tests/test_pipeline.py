@@ -6,6 +6,7 @@ glyphs, anchors, metrics, features and production names directly.
     cd pipeline && python3 -m pytest tests/ -q
 """
 
+import math
 import sys
 from pathlib import Path
 
@@ -603,6 +604,75 @@ def test_vowels_take_tall_forms_after_ja_and_wa(tmp_path):
     # (Padauk's လျှု takes the tall stroke), while ရှု stays safe because
     # the base ra before the ha is always visible and blocks the match
     assert "medialHa-myanmar" not in lookup
+
+
+def test_round_nib_is_the_default_and_unchanged():
+    """A round pen must still produce exactly the old circle.
+
+    meta.pen is opt-in, and every project written before it existed has to
+    compile byte-for-byte as it did. The superellipse collapses to a
+    circle at n = 2, so this is checkable rather than a hope.
+    """
+    stroke = {"width": 60, "points": [[100, 0], [100, 550], [500, 550]]}
+    default = json_to_ufo.stroke_to_polygon(stroke, 1.0)
+    explicit = json_to_ufo.stroke_to_polygon(stroke, 1.0, 2.0)
+    assert default == explicit
+    for x, y in default:
+        assert -100 < x < 700 and -100 < y < 700
+    # the nib's reach is 1.0 in every direction — that IS a circle
+    for degrees in (0, 30, 45, 60, 90, 137):
+        assert json_to_ufo._pen_radius(math.radians(degrees), 2.0) == 1.0
+
+
+def test_squared_nib_reaches_further_on_the_diagonal(tmp_path):
+    """n = 4 is a squircle: same reach on the axes, more at the corners.
+
+    |x|⁴+|y|⁴ = 1 puts the corner at 2^0.25 ≈ 1.189 while the axes stay at
+    1.0. That ratio is the whole difference between a round face and a
+    squared one, so pin it here rather than eyeballing an outline.
+    """
+    assert json_to_ufo._pen_radius(0.0, 4.0) == pytest.approx(1.0)
+    assert json_to_ufo._pen_radius(math.pi / 2, 4.0) == pytest.approx(1.0)
+    assert json_to_ufo._pen_radius(math.pi / 4, 4.0) == pytest.approx(2 ** 0.25,
+                                                                     abs=1e-9)
+    # a squared nib needs more points to turn its corner cleanly
+    stroke = {"width": 60, "points": [[100, 0], [100, 550], [500, 550]]}
+    assert (len(json_to_ufo.stroke_to_polygon(stroke, 1.0, 4.0))
+            > len(json_to_ufo.stroke_to_polygon(stroke, 1.0, 2.0)))
+
+
+def test_pen_exponent_is_clamped_and_survives_nonsense():
+    read = json_to_ufo.pen_exponent
+    assert read({}) == 2.0
+    assert read({"meta": {}}) == 2.0
+    assert read({"meta": {"pen": 4}}) == 4.0
+    assert read({"meta": {"pen": "4"}}) == 4.0
+    assert read({"meta": {"pen": 0.5}}) == 2.0          # below the floor
+    assert read({"meta": {"pen": 9999}}) == 12.0        # above the ceiling
+    assert read({"meta": {"pen": "round"}}) == 2.0      # not a number
+    assert read({"meta": {"pen": float("nan")}}) == 2.0
+
+
+def test_squircle_warp_squares_a_circle_without_resizing_it():
+    """make_sample --squircle turns bowls into superellipses in place."""
+    import make_sample
+    circle = [[500 + 200 * math.cos(t * math.pi / 24),
+               300 + 200 * math.sin(t * math.pi / 24)] for t in range(48)]
+    glyphs = {"o": {"advance": 1000, "strokes": [{"width": 60,
+                                                  "points": circle}]}}
+    make_sample.squircle_project(glyphs, 4.0)
+    pts = glyphs["o"]["strokes"][0]["points"]
+
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    # extents preserved: the shape is redistributed, never inflated
+    assert min(xs) == pytest.approx(300, abs=1.5)
+    assert max(xs) == pytest.approx(700, abs=1.5)
+    assert min(ys) == pytest.approx(100, abs=1.5)
+    assert max(ys) == pytest.approx(500, abs=1.5)
+    # …but the corners now push out where a circle would not reach
+    corner = max(math.hypot(x - 500, y - 300) for x, y in pts)
+    assert corner / 200 == pytest.approx(2 ** 0.25, abs=0.03)
 
 
 def test_fused_wa_ha_still_triggers_the_tall_vowel(tmp_path):

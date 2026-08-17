@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="my">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#a8352f">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<title>Reading proof — a whole book in a generated font</title>
+<meta name="description" content="A classical Burmese orthography primer set page by page in a font generated from browser sketches — the test a proof sheet cannot give you. စာအုပ်တစ်အုပ်လုံးဖြင့် ဖောင့်စမ်းသပ်ခြင်း။">
+<link rel="canonical" href="https://thiha-lynn.github.io/myanmar-glyph-studio/book.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Myanmar Glyph Studio">
+<meta property="og:title" content="Reading proof — a whole book in a generated font">
+<meta property="og:description" content="34 pages of classical Burmese, set in a typeface generated from stroke sketches.">
+<meta property="og:url" content="https://thiha-lynn.github.io/myanmar-glyph-studio/book.html">
+<meta property="og:image" content="https://thiha-lynn.github.io/myanmar-glyph-studio/icons/icon-512.png">
+<style>
+  :root {
+    --bg: #f4efe6; --page: #fffdf8; --ink: #1f1a15; --muted: #7a7168;
+    --line: #ded3c2; --accent: #a8352f; --edge: rgba(31,26,21,.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14110f; --page: #1e1a17; --ink: #ece6dd; --muted: #a1988d;
+      --line: #37312b; --accent: #e06a63; --edge: rgba(0,0,0,.45);
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header, main, footer { max-width: 62rem; margin: 0 auto; padding: 0 20px; }
+  header { padding-top: 20px; }
+  h1 { font-size: 22px; margin: 0 0 .2rem; }
+  .lede { color: var(--muted); max-width: 44rem; }
+  nav a { color: var(--accent); margin-right: 1rem; }
+  a { color: var(--accent); }
+
+  .bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap;
+         gap: .5rem 1rem; align-items: center; background: var(--page);
+         border: 1px solid var(--line); border-radius: .6rem;
+         padding: .6rem .8rem; margin: 1rem 0; }
+  .bar label { color: var(--muted); font-size: .85rem; }
+  select, button, input[type=range] {
+    font: inherit; color: var(--ink); background: var(--bg);
+    border: 1px solid var(--line); border-radius: .4rem; padding: .3rem .5rem; }
+  button { cursor: pointer; }
+  button[disabled] { opacity: .45; cursor: default; }
+  .cp { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: .72rem; color: var(--muted); }
+
+  /* A page, shaped like a page: fixed measure, real margins, a paper edge.
+     Reading proofs fail when the text is set edge to edge in a browser —
+     line length is half of what makes type comfortable or not. */
+  .sheet { background: var(--page); border: 1px solid var(--line);
+           border-radius: 2px; box-shadow: 0 1px 0 var(--edge),
+           0 12px 28px -18px var(--edge); padding: 3.2rem 3rem 2.4rem;
+           margin: 0 auto 1.6rem; max-width: 46rem; min-height: 60vh;
+           position: relative; }
+  .sheet p { font-family: var(--face, "Bagan Display"), Padauk, sans-serif;
+             font-size: var(--size, 27px); line-height: var(--leading, 2.05);
+             margin: 0 0 1.1em; text-align: justify;
+             text-justify: inter-character; word-break: break-word; }
+  .folio { position: absolute; bottom: 1rem; left: 0; right: 0;
+           text-align: center; color: var(--muted); font-size: .75rem; }
+  .sheet.reference p { font-family: Padauk, sans-serif; }
+  .sheet .who { position: absolute; top: .7rem; left: 0; right: 0;
+                text-align: center; color: var(--muted); font-size: .7rem;
+                letter-spacing: .06em; text-transform: uppercase; }
+  /* side by side while there is room, stacked once there is not */
+  .spread { display: grid; gap: 1.2rem; grid-template-columns: 1fr; }
+  @media (min-width: 62rem) {
+    .spread.two { grid-template-columns: 1fr 1fr; }
+    .spread.two .sheet { max-width: none; padding: 3rem 2rem 2.4rem; }
+  }
+
+  footer { color: var(--muted); font-size: .85rem; padding-bottom: 3rem;
+           margin-top: 1.5rem; }
+  .credit { background: var(--page); border: 1px solid var(--line);
+            border-radius: .6rem; padding: .9rem 1.1rem; }
+  .note { background: var(--page); border-left: 3px solid var(--accent);
+          padding: .6rem .9rem; border-radius: 0 .4rem .4rem 0; margin: .8rem 0; }
+  @media (max-width: 46rem) {
+    header, main, footer { padding: 0 12px; }
+    .sheet { padding: 1.6rem 1.2rem 2.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Reading proof <span class="cp" id="face"></span></h1>
+  <p class="lede">A proof sheet shows a font the clusters somebody chose for
+  it. A book shows it the ones nobody chose — thousands of words in a row, at
+  reading size, where a mark two units out of place stops being a measurement
+  and becomes something you notice on page nine. Every page below is real
+  Burmese, set in a typeface generated from stroke sketches by this
+  repository's own pipeline.</p>
+  <nav>
+    <a href="index.html">← Studio</a>
+    <a href="showcase.html">Rendering showcase</a>
+    <a href="gallery.html">Font gallery</a>
+  </nav>
+</header>
+
+<main>
+  <div class="bar">
+    <span><label for="face-pick">Font</label>
+      <select id="face-pick"></select></span>
+    <span><label for="size">Size</label>
+      <input id="size" type="range" min="16" max="48" value="27"></span>
+    <span><label for="leading">Leading</label>
+      <input id="leading" type="range" min="150" max="280" value="205"></span>
+    <span><label for="compare"><input id="compare" type="checkbox">
+      Alternate with Padauk</label></span>
+    <span><label for="all"><input id="all" type="checkbox"> Show all pages</label></span>
+  </div>
+
+  <div id="status"></div>
+
+  <div id="pages"></div>
+
+  <div class="bar" id="pager">
+    <button id="prev" type="button">← Previous</button>
+    <span class="cp" id="folio"></span>
+    <button id="next" type="button">Next →</button>
+  </div>
+</main>
+
+<footer>
+  <div class="credit" id="credit"></div>
+</footer>
+
+<script src="data/book.js"></script>
+<script>
+(function () {
+  "use strict";
+  var B = window.BOOK;
+  var pagesHost = document.getElementById("pages");
+  var status = document.getElementById("status");
+
+  function el(t, c, x) {
+    var e = document.createElement(t);
+    if (c) e.className = c;
+    if (x != null) e.textContent = x;
+    return e;
+  }
+
+  if (!B || !B.pages || !B.pages.length) {
+    var m = el("div", "note");
+    m.innerHTML = "<b>data/book.js has not been generated.</b> Run " +
+                  "<code>python3 pipeline/make_book.py</code> and reload.";
+    status.appendChild(m);
+    return;
+  }
+
+  // --- the faces under test ------------------------------------------------
+  // Padauk is committed, so it always loads. The generated faces come from
+  // gallery-data/, which the build writes — if that is missing, say so
+  // rather than quietly setting the whole book in a fallback font and
+  // calling it a proof.
+  function face(family, url) {
+    return new FontFace(family, "url(" + url + ")").load()
+      .then(function (f) { document.fonts.add(f); return true; })
+      .catch(function () { return false; });
+  }
+  face("Padauk", "fonts/Padauk-Regular.ttf");
+
+  var picker = document.getElementById("face-pick");
+  fetch("gallery-data/fonts.json")
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (manifest) {
+      if (!manifest || !manifest.fonts || !manifest.fonts.length) throw 0;
+      return Promise.all(manifest.fonts.map(function (f) {
+        var url = "gallery-data/" + (f.woff2 || f.file);
+        return face(f.family, url).then(function (ok) {
+          return ok ? f.family : null;
+        });
+      }));
+    })
+    .then(function (families) {
+      families.filter(Boolean).forEach(function (name) {
+        picker.appendChild(new Option(name, name));
+      });
+      picker.appendChild(new Option("Padauk (reference)", "Padauk"));
+      if (picker.options.length) {
+        setFace(picker.value);
+      }
+    })
+    .catch(function () {
+      picker.appendChild(new Option("Padauk (reference)", "Padauk"));
+      setFace("Padauk");
+      var m = el("div", "note");
+      m.innerHTML = "<b>The generated fonts are not published yet.</b> Run " +
+        "<code>python3 pipeline/make_gallery.py</code> locally, or read this " +
+        "on the deployed site. Showing Padauk meanwhile — which proves " +
+        "nothing about the generated font, so do not read it as a proof.";
+      status.appendChild(m);
+    });
+
+  function setFace(name) {
+    document.documentElement.style.setProperty("--face", '"' + name + '"');
+    document.getElementById("face").textContent = "· " + name;
+  }
+  picker.addEventListener("change", function () { setFace(this.value); });
+
+  // --- pages ---------------------------------------------------------------
+  var current = 0;
+
+  function sheet(index, reference) {
+    var s = el("div", "sheet" + (reference ? " reference" : ""));
+    if (reference) s.appendChild(el("div", "who", "Padauk"));
+    else if (document.getElementById("compare").checked) {
+      s.appendChild(el("div", "who", picker.value));
+    }
+    B.pages[index].forEach(function (para) { s.appendChild(el("p", null, para)); });
+    s.appendChild(el("div", "folio", B.title + " · " + (index + 1) +
+                                     " / " + B.pages.length));
+    return s;
+  }
+
+  // The same page twice, the generated face beside the one it was traced
+  // over. Alternating paragraphs was the first idea and it was useless:
+  // most pages here are a single paragraph, so there was nothing to
+  // alternate with.
+  function spread(index) {
+    var compare = document.getElementById("compare").checked;
+    var wrap = el("div", "spread" + (compare ? " two" : ""));
+    wrap.appendChild(sheet(index, false));
+    if (compare) wrap.appendChild(sheet(index, true));
+    return wrap;
+  }
+
+  function render() {
+    pagesHost.textContent = "";
+    var showAll = document.getElementById("all").checked;
+    if (showAll) {
+      var frag = document.createDocumentFragment();
+      for (var i = 0; i < B.pages.length; i++) frag.appendChild(spread(i));
+      pagesHost.appendChild(frag);
+    } else {
+      pagesHost.appendChild(spread(current));
+    }
+    document.getElementById("pager").hidden = showAll;
+    document.getElementById("folio").textContent =
+      "page " + (current + 1) + " of " + B.pages.length;
+    document.getElementById("prev").disabled = current === 0;
+    document.getElementById("next").disabled = current === B.pages.length - 1;
+  }
+
+  document.getElementById("prev").addEventListener("click", function () {
+    if (current > 0) { current--; render(); window.scrollTo(0, 0); }
+  });
+  document.getElementById("next").addEventListener("click", function () {
+    if (current < B.pages.length - 1) { current++; render(); window.scrollTo(0, 0); }
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowLeft") document.getElementById("prev").click();
+    if (e.key === "ArrowRight") document.getElementById("next").click();
+  });
+  ["compare", "all"].forEach(function (id) {
+    document.getElementById(id).addEventListener("change", render);
+  });
+  document.getElementById("size").addEventListener("input", function () {
+    document.documentElement.style.setProperty("--size", this.value + "px");
+  });
+  document.getElementById("leading").addEventListener("input", function () {
+    document.documentElement.style.setProperty("--leading", this.value / 100);
+  });
+
+  render();
+
+  document.getElementById("credit").innerHTML =
+    "<p><b>" + B.title + "</b> — " + B.author + ". " +
+    (B.blurb || "") + "</p>" +
+    "<p>Text from <a href='" + B.source + "'>မြန်မာဝီကီရင်းမြစ် (Burmese " +
+    "Wikisource)</a>, " + B.licence + ". The underlying work is a classical " +
+    "one; the transcription is the volunteer work of Wikisource " +
+    "contributors, and this page would have nothing to set without them. " +
+    B.chars.toLocaleString() + " characters over " + B.pages.length +
+    " pages.</p>" +
+    "<p>Padauk © SIL International, bundled unmodified under the OFL as the " +
+    "reference face.</p>";
+}());
+</script>
+</body>
+</html>

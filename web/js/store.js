@@ -105,6 +105,13 @@
       }
       this.meta = Object.assign({}, this.meta, data.meta || {});
       this.glyphs = data.glyphs || {};
+      // The nib travels with the project, so the canvas previews the shape
+      // the build will actually emit. Without this a squircle-nib font
+      // would be drawn round here and compile squared, which is exactly
+      // the mismatch web/js/outline.js and json_to_ufo.py exist to avoid.
+      if (window.Outline && window.Outline.setPen) {
+        window.Outline.setPen(this.meta.pen);
+      }
     },
 
     exportFile: function () {

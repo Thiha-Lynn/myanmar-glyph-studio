@@ -8,6 +8,42 @@ versions are git tags with installable font zips on the
 ## [Unreleased]
 
 ### Added
+- **A second typeface, and the two knobs that shape it.** *Bagan Display* —
+  bold, squircle, 480 glyphs ([projects/bagan-display/](projects/bagan-display/)).
+  It exists because the pipeline could not previously make a font that
+  looked like anything but a monolinear round sans, and now it can:
+  - **`meta.pen`** — the nib is a superellipse, one number spanning the
+    range that matters: 2 is the circle the pipeline always drew, 4 a
+    squircle, 8 a slab. Written in polar form so the cap meets the stroke
+    sides exactly instead of notching at every terminal. Existing projects
+    compile **byte-for-byte identical** at the default, which is asserted
+    rather than assumed.
+  - **`make_sample --squircle N`** — squares the *skeletons*. This is the
+    knob that does the visible work: Myanmar's character lives in its
+    bowls, and those are circles, so a squared nib alone still reads as a
+    rounded sans. Each stroke is warped about its own centre from `(r, θ)`
+    to `(r · k(θ), θ)` and scaled back into its original box, which turns
+    circles into superellipses without changing a letter's extents or
+    where its anchors land.
+  - **`make_sample --weight X`** to scale stroke widths off the extracted
+    skeleton.
+
+  Bolding pushes marks upward, because mark anchors follow the base's ink:
+  at ×1.80 and full height, 930 clusters put ink above the design
+  ascender. Compressing the drawing to y × 0.90 brings that to 10. Nothing
+  was ever clipped — but the measurement is why the number is 0.90 rather
+  than a guess.
+- **A reading proof** ([web/book.html](web/book.html), data from
+  [`pipeline/make_book.py`](pipeline/make_book.py)): 34 pages of
+  **ကဗျာသာရတ္ထသတ်ပုံ**, a classical Burmese orthography primer in verse by
+  ညောင်ကန်ဆရာတော်, set page by page in the generated font with the option
+  to put the same page beside Padauk. A proof sheet shows a font the
+  clusters somebody chose for it; a book shows it the ones nobody chose.
+  A *spelling* book is the fairest test there is of a typeface claiming to
+  spell — its subject matter is the exact clusters that break Myanmar
+  fonts, chosen by its author because they are hard. Text from
+  မြန်မာဝီကီရင်းမြစ် (Burmese Wikisource), CC BY-SA 4.0, in its own file
+  with its own licence header.
 - **The whole vocabulary, rendered.** The showcase now renders all
   **12,450** words of the DatarrX Myanmar Word Glyphs vocabulary in the
   generated webfont — the entire dataset the font is validated against,
