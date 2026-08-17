@@ -45,7 +45,9 @@ It is built phone-first, because that is the device the community actually
 has: finger and stylus drawing with palm rejection and pressure support,
 two-finger pan & zoom, multi-finger tap for undo/redo, a thumb bar for
 one-handed use, and the whole studio installs as an offline app (PWA) —
-or as a [desktop app](docs/DESKTOP.md).
+as a [desktop app](docs/DESKTOP.md) for macOS, Windows and Linux, or as a
+[phone app](docs/MOBILE.md) for Android and iOS — all five running the
+same code, so a feature cannot exist on one and not another.
 
 > ဖောင့်တစ်လုံး ဖန်တီးဖို့ စာလုံးတိုင်းကို ရေးဆွဲစရာမလိုပါ —
 > အခြေခံစာလုံး ~၁၅၀ နဲ့ ပုံစံကွဲအချို့ကိုသာ ရေးဆွဲပြီး

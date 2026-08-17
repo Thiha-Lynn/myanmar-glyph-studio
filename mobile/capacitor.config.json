@@ -1,0 +1,18 @@
+{
+  "appId": "io.github.thihalynn.myanmarglyphstudio",
+  "appName": "Myanmar Glyph Studio",
+  "webDir": "../web",
+  "loggingBehavior": "debug",
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "ios": {
+    "contentInset": "always",
+    "limitsNavigationsToAppBoundDomains": true
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}
