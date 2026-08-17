@@ -172,7 +172,7 @@ python pipeline\directwrite_check.py projects\myanmar-glyph-sans\MyanmarGlyphSan
 ```
 
 Current result for the shipped family, in every weight, across both
-corpora: **6,357 cluster comparisons against CoreText and 6,357 against
+corpora: **6,363 cluster comparisons against CoreText and 6,363 against
 DirectWrite, zero rendering differences either way.** Both run under
 `pytest` and skip on the platforms they do not apply to, so a Mac or
 Windows contributor covers their engine without doing anything extra.

@@ -73,7 +73,7 @@ application and toolchain, not a package on npm/PyPI.
   [`docs/SHAPING_SPEC.md`](SHAPING_SPEC.md) states the model — anchor
   formulas with coordinates, glyph classes, GSUB order, a 50-unit
   collision protocol — and `pipeline/validate_spec.py` *measures* a font
-  against it: two corpora, **1,484 synthetic clusters** (every consonant ×
+  against it: two corpora, **1,486 synthetic clusters** (every consonant ×
   vowel × medial, stacks, kinzi, tall-aa, torture text, Mon/Shan/Karen)
   and **711 real Burmese words covering all 1,213 syllable clusters** in a
   12,451-word Wiktionary vocabulary. Findings are graded so a malformed
@@ -87,8 +87,8 @@ application and toolchain, not a package on npm/PyPI.
   (`pipeline/coretext/`); and **DirectWrite** via a C++ shaper calling
   `IDWriteTextAnalyzer` on a `windows-latest` runner, so Windows is
   covered on every pull request (`pipeline/directwrite/`). Chromium/Skia
-  is checked through the browser. Current result: **6,357 cluster
-  comparisons against Apple's engine and 6,357 against Microsoft's, zero
+  is checked through the browser. Current result: **6,363 cluster
+  comparisons against Apple's engine and 6,363 against Microsoft's, zero
   rendering differences either way.** What is left for a person is
   judgement, not geometry — whether it *looks* right to a reader of
   Burmese — and the repo ships a
@@ -160,7 +160,7 @@ application and toolchain, not a package on npm/PyPI.
 | Stars / forks / watchers | repo header | ‹…› |
 | Fonts published in the gallery | `projects/` | ‹…› |
 | Repository collaborators | Settings → Collaborators | ‹…› |
-| Cluster comparisons passing, 3 engines | `docs/VALIDATION.md` | 6,357 / 6,357 |
+| Cluster comparisons passing, 3 engines | `docs/VALIDATION.md` | 6,363 / 6,363 |
 | Release downloads | Releases page | ‹…› |
 | Your own merged PRs to other repos (12 mo) | `is:pr is:merged author:Thiha-Lynn` | ‹…› |
 

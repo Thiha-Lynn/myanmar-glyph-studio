@@ -17,7 +17,7 @@ versions are git tags with installable font zips on the
   `IDWriteTextAnalyzer::GetGlyphs` + `GetGlyphPlacements` — the actual
   OpenType shaping engine, the path `IDWriteTextLayout` uses internally —
   and `directwrite_check.py` diffs its glyph run against HarfBuzz's on
-  every pull request. Result for the shipped family: **6,357 cluster
+  every pull request. Result for the shipped family: **6,363 cluster
   comparisons across both corpora in all three weights, zero rendering
   differences.** Going through the analyzer rather than a layout keeps the
   font under test the only font in play, so a character it lacks comes
@@ -34,6 +34,16 @@ versions are git tags with installable font zips on the
   one that shifts the rest of the cluster along, is still reported.
 
 ### Fixed
+- **Block K now tests S'gaw Karen instead of Rejang.** The nine spec-corpus
+  rows labelled "S'gaw Karen" carried U+A930–A938 — Rejang letters, a
+  different script on a different continent, which no Myanmar font should
+  cover. They tested nothing. Replaced with the characters S'gaw Karen
+  actually adds to the Myanmar block (U+1061 SHA, U+1062 vowel EU, U+1063
+  tone HATHI, U+1064 tone KE PHO) in the combinations they occur in —
+  တၢ်, ယွၤ, ပှၤ, အိၣ်, မ့ၢ်. Block K is 50 rows and the shipped family
+  passes all of them, so a block that was documented as partly untestable
+  now tests what its label claims. The DirectWrite check surfaced it: the
+  old rows looked like nine Windows disagreements and were a corpus bug.
 - The engine reports print in UTF-8, so a Windows console can show the
   Myanmar cluster it is reporting instead of dying on `cp1252`.
 
@@ -56,7 +66,7 @@ versions are git tags with installable font zips on the
 ### Added
 - **Shaping specification + validation harness**: the full shaping model
   is now written down ([docs/SHAPING_SPEC.md](docs/SHAPING_SPEC.md)) and
-  machine-checked — `pipeline/validate_spec.py` shapes a 1,484-cluster
+  machine-checked — `pipeline/validate_spec.py` shapes a 1,486-cluster
   corpus (`pipeline/spec_corpus.txt`, Blocks A–O: every consonant × vowel
   × medial combination, stacks, kinzi, tall-aa, torture sentences,
   Mon/Shan/Karen) with HarfBuzz and *measures* every cluster: coverage,

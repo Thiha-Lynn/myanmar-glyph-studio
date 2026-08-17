@@ -3,7 +3,7 @@
 Fonts under test: **Myanmar Glyph Sans** Light / Regular / Bold / VF and
 **Glyph Studio Sample** Regular, as committed in `projects/` (build of
 2026-08-16). Method: every string of the shaping specification corpus —
-`pipeline/spec_corpus.txt`, 1 484 clusters across test Blocks A–O — is
+`pipeline/spec_corpus.txt`, 1 486 clusters across test Blocks A–O — is
 shaped with HarfBuzz and measured by `pipeline/validate_spec.py` per the
 checks in [SHAPING_SPEC.md §6](SHAPING_SPEC.md). Reference font for every
 disputed judgement: SIL Padauk 6.000.
@@ -60,7 +60,7 @@ fonts clear it.
 | H | "left-side vowel" rows (see §spec issues) | 134 | **PASS** — all rows SPEC-invalid |
 | I | tall-aa rule (ခါ vs ကာ) | 38 | **PASS** |
 | J | complex multi-mark clusters | 9 | **PASS** |
-| K | Mon / Shan / S'gaw Karen | 48 | **PASS** (9 rows are not Myanmar script) |
+| K | Mon / Shan / S'gaw Karen | 50 | **PASS** |
 | L | torture sentences, all rules combined | 7 | **PASS** |
 | M | complete consonant × vowel matrix | 429 | **PASS** |
 | N | complete medial combination matrix | 258 | **PASS** |
@@ -163,15 +163,22 @@ quarantines so they can never mask a real bug:
   their consonant (ကေ); the reordering is the renderer's job — which
   Block M's ~100 correctly-ordered ေ-cases verify. Every shaper shows
   these rows with a dotted circle; so does Padauk.
-* **9 Block K "S'gaw Karen" rows** use U+A930–A938 — Rejang script, not
-  Myanmar S'gaw Karen (U+1060s/Ext-A). No Myanmar font can shape them.
+* ~~**9 Block K "S'gaw Karen" rows** use U+A930–A938 — Rejang script, not
+  Myanmar S'gaw Karen.~~ **Fixed 2026-08-17.** They were replaced with the
+  characters S'gaw Karen actually adds to the Myanmar block — U+1061 SHA,
+  U+1062 vowel EU, U+1063 tone HATHI, U+1064 tone KE PHO — in the
+  combinations they really occur in (တၢ်, ယွၤ, ပှၤ, အိၣ်, မ့ၢ်). Block K
+  is now 50 rows and the shipped family passes all of them, so the block
+  finally tests what its label claims. The DirectWrite check is what
+  surfaced it: Windows reported nine "disagreements" that turned out to be
+  a corpus bug, not an engine one.
 * Block G's အံု (vowel stored after the anusvara) and Block L's ပ marked
   with the Western Pwo Karen tone U+106A carry dotted circles for the
   same storage-order reason.
 
 ## Performance
 
-Shaping the full corpus (4 837 glyphs from 1 484 clusters), Apple
+Shaping the full corpus (4 775 glyphs from 1 486 clusters), Apple
 Silicon, uharfbuzz 0.56:
 
 | Metric | Value |
