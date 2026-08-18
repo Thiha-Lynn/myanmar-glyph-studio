@@ -363,6 +363,13 @@ def build_inventory():
     inv.append(entry("uni100F100D", chr(0x100F) + VIRAMA + chr(0x100D),
                      "variants"))
 
+    # Tall-aa + asat fused (ခေါ် ပေါ် → Padauk's uni102B103A): the asat
+    # integrates with the ါ stem as one drawing instead of hovering across
+    # it as a separately positioned mark.
+    inv.append(entry("uni102B103A",
+                     chr(0x1001) + chr(0x1031) + chr(0x102B) + ASAT,
+                     "variants", exclude={0, 1}))
+
     # ---- everything beyond core Burmese ---------------------------------
     # The rest of the Myanmar block (Pali, Mon, Karen, Kayah, Shan, Palaung,
     # Khamti, Aiton), Myanmar Extended-A/B, the dotted circle and optional

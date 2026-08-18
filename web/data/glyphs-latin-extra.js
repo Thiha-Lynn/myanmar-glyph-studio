@@ -20,7 +20,7 @@
     {name:"uni007C", cp:0x007C, label:"|", guide:"|", hint:"Optional — Vertical Line", hintMy:"မဖြစ်မနေမလို — Vertical Line", mark:false, group:"latinExtraPunct"},
     {name:"uni007D", cp:0x007D, label:"}", guide:"}", hint:"Optional — Right Curly Bracket", hintMy:"မဖြစ်မနေမလို — Right Curly Bracket", mark:false, group:"latinExtraPunct"},
     {name:"uni007E", cp:0x007E, label:"~", guide:"~", hint:"Optional — Tilde", hintMy:"မဖြစ်မနေမလို — Tilde", mark:false, group:"latinExtraPunct"},
-    {name:"uni2012", cp:0x2012, label:"‒", guide:"‒", hint:"Optional — Figure Dash (joins number ranges in Burmese text)", hintMy:"မဖြစ်မနေမလို — Figure Dash", mark:false, group:"latinExtraPunct"},
+    {name:"uni2012", cp:0x2012, label:"‒", guide:"‒", hint:"Optional — Figure Dash", hintMy:"မဖြစ်မနေမလို — Figure Dash", mark:false, group:"latinExtraPunct"},
     {name:"uni2013", cp:0x2013, label:"–", guide:"–", hint:"Optional — En Dash", hintMy:"မဖြစ်မနေမလို — En Dash", mark:false, group:"latinExtraPunct"},
     {name:"uni2014", cp:0x2014, label:"—", guide:"—", hint:"Optional — Em Dash", hintMy:"မဖြစ်မနေမလို — Em Dash", mark:false, group:"latinExtraPunct"},
     {name:"uni2018", cp:0x2018, label:"‘", guide:"‘", hint:"Optional — Left Single Quotation Mark", hintMy:"မဖြစ်မနေမလို — Left Single Quotation Mark", mark:false, group:"latinExtraPunct"},
