@@ -7,7 +7,9 @@ where it is an engineering claim, re-run rather than quoted.
 **Repository:** <https://github.com/Thiha-Lynn/myanmar-glyph-studio>
 **Live tool:** <https://thiha-lynn.github.io/myanmar-glyph-studio/>
 **Gallery:** <https://thiha-lynn.github.io/myanmar-glyph-studio/gallery.html>
-**Maintainer:** Thiha Lynn (GitHub `@Thiha-Lynn`) · koshanlay1994@gmail.com
+**Maintainer:** Thiha Lynn (GitHub `@Thiha-Lynn`) ·
+koshanlay1994@gmail.com · 6631503092@lamduan.mfu.ac.th (the address on
+the Claude-for-OSS application)
 **Licenses:** MIT (toolkit) · SIL OFL 1.1 (every font produced)
 
 ---

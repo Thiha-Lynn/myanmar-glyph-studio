@@ -4,7 +4,8 @@
 
 If you find a security issue in the studio (`web/`), the build pipeline
 (`pipeline/`), or the CI workflows, please **do not open a public issue**.
-Email **koshanlay1994@gmail.com** with the details, or use GitHub's
+Email **koshanlay1994@gmail.com** (or **6631503092@lamduan.mfu.ac.th**)
+with the details, or use GitHub's
 [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guided-security-advisories)
 if it is enabled on the repository. You will get a response within a week.
 
