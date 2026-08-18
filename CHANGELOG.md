@@ -8,6 +8,27 @@ versions are git tags with installable font zips on the
 ## [Unreleased]
 
 ### Added
+- **Three more faces from the same skeletons** —
+  [`projects/nway-oo-display`](projects/nway-oo-display) (နွေဦး: bold,
+  compact, gently squared, for posters and headlines),
+  [`projects/metta-round`](projects/metta-round) (မေတ္တာ: the bubble face —
+  heaviest weight, widest stance, every terminal round) and
+  [`projects/inwa-light`](projects/inwa-light) (light, quiet, slightly
+  squared — the closest a monolinear pen comes to East-Asian gothic
+  restraint; true brush contrast is impossible with a centre-line model
+  and no face here pretends to it). Same rules as the first five: machine
+  variations, honestly labelled, recipes in
+  [docs/FIVE-FACES.md](docs/FIVE-FACES.md), 0 FAIL on both corpora before
+  they were allowed in. Metta Round's first cut repeated the mark-lift
+  failure on cue (314 warnings, asat and kinzi past the 900 ascender) and
+  Bagan's y×0.90 fixed it the same way, which is what a predictable
+  pipeline looks like.
+- **Myanmar Glyph Sans draws U+2012** ‒ FIGURE DASH (the en dash's bar
+  re-centred at the tabular-digit advance): the single GAP finding the
+  full-vocabulary sweep has reported since it first ran — one word,
+  စောင်ခြုံ‒ — now shapes with no `.notdef` in every weight, verified by
+  shaping, and all four font files are rebuilt from the one
+  `make_variable` path so the statics and the variable font agree.
 - **A front door** (`web/js/welcome.js`): the site used to drop every
   first-time visitor straight onto the drawing canvas with no explanation
   of what the project is or that seven other pages exist. A one-time
