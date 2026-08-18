@@ -48,6 +48,8 @@ def test_discovery_found_every_shipped_font():
         "NwayOoDisplay-Regular.ttf",
         "MettaRound-Regular.ttf",
         "InwaLight-Regular.ttf",
+        "TaunggyiWide-Regular.ttf",
+        "PatheinPoster-Regular.ttf",
     } <= found, f"shipped fonts missing from discovery: {found}"
 
 
