@@ -12,6 +12,7 @@ Myanmar Glyph Sans, the typeface this toolkit built.</em></p>
 
 [![Build fonts](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/build.yml/badge.svg)](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/build.yml)
 [![Deploy studio](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/pages.yml/badge.svg)](https://github.com/Thiha-Lynn/myanmar-glyph-studio/actions/workflows/pages.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Thiha-Lynn/myanmar-glyph-studio/badge)](https://scorecard.dev/viewer/?uri=github.com/Thiha-Lynn/myanmar-glyph-studio)
 [![Studio](https://img.shields.io/badge/studio-draw%20in%20your%20browser-a8352f)](https://thiha-lynn.github.io/myanmar-glyph-studio/)
 [![License: MIT + OFL](https://img.shields.io/badge/license-MIT%20%2B%20OFL--1.1-blue)](LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/myanmar-glyph-studio)](https://pypi.org/project/myanmar-glyph-studio/)
