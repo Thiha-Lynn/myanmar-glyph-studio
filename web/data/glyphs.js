@@ -312,6 +312,24 @@
   });
 
   glyphs.push({
+    name: "uni100B100C", cp: null, label: ch(0x100b) + "္" + ch(0x100c),
+    variant: "fused", baseVariant: true,
+    guide: ch(0x100b) + "္" + ch(0x100c),
+    hint: "Fused ဋ္ဌ stack — ဋ and ဌ woven as ONE letter-width glyph (ကမ္မဋ္ဌာန်း); their full-width descenders leave no room to stack",
+    hintMy: "ဋ္ဌ ပေါင်းစပ်ပုံစံ — ဋ နှင့် ဌ ကို စာလုံးတစ်လုံးအကျယ်တွင် တစ်ခုတည်းအဖြစ် ရေးဆွဲပါ (ကမ္မဋ္ဌာန်း)",
+    mark: false, group: "variants"
+  });
+
+  glyphs.push({
+    name: "uni100F100D", cp: null, label: ch(0x100f) + "္" + ch(0x100d),
+    variant: "fused", baseVariant: true,
+    guide: ch(0x100f) + "္" + ch(0x100d),
+    hint: "Fused ဏ္ဍ stack — ဏ and ဍ woven as ONE letter-width glyph (ပဏ္ဍိတ); the descender tails leave no room to stack",
+    hintMy: "ဏ္ဍ ပေါင်းစပ်ပုံစံ — ဏ နှင့် ဍ ကို စာလုံးတစ်လုံးအကျယ်တွင် တစ်ခုတည်းအဖြစ် ရေးဆွဲပါ (ပဏ္ဍိတ)",
+    mark: false, group: "variants"
+  });
+
+  glyphs.push({
     name: "ra-myanmar.alt", cp: null, label: ch(0x101b), variant: "alt",
     baseVariant: true,
     guide: ch(0x101b) + ch(0x102f),
