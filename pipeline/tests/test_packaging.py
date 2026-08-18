@@ -82,6 +82,45 @@ def test_repo_tools_guard_before_touching_the_filesystem(module):
         f"repo_root() — installed, it will write into site-packages")
 
 
+def test_the_version_agrees_everywhere_it_is_written():
+    """The version is written down in five files; releases bump them together.
+
+    v0.7.0 shipped while CITATION.cff still said 0.6.0 — the version had
+    already outgrown its "three places", then its "four places", and each
+    time the newest file was the one missed. This pins all five to
+    pyproject.toml so the next new home for the version number fails the
+    suite instead of shipping stale.
+    """
+    import json
+    import re
+
+    tomllib = pytest.importorskip("tomllib")   # 3.11+; CI runs 3.12
+    with open(ROOT / "pyproject.toml", "rb") as fh:
+        canonical = tomllib.load(fh)["project"]["version"]
+
+    def package_json(path):
+        return json.loads((ROOT / path / "package.json").read_text(
+            encoding="utf-8"))["version"]
+
+    citation = re.search(
+        r"^version:\s*(\S+)", (ROOT / "CITATION.cff").read_text(encoding="utf-8"),
+        re.M).group(1)
+    changelog = re.search(
+        r"^## \[(\d+\.\d+\.\d+)\]", (ROOT / "CHANGELOG.md").read_text(encoding="utf-8"),
+        re.M).group(1)
+
+    written = {
+        "desktop/package.json": package_json("desktop"),
+        "mobile/package.json": package_json("mobile"),
+        "CITATION.cff": citation,
+        "CHANGELOG.md (newest released heading)": changelog,
+    }
+    stale = {place: v for place, v in written.items() if v != canonical}
+    assert not stale, (
+        f"pyproject.toml says {canonical} but these disagree: {stale}. "
+        f"A release bumps every one of them.")
+
+
 def test_every_classifier_is_one_pypi_accepts():
     """PyPI rejects an unknown classifier with 400 at upload time.
 
