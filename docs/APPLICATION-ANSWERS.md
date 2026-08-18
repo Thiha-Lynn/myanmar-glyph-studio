@@ -54,7 +54,7 @@ length on evidence instead.
 > computer required.
 >
 > I would rather you heard the numbers from me: the repository is five
-> days old, has 4 stars, and no external contributors yet. What I can
+> days old, has 5 stars, and no external contributors yet. What I can
 > offer instead is engineering that is public and checkable in ten
 > minutes.
 >
@@ -70,7 +70,7 @@ length on evidence instead.
 >   Myanmar Text 7 — while the fonts here clear both corpora at zero.
 >   Defects found in my own fonts are published in docs/VALIDATION.md
 >   rather than quietly fixed.
-> - 106 tests, fontbakery-gated CI, 8 font families under the SIL Open
+> - 107 tests, fontbakery-gated CI, 8 font families under the SIL Open
 >   Font License, 16 command-line tools, and 14 documents. The studio
 >   runs as a web app, as desktop apps for macOS/Windows/Linux, and as
 >   Android and iOS apps — all from one codebase, so a feature cannot
@@ -142,7 +142,7 @@ that described the graph without mentioning it would be inaccurate about
 the one thing that reader is best placed to check.
 
 > I would rather you heard the weak numbers from me than found them
-> yourself: five days old, 4 stars, 0 forks, no external contributors,
+> yourself: five days old, 5 stars, 0 forks, no external contributors,
 > 102 unique cloners of which most are CI. I meet none of the five
 > numeric lanes and the repository concedes that lane by lane in
 > docs/OSS_APPLICATION.md, along with the routes that would change it.
