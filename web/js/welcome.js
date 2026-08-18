@@ -10,9 +10,9 @@
  * It deliberately never appears where it would be noise:
  *   - inside the desktop/mobile app shells (they installed it; they know),
  *   - on a #g= deep link (the link IS the destination),
- *   - for anyone with drawn glyphs in the autosave (they found the studio
- *     long before this screen existed — do not greet them),
- *   - after it has been seen once. The က brand mark reopens it any time.
+ *   - after it has been dismissed once. The က brand mark reopens it any
+ *     time. Having drawn work does NOT skip it: the root URL is the
+ *     project's front door for everyone exactly once, maintainer included.
  *
  * Page list and icons come from sitenav.js (window.SiteNav) — one list,
  * or they drift.
@@ -21,7 +21,6 @@
   "use strict";
 
   var SEEN_KEY = "mgs-welcome-seen";
-  var STORE_KEY = "mm-glyph-studio-v1";   // store.js STORAGE_KEY
 
   function inAppShell() {
     // The desktop shell serves over its private app:// scheme and the
@@ -29,23 +28,6 @@
     // the user agent: plenty of ordinary embedded browsers carry it, and
     // they are exactly the first-time visitors this screen is for.
     return !!window.Capacitor || location.protocol === "app:";
-  }
-
-  function hasDrawnWork() {
-    try {
-      var raw = localStorage.getItem(STORE_KEY);
-      if (!raw) return false;
-      var data = JSON.parse(raw);
-      var glyphs = data && data.glyphs;
-      if (!glyphs) return false;
-      for (var name in glyphs) {
-        var g = glyphs[name];
-        if (g && g.strokes && g.strokes.length) return true;
-      }
-      return false;
-    } catch (e) {
-      return false;
-    }
   }
 
   function markSeen() {
@@ -193,7 +175,6 @@
     if (typeof landing !== "string") landing = location.hash;
     if (landing) return;                // deep links go straight to work
     if (seen()) return;
-    if (hasDrawnWork()) { markSeen(); return; }
     show();
   }
 
