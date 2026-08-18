@@ -8,6 +8,28 @@ versions are git tags with installable font zips on the
 ## [Unreleased]
 
 ### Added
+- **The ဋ္ဌ tangle is fixed — with artwork, as diagnosed.** `uni100B100C`
+  (ဋ္ဌ, 27 vocabulary words) and `uni100F100D` (ဏ္ဍ, 21 words) are now
+  traced fused glyphs in Myanmar Glyph Sans and the sample font, joined
+  by a `stack_fuse` ligature lookup in `blws` that fires only in fonts
+  which draw them. ကမ္မဋ္ဌာန်း, ပဏ္ဍိတ and အဋ္ဌိ shape to the fused
+  forms (the ိ attaches to the ligature's own anchors), and the studio
+  asks contributors for both drawings. VALIDATION.md's "still open"
+  section is now a resolved one.
+
+### Fixed
+- **The fused ွှ sat ~100 units too far right** — measured, not felt:
+  Padauk keeps the WA half of its ကွှ ligature exactly where plain ကွ
+  puts wa (right edges 871/872) and lets the ha loop extend left; ours
+  centred the whole 534-unit drawing on the anchor. A per-glyph
+  attachment offset (mirrored `BOTTOM_MARK_DX` in `json_to_ufo.py` and
+  `anchors.js`) brings every fused wa+ha cluster from +81…+125 units of
+  deviation down to −19…+25, inside the showcase's own 40-unit notable
+  threshold. The rendering showcase's flagged rows drop from 11 to 6.
+- **The welcome screen now greets everyone once** — having drawn work no
+  longer suppresses it. The root URL is the site's front door for every
+  browser exactly once; dismissal (or an app shell, or a deep link) is
+  the only thing that skips it.
 - **Three more faces from the same skeletons** —
   [`projects/nway-oo-display`](projects/nway-oo-display) (နွေဦး: bold,
   compact, gently squared, for posters and headlines),
