@@ -132,4 +132,8 @@
   } else {
     init();
   }
+
+  // The welcome screen renders the same page list, from the same source,
+  // for the same reason this file exists: one list, or they drift.
+  window.SiteNav = { PAGES: PAGES, svg: svg };
 })();

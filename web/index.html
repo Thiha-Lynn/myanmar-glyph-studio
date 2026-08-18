@@ -340,6 +340,10 @@
 
 <div id="toast"></div>
 
+<!-- app.js writes the current glyph into the hash at boot, so anyone who
+     wants to know whether the VISITOR arrived with a deep link must read
+     the hash before any app script runs. welcome.js does. -->
+<script>window.__mgsLandingHash = location.hash;</script>
 <script src="vendor/opentype.min.js"></script>
 <script src="data/glyphs.js"></script>
 <script src="data/glyphs-extended.js"></script>
@@ -369,5 +373,7 @@
 <!-- After app.js: app.js re-parents #secondaryActions into the phone sheet,
      and the nav has to exist before that runs. -->
 <script src="js/sitenav.js"></script>
+<!-- After sitenav.js: the welcome screen renders the same page list. -->
+<script src="js/welcome.js"></script>
 </body>
 </html>
