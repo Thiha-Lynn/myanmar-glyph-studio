@@ -149,6 +149,21 @@ STACK_MARKS = {f"{n}-myanmar.sub" for _, n in CONSONANTS}
 
 BASE_NAMES = {f"{n}-myanmar" for _, n in CONSONANTS} | {"greatSa-myanmar"}
 
+# Fused deep-descender stacks, drawn as ONE glyph in a single letter's
+# footprint (Padauk's answer): ဋ ဌ ဍ ဠ descend across their entire width,
+# so a subjoined form under them would have to sit below the design
+# descender — ကမ္မဋ္ဌာန်း rendered as a tangle until these existed. They
+# behave as bases (full base anchors, GDEF base) but never join the
+# wide-base wrap measurement, exactly like the .alt side-form variants.
+FUSED_STACK_BASES = {"uni100B100C", "uni100F100D"}
+
+# The fused wa+ha keeps its WA half where plain wa sits and lets the ha
+# loop extend LEFT: Padauk's ကွ and ကွှ share a right edge (871/872),
+# while centring the 558-wide ligature put ours 100 units right of it.
+# Moving the attachment point right moves the placed ink left. Mirrored
+# in web/js/anchors.js (bottom-mark role).
+BOTTOM_MARK_DX = {"medialWa-myanmar.ha": 100, "medialWa-myanmar.ha.small": 75}
+
 # Signs that wrap around their base (medial ra). Their sketched coordinates
 # are kept as drawn, and their advance is SMALL BUT POSITIVE: it is what
 # moves the pen past the wrap's left stem so the base lands inside the
@@ -844,9 +859,11 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         # Side-form base variants (na-myanmar.alt …) carry the same anchors
         # as the letters they stand in for: they are swapped in by GSUB in
         # front of below-marks, and the marks must still find their spots.
-        is_base_variant = (not is_mark and "." in name
-                           and name.partition(".")[0] in BASE_NAMES
-                           and name not in WRAP_SIGNS)
+        is_base_variant = (not is_mark
+                           and (name in FUSED_STACK_BASES
+                                or ("." in name
+                                    and name.partition(".")[0] in BASE_NAMES
+                                    and name not in WRAP_SIGNS)))
         # Marks carry the attaching _anchor plus a plain anchor on their
         # outer side so further marks can stack on them (GPOS mkmk).
         if name in BASE_NAMES or is_base_variant or (
@@ -927,7 +944,7 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             # tops aligned, next ink starting 55 units right (the spec's
             # 50-unit clearance protocol plus a margin) — which is the
             # geometry of Padauk's uni103D103E / uni103E102F ligatures.
-            anchor("_bottom", cx, ay_max + 20)
+            anchor("_bottom", cx + BOTTOM_MARK_DX.get(name, 0), ay_max + 20)
             anchor("side", ax_max, ay_max + 20)
             anchor("_side", ax_min - 55 - pen_pad, ay_max + 20)
         elif name in STACK_MARKS:
@@ -1509,9 +1526,24 @@ def generate_features(drawn, wide_bases=None, bases=None, dot_advances=None):
             medial_rules.append(
                 f"    sub [{' '.join(medial_ctx)}] {base_v}' by {alt_v};")
             medial_filter.add(base_v)
+    # Deep-descender stacks fuse into their single drawn glyph once blwf
+    # has made the subjoined form: ဋ + ဌ.sub → uni100B100C (Padauk's own
+    # structure — ကမ္မဋ္ဌာန်း ပဏ္ဍိတ). Emitted only when the fused glyph
+    # is drawn, so fonts without the artwork keep the plain stack.
+    fuse_stack_rules = []
+    for lig, top, sub in (("uni100B100C", "tta-myanmar", "ttha-myanmar.sub"),
+                          ("uni100F100D", "nna-myanmar", "dda-myanmar.sub")):
+        if lig in drawn and top in drawn and sub in drawn:
+            fuse_stack_rules.append(f"    sub {top} {sub} by {lig};")
+
     if (blws_rules or side_rules or ra_side_rules or nya_side_rules
-            or medial_rules):
+            or medial_rules or fuse_stack_rules):
         lines.append("feature blws {")
+        if fuse_stack_rules:
+            lines.append("  lookup stack_fuse {")
+            lines.append("    lookupflag 0;")
+            lines.extend(fuse_stack_rules)
+            lines.append("  } stack_fuse;")
         if blws_rules:
             lines.append("  lookup desc_vowels {")
             lines.append("    lookupflag UseMarkFilteringSet "
