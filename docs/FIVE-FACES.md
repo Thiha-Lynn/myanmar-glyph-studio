@@ -103,3 +103,23 @@ second guess is usually right, which is itself worth recording.
 Validation, spec / words, 0 FAIL everywhere: Nway Oo 11 / 33 WARN,
 Metta Round 15 / 9, Inwa Light 3 / 3 — the usual `bounds`/`neighbour`
 findings, inside the range the existing families occupy.
+
+## And two more, same day
+
+| Family | Weight | Skeleton warp | Nib | Width | y |
+|---|---|---|---|---|---|
+| **Taunggyi Wide** | 1.05 | 2 (round) | 2 (round) | 1.28 | 1.00 |
+| **Pathein Poster** | 1.75 | 2 (round) | 2 (round) | 0.88 | 0.92 |
+
+**Taunggyi Wide** is the banner cut — the widest stance in the
+collection at an easy medium weight, width doing almost all of the
+talking, named for the town of the balloon festival. **Pathein Poster**
+is the round condensed black: Nway Oo Display's warmer, hand-painted
+counterpart, named for the town of the painted umbrellas. Validation,
+spec / words, 0 FAIL: Taunggyi 14 / 3 WARN, Pathein 4 / 7.
+
+Every machine face — these ten plus Bagan Display — also carries the
+traced fused forms the hand projects gained (ဋ္ဌ, ဏ္ဍ, ါ်, and U+2012),
+merged at each face's own width and height from a fresh trace, then
+rebuilt and re-validated. A recipe is a first-class citizen: when the
+shared inventory grows, every face grows with it.
