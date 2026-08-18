@@ -19,12 +19,9 @@
 *(English README → [README.md](README.md))*
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Thiha-Lynn/myanmar-glyph-studio/main/docs/images/studio-desktop.png"
-       alt="ကွန်ပျူတာပေါ်က စတူဒီယို — စာလုံးစာရင်း၊ ရေးဆွဲကိရိယာများနဲ့ မှိန်ပြလမ်းညွှန်ပေါ်မှာ က ကို ရေးဆွဲနေပုံ"
-       width="720">
-  <img src="https://raw.githubusercontent.com/Thiha-Lynn/myanmar-glyph-studio/main/docs/images/studio-phone.png"
-       alt="ဖုန်းပေါ်မှာ တူညီတဲ့ စတူဒီယို — ကျစ်လျစ်တဲ့ ကိရိယာဘား၊ လက်မဘားနဲ့ ရေးဆွဲကွက် အပြည့်"
-       width="180">
+  <img src="https://raw.githubusercontent.com/Thiha-Lynn/myanmar-glyph-studio/main/docs/images/studio-hero.png"
+       alt="ကွန်ပျူတာနှင့် ဖုန်းပေါ်တွင် စတူဒီယို"
+       width="100%">
 </p>
 
 ## ဘယ်လိုအလုပ်လုပ်သလဲ
