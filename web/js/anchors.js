@@ -199,7 +199,14 @@
       // no plain "bottom" chain: marks that follow a below-mark chain
       // BESIDE it (side/_side, tops aligned) — ha right of wa in ကွှ, the
       // tone dot beside a deep hook in ရွှံ့ — mirrors json_to_ufo.py
-      defaults._bottom = [cx, b.yMax + 20];
+      //
+      // The fused wa+ha keeps its WA half where plain wa sits and lets
+      // the ha loop extend LEFT: Padauk's ကွ and ကွှ share a right edge
+      // (871/872), while centring the 558-wide ligature put ours 100
+      // units right of it. Moving the attachment point right moves the
+      // placed ink left. Mirrors BOTTOM_MARK_DX in json_to_ufo.py.
+      var dxFix = { "medialWa-myanmar.ha": 100, "medialWa-myanmar.ha.small": 75 };
+      defaults._bottom = [cx + (dxFix[meta.name] || 0), b.yMax + 20];
       defaults.side = [b.xMax, b.yMax + 20];
       defaults._side = [b.xMin - SIDE_GAP, b.yMax + 20];
     } else if (role === "stack-mark") {
