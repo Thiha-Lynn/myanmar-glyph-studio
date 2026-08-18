@@ -138,3 +138,47 @@ keep again: weight 2.0 with the slab nib tripped **95** spec warnings
 anyway, because the flat terminals carry more ink. Textures, outlines
 and gold bevels are poster effects for a graphics tool; the letterforms
 are the part a font can honestly carry, and this is that part.
+
+## The corsair cut
+
+| Family | Weight | Skeleton warp | Nib | Width | y | Post-process |
+|---|---|---|---|---|---|---|
+| **Kawthaung Corsair** | 1.95 | 2 (round) | 2 (round) | 1.06 | 0.88 | `mgs-pirate` |
+
+The follow-up ask — actual carved-bone letterforms, not just a heavy
+slab — needed an axis none of the knobs reach: the *outline* itself.
+[`make_pirate.py`](../pipeline/make_pirate.py) is that axis, a stage
+that converts the expanded strokes into weathered filled contours: one
+unioned silhouette per glyph, bone knuckles on open stroke ends, two
+superimposed waves plus grain along every edge, deterministic chip
+gouges, and two ornaments drawn from primitives (U+2620 ☠, U+2693 ⚓).
+The output is a normal version-1 project full of `fill: true` contours,
+so nothing downstream changes — and nothing upstream either: weight
+must be baked in the skeletons first, because a fill contour has no pen
+for a weight master to scale (`meta.variable: false`).
+
+Three findings, each measured before it was believed:
+
+**Winding is load-bearing.** Primitive polygons arrive with arbitrary
+orientation, and under the nonzero rule two opposite windings cancel:
+the first build rendered every knuckle with a white hole in it. All
+primitives are rewound counter-clockwise before the union; contours
+that *come out* of a union keep their windings, which now encode real
+holes.
+
+**Marks cannot afford the costume.** Full-strength weathering put 289
+bounds warnings on the spec corpus — knuckled asat and kinzi rose to
+y = 935–962 against the 900 ascender, and a fattened subjoined ဘ met
+the below-dot in ကမ္ဘာ့တန်ဆာ, the same squeeze that once failed Sagaing
+Square. Marks now weather at 0.45 amplitude, grow no knuckles, and are
+clamped to their own nominal ink ceiling; crowns above y = 720 fade
+their wave, and knuckles never form above y = 640 (a knob on a crown
+lifts the ink-following anchor of every mark above it). With Thanlwin
+Black's y 0.88 the shipped cut validates **0 FAIL, 19 / 9 WARN** —
+inside the family band, with fontbakery at 0 FAIL.
+
+**Bone feet, tucked shoulders.** A terminal at the baseline takes the
+full condyle, pushed past the stroke end — the letters stand on bone
+feet. A mid-height terminal takes knobs that bulge sideways only, axial
+reach inside the original cap, so a stem's knuckle never raises the
+glyph's ink ceiling.
