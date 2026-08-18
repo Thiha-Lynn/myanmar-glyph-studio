@@ -45,6 +45,9 @@ def test_discovery_found_every_shipped_font():
         "MyanmarGlyphSans-VF.ttf",
         "GlyphStudioSample-Regular.ttf",
         "GlyphStudioSample-VF.ttf",
+        "NwayOoDisplay-Regular.ttf",
+        "MettaRound-Regular.ttf",
+        "InwaLight-Regular.ttf",
     } <= found, f"shipped fonts missing from discovery: {found}"
 
 
