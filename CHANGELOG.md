@@ -7,6 +7,16 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
+### Added
+- **Myeik Treasure** ([`projects/myeik-treasure`](projects/myeik-treasure))
+  — the adventure cut, requested as pirate-comic lettering: the heaviest
+  weight the slab nib validates cleanly at (1.85 — weight 2.0 tripped 95
+  slab-overshoot warnings and was rejected), 8% wide, squared bowls,
+  flat plank-cut terminals, named for the archipelago that hid real
+  pirates for real centuries. Fourteen families. 0 FAIL both corpora
+  (14 / 9 WARN); textures and gold bevels are a graphics tool's job and
+  the README says so.
+
 ## [0.8.0] — 2026-08-18
 
 ### Added

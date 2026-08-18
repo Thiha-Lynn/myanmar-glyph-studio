@@ -72,7 +72,7 @@ length on evidence instead.
 >   Myanmar Text 7 — while the fonts here clear both corpora at zero.
 >   Defects found in my own fonts are published in docs/VALIDATION.md
 >   rather than quietly fixed.
-> - 117 tests, fontbakery-gated CI, 13 font families under the SIL Open
+> - 119 tests, fontbakery-gated CI, 14 font families under the SIL Open
 >   Font License, 16 command-line tools, and 14 documents. The studio
 >   runs as a web app, as desktop apps for macOS/Windows/Linux, and as
 >   Android and iOS apps — all from one codebase, so a feature cannot
@@ -152,7 +152,7 @@ the one thing that reader is best placed to check.
 > repository-local git identity; .mailmap maps them), and the fourth is
 > "claude" — the project is openly AI-assisted, 37 early commits carry
 > co-author trailers, and CLAUDE.md documents the working agreement.
-> Ten of the thirteen font families were generated parametrically from one
+> Eleven of the fourteen font families were generated parametrically from one
 > set of skeletons rather than drawn by hand; docs/FIVE-FACES.md states
 > that in its second paragraph, with no contributor credited for them.
 > And what is genuinely unusual here is not the reach but the coverage:
