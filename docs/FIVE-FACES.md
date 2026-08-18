@@ -66,3 +66,40 @@ findings that extreme weights and widths produce.
 A face that does not clear the corpus does not ship — a showcase carrying
 hundreds of geometry warnings would quietly contradict the thing this
 project's validation story asserts.
+
+## Three more (2026-08-18)
+
+| Family | Weight | Skeleton warp | Nib | Width | y |
+|---|---|---|---|---|---|
+| **Nway Oo Display** | 1.60 | 3 | 3 | 0.92 | 0.96 |
+| **Metta Round** | 1.90 | 2 (round) | 2 (round) | 1.15 | 0.90 |
+| **Inwa Light** | 0.85 | 4 (squircle) | 4 (squircle) | 0.90 | 1.00 |
+
+Same rules, same honesty: machine variations of the same skeletons, nobody
+credited, each separated by the axis the first five proved actually
+separates faces — width, spread here from 0.90 to 1.15 across a weight
+range of 0.85 to 1.90.
+
+**Nway Oo Display** (နွေဦး — the season of new starts) is the poster cut:
+bold, compact, gently squared. **Metta Round** (မေတ္တာ, loving-kindness)
+is the bubble face — the heaviest weight in the collection on the widest
+stance, every terminal round, for stickers and celebration banners.
+**Inwa Light** is the quiet one: light, slightly squared, a little
+condensed — the closest a monolinear pen comes to the restraint of
+East-Asian gothic typography. True brush contrast — the modulated stroke
+of Chinese calligraphic type — needs width variation along the stroke
+that a centre-line-plus-pen model cannot express, so no face here
+pretends to it.
+
+**The mark-lift lesson repeated on cue.** Metta Round's first cut used
+y 0.94 and came back with 314 spec warnings — asat at y=901–905 and kinzi
+at 909–913, just past the 900 design ascender, once per cluster they
+appear in. It is the identical failure Bagan Display and the slab faces
+met: bolding raises marks because their anchors follow the base's ink.
+The identical fix (y 0.90, Bagan's own value at this weight class) took
+it to 15. The knob interactions are predictable enough now that the
+second guess is usually right, which is itself worth recording.
+
+Validation, spec / words, 0 FAIL everywhere: Nway Oo 11 / 33 WARN,
+Metta Round 15 / 9, Inwa Light 3 / 3 — the usual `bounds`/`neighbour`
+findings, inside the range the existing families occupy.
