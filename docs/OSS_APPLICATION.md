@@ -203,8 +203,8 @@ the honest case above.
   judgement, not geometry — and the repo ships a
   [device-test page](https://thiha-lynn.github.io/myanmar-glyph-studio/devicetest.html)
   that walks anyone through it and writes the report.
-* **Automated quality gates on every push and PR:** **117 tests**
-  (`pipeline/tests/`, 116 passing + 1 platform-skipped), both shaping
+* **Automated quality gates on every push and PR:** **119 tests**
+  (`pipeline/tests/`, 118 passing + 1 platform-skipped), both shaping
   corpora against *every* shipped font file — discovered by glob, so a
   font cannot ship untested — a HarfBuzz regression that fails the build
   if the reference font drops any glyph, and fontbakery's universal
@@ -292,7 +292,7 @@ the honest case above.
 | It actually works in a browser | Open the studio, trace a letter, press Export font |
 | The fonts are real and shaped | Download from the gallery, type ကျွန်ုပ်တို့ |
 | Three engines agree | `docs/VALIDATION.md`, then the Actions tab (DirectWrite job) |
-| The tests exist and pass | `pip install -e ".[dev]" && pytest` → 116 passed, 1 skipped |
+| The tests exist and pass | `pip install -e ".[dev]" && pytest` → 118 passed, 1 skipped |
 | The benchmark is honest | `mgs-validate` any Myanmar font on their own machine |
 | The defects are disclosed | `docs/VALIDATION.md` — including bugs in our own fonts |
 | Nothing is padded | Insights → Contributors, Commits, Actions history |

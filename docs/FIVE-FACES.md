@@ -123,3 +123,18 @@ traced fused forms the hand projects gained (ဋ္ဌ, ဏ္ဍ, ါ်, and U
 merged at each face's own width and height from a fresh trace, then
 rebuilt and re-validated. A recipe is a first-class citizen: when the
 shared inventory grows, every face grows with it.
+
+## The adventure cut
+
+| Family | Weight | Skeleton warp | Nib | Width | y |
+|---|---|---|---|---|---|
+| **Myeik Treasure** | 1.85 | 5 | 8 (slab) | 1.08 | 0.90 |
+
+Requested as "pirate-comic lettering": heavy, wide, flat-ended, squared
+— treasure maps and ship names. The knobs' interaction table earned its
+keep again: weight 2.0 with the slab nib tripped **95** spec warnings
+(the slab-overshoot class at black weight), while 1.85 validates at
+14 / 9 with 0 FAIL — and a slab nib reads a step heavier than its number
+anyway, because the flat terminals carry more ink. Textures, outlines
+and gold bevels are poster effects for a graphics tool; the letterforms
+are the part a font can honestly carry, and this is that part.
