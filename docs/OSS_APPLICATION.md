@@ -56,9 +56,11 @@ Live: https://thiha-lynn.github.io/myanmar-glyph-studio/
 > FontLab) demand exactly the expertise that is missing. I could not find
 > any browser-based tool, for any complex script, that generates its own
 > shaping rules. This one does: you trace about 150 glyph parts over
-> dimmed guides on a phone, tablet or desktop, and the toolchain emits
-> the shaping rules, mark anchors and UFO sources, compiling through the
-> standard stack (fontmake, fontTools, fontbakery).
+> dimmed guides on a phone, tablet or desktop (a complete Burmese font;
+> the optional minority-language and Latin groups take the inventory to
+> 484), and the toolchain emits the shaping rules, mark anchors and UFO
+> sources, compiling through the standard stack (fontmake, fontTools,
+> fontbakery).
 >
 > The part worth checking is the engineering, because it is public and
 > reproducible in ten minutes:

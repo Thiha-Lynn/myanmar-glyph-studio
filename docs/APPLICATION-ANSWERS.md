@@ -50,8 +50,10 @@ length on evidence instead.
 > parts over dimmed guides — on a phone, which is the device the
 > community actually has — and the toolchain generates the shaping rules,
 > mark anchors and UFO sources, then compiles a real font through the
-> standard fontmake stack. No font engineering required, and no desktop
-> computer required.
+> standard fontmake stack. (Those ~150 drawings are a complete Burmese
+> font; the optional groups — Shan, Mon, Karen, Kayah, Khamti, full
+> Latin — take the inventory to the 484 above.) No font engineering
+> required, and no desktop computer required.
 >
 > I would rather you heard the numbers from me: the repository is five
 > days old, has 5 stars, and no external contributors yet. What I can
