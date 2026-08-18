@@ -133,21 +133,31 @@ that is the form, not a formatting mistake. It volunteers every weakness
 a reviewer would find anyway — and then closes on coverage, which is
 real, rather than on reach, which is not.
 
+It names the `claude` identity in the contributor graph deliberately. The
+graph shows it as the second-largest contributor, because 37 early
+commits carry `Co-Authored-By` trailers; a reviewer at Anthropic will see
+that immediately. Disclosed in one clause it reads as ordinary — the repo
+has shipped a CLAUDE.md briefing since early on — while an application
+that described the graph without mentioning it would be inaccurate about
+the one thing that reader is best placed to check.
+
 > I would rather you heard the weak numbers from me than found them
 > yourself: five days old, 4 stars, 0 forks, no external contributors,
 > 102 unique cloners of which most are CI. I meet none of the five
 > numeric lanes and the repository concedes that lane by lane in
 > docs/OSS_APPLICATION.md, along with the routes that would change it.
-> Two things a reviewer may notice: the contributor graph shows three
-> identities and they are all me (commits before 2026-08-16 predate the
-> repository-local git identity; .mailmap maps them), and five of the
-> eight font families were generated parametrically from one set of
-> skeletons rather than drawn by hand — docs/FIVE-FACES.md states that in
-> its second paragraph, with no contributor credited. What is genuinely
-> unusual here is not the reach but the coverage: the inventory spans the
-> full Myanmar block plus Extended-A and Extended-B, so a Shan, Mon,
-> Karen, Kayah, Palaung, Khamti, Aiton or Tai Laing speaker can draw
-> their own font in a browser today. Links:
+> Three things a reviewer may notice. The contributor graph shows four
+> identities: three are mine (commits before 2026-08-16 predate the
+> repository-local git identity; .mailmap maps them), and the fourth is
+> "claude" — the project is openly AI-assisted, 37 early commits carry
+> co-author trailers, and CLAUDE.md documents the working agreement.
+> Five of the eight font families were generated parametrically from one
+> set of skeletons rather than drawn by hand; docs/FIVE-FACES.md states
+> that in its second paragraph, with no contributor credited for them.
+> And what is genuinely unusual here is not the reach but the coverage:
+> the inventory spans the full Myanmar block plus Extended-A and
+> Extended-B, so a Shan, Mon, Karen, Kayah, Palaung, Khamti, Aiton or Tai
+> Laing speaker can draw their own font in a browser today. Links:
 > github.com/Thiha-Lynn/myanmar-glyph-studio ·
 > thiha-lynn.github.io/myanmar-glyph-studio ·
 > pypi.org/project/myanmar-glyph-studio
