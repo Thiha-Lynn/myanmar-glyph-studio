@@ -30,7 +30,7 @@ npm install
 npx cap sync            # copy web/ into both native projects
 
 npx cap open ios        # opens Xcode
-npx cab open android    # opens Android Studio
+npx cap open android    # opens Android Studio
 ```
 
 Or from the command line:
