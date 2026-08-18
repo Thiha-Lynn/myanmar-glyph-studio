@@ -353,6 +353,16 @@ def build_inventory():
                                   {0})],
                      differ_from="medialYa-myanmar"))
 
+    # Fused deep-descender stacks (ကမ္မဋ္ဌာန်း အဋ္ဌိ ပဏ္ဍိတ → Padauk's
+    # uni100B100C / uni100F100D): ဋ ဌ ဍ ဠ descend across their entire
+    # width, so a subjoined form under them would sit below the design
+    # descender — anchors cannot fix it. Padauk draws each Pali stack as
+    # ONE glyph inside a single letter's footprint; these trace it whole.
+    inv.append(entry("uni100B100C", chr(0x100B) + VIRAMA + chr(0x100C),
+                     "variants"))
+    inv.append(entry("uni100F100D", chr(0x100F) + VIRAMA + chr(0x100D),
+                     "variants"))
+
     # ---- everything beyond core Burmese ---------------------------------
     # The rest of the Myanmar block (Pali, Mon, Karen, Kayah, Shan, Palaung,
     # Khamti, Aiton), Myanmar Extended-A/B, the dotted circle and optional
