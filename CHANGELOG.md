@@ -7,6 +7,38 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
+### Added
+- **The version-drift class of bug now fails the suite** instead of
+  shipping: v0.7.0 went out while `CITATION.cff` still said 0.6.0 —
+  every version roll so far has missed whichever file was newest. A
+  packaging test now pins every place the version is written
+  (`pyproject.toml`, both app `package.json`s, `CITATION.cff`, the
+  newest CHANGELOG heading) to a single value, so the next new home for
+  the version number fails the tests instead of shipping stale.
+- **Two auditors that do not work here** (`.github/workflows/`):
+  OpenSSF Scorecard publishes an independent supply-chain audit of the
+  repository weekly — badge in the README, results public on
+  scorecard.dev — and CodeQL runs static analysis over both the Python
+  pipeline and the studio's JavaScript on every push and pull request.
+
+### Changed
+- **docs/PLATFORMS.md caught up with the installers.** It still
+  described a world where running the studio outside a browser meant
+  wrapping the PWA yourself with Bubblewrap or Capacitor; releases have
+  shipped CI-built desktop installers since v0.5.0 and an Android APK
+  since v0.7.0. The page now leads with what a visitor can actually
+  download, keeps the PWA as the recommended zero-download path, and
+  routes store publishing through the committed `mobile/` project.
+
+### Fixed
+- `CITATION.cff` claimed version 0.6.0 with a 2026-08-17 release date.
+- `docs/MOBILE.md` told Android users to run `npx cab open android`.
+- The application dossier contradicted itself about PyPI — §3 said
+  published, §4 still said *"Not yet on PyPI"* — and quoted 81 tests,
+  v0.6.1 release assets and day-old star and PR counts. Re-measured
+  2026-08-18: 107 tests, 40 merged PRs, five stars, v0.7.0 assets
+  including the Android APK.
+
 ## [0.7.0] — 2026-08-18
 
 ### Added

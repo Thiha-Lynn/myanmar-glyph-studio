@@ -38,7 +38,7 @@ Live: https://thiha-lynn.github.io/myanmar-glyph-studio/
 > 40 million people.
 >
 > Let me be straight about the numeric lanes: I meet none of them. The
-> repository is five days old, has four stars, and no external contributors
+> repository is five days old, has five stars, and no external contributors
 > yet. I am applying under "if you maintain something the ecosystem
 > quietly depends on, apply anyway and tell us about it" — with the
 > honest amendment that nothing depends on it *yet*. What I can offer
@@ -106,9 +106,9 @@ Live: https://thiha-lynn.github.io/myanmar-glyph-studio/
 |---|---|---|---|
 | Maintainers / library authors | 500+ dependent repos, 100+ dependent packages, or 200k+ monthly downloads | **Published to PyPI 2026-08-17** — [`pip install myanmar-glyph-studio`](https://pypi.org/project/myanmar-glyph-studio/) (0.7.0, via GitHub OIDC trusted publishing, no API token). That makes the software installable rather than merely installable-in-principle; it does **not** approach the bar — zero dependents, and downloads are the publish itself. Eight tagged releases; v0.7.0 ships eight font families plus desktop installers for macOS/Windows/Linux **and an Android APK** | ✗ |
 | Core contributors | Committer on CPython/Rust/Node/Apache/CNCF-class projects | No | ✗ |
-| Active contributors | 100+ PRs merged into repos you don't own, 12 mo | **0** (`author:Thiha-Lynn is:merged -user:Thiha-Lynn` → 0; 37 merged PRs total, all in this repo) | ✗ |
+| Active contributors | 100+ PRs merged into repos you don't own, 12 mo | **0** (`author:Thiha-Lynn is:merged -user:Thiha-Lynn` → 0; 40 merged PRs total, all in this repo) | ✗ |
 | Community builders | 20+ unique external contributors merged, 12 mo | **0** | ✗ |
-| Critical infrastructure | OpenSSF criticality ≥ 0.4 | Created 2026-08-13; 4 stars, 0 forks, 0 watchers, 0 dependents → ≈ 0 | ✗ |
+| Critical infrastructure | OpenSSF criticality ≥ 0.4 | Created 2026-08-13; 5 stars, 0 forks, 0 watchers, 0 dependents → ≈ 0 | ✗ |
 
 **Nought for five, and not narrowly.** Reach in the last fortnight: 58
 views from 4 unique visitors. (293 clones from 102 "uniques" is almost
@@ -162,7 +162,7 @@ buying credibility for a reach claim it cannot support.
    `@Thiha-Lynn` in Insights immediately. The university address belongs
    to its own account and stays as explained history — do not claim it.
 
-3. **Say the stage plainly, in your own words.** Four days old, one
+3. **Say the stage plainly, in your own words.** Five days old, one
    maintainer, built to fill a gap you hit yourself. The programme
    explicitly invites this case. The age is only fatal if you hide it.
 
@@ -199,8 +199,8 @@ the honest case above.
   judgement, not geometry — and the repo ships a
   [device-test page](https://thiha-lynn.github.io/myanmar-glyph-studio/devicetest.html)
   that walks anyone through it and writes the report.
-* **Automated quality gates on every push and PR:** **81 tests**
-  (`pipeline/tests/`, 80 passing + 1 platform-skipped, 20s), both shaping
+* **Automated quality gates on every push and PR:** **107 tests**
+  (`pipeline/tests/`, 106 passing + 1 platform-skipped), both shaping
   corpora against *every* shipped font file — discovered by glob, so a
   font cannot ship untested — a HarfBuzz regression that fails the build
   if the reference font drops any glyph, and fontbakery's universal
@@ -253,8 +253,8 @@ the honest case above.
   guide, a full Burmese README (`README.my.md`), SUPPORT.md, CHANGELOG.md,
   CITATION.cff, a repository map ([ARCHITECTURE.md](ARCHITECTURE.md)),
   per-family OFL compliance, topical labels, and tagged releases whose
-  assets are built by CI — v0.6.1 carries per-family font zips plus
-  desktop installers for all three platforms. GitHub community profile
+  assets are built by CI — v0.7.0 carries per-family font zips, desktop
+  installers for all three platforms, and the Android APK. GitHub community profile
   at 100%, four standing invitations written out in
   [CONTRIBUTING.md](../CONTRIBUTING.md#where-to-start--four-standing-invitations)
   and surfaced on the site itself at
@@ -263,12 +263,14 @@ the honest case above.
   markdown file a visitor has to go looking for — and a
   [CLAUDE.md](../CLAUDE.md) briefing so contributions made with a coding
   assistant do not trip the project's invariants.
-* **Installable from a checkout:** `pip install -e ".[dev]"` gives
-  fifteen command-line tools (build, variable build, proof, validate,
+* **Installable software:**
+  [`pip install myanmar-glyph-studio`](https://pypi.org/project/myanmar-glyph-studio/)
+  — or `pip install -e ".[dev]"` from a checkout — gives sixteen
+  command-line tools (build, variable build, proof, validate,
   CoreText diff, kerning, showcase, gallery, book, PDF, i18n check, …)
   with PEP 621 metadata and an SPDX licence expression; both corpora ship
   inside the wheel, so any Myanmar font anywhere can be audited with one
-  command. *(Not yet on PyPI — see §3.1.)*
+  command. *(On PyPI since 2026-08-17 — §3.1.)*
 * **A real editor, not a toy:** the studio ships professional vector
   tools (Bézier pen with permanently editable paths, selection with
   transform handles, node editing, cross-glyph copy/paste, snapping,
@@ -284,7 +286,7 @@ the honest case above.
 | It actually works in a browser | Open the studio, trace a letter, press Export font |
 | The fonts are real and shaped | Download from the gallery, type ကျွန်ုပ်တို့ |
 | Three engines agree | `docs/VALIDATION.md`, then the Actions tab (DirectWrite job) |
-| The tests exist and pass | `pip install -e ".[dev]" && pytest` → 80 passed, 1 skipped |
+| The tests exist and pass | `pip install -e ".[dev]" && pytest` → 106 passed, 1 skipped |
 | The benchmark is honest | `mgs-validate` any Myanmar font on their own machine |
 | The defects are disclosed | `docs/VALIDATION.md` — including bugs in our own fonts |
 | Nothing is padded | Insights → Contributors, Commits, Actions history |
@@ -308,8 +310,8 @@ strategy, and the routes that would flip a lane are already written down:
   — no ticket to claim, partial work welcome. Even three merged glyph
   PRs from strangers change the story from "personal project" to
   "community infrastructure".
-* **Downloads lane:** publish to PyPI (§3.1), then the fonts to Google
-  Fonts / a package repository.
+* **Downloads lane:** PyPI is done (§3.1); next, the fonts themselves to
+  Google Fonts / a package repository.
 * **Third-party validation:** an accepted PR to awesome-myanmar-unicode,
   a ScriptSource entry, a mention from SIL or the Noto community, or a
   write-up by anyone who is not the maintainer.
