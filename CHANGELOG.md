@@ -7,7 +7,28 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-08-18
+
 ### Added
+- **Two more faces — thirteen families now.**
+  [`projects/taunggyi-wide`](projects/taunggyi-wide) (the banner cut:
+  the collection's widest stance at an easy medium weight, named for the
+  balloon-festival town) and
+  [`projects/pathein-poster`](projects/pathein-poster) (a round
+  condensed poster black — Nway Oo Display's warmer, hand-painted
+  counterpart, named for the town of the painted umbrellas). Same rules:
+  machine variations, honestly labelled, 0 FAIL on both corpora,
+  recipes in [docs/FIVE-FACES.md](docs/FIVE-FACES.md).
+- **ခေါ် gets Padauk's own ligature.** ါ + ် fuse into a traced
+  `uni102B103A` — the asat integrated with the tall-aa's stem as one
+  drawing instead of hovering across it — in every family, hand and
+  machine alike, with a studio inventory entry so contributors draw it
+  too.
+- **The whole collection moves together.** Every machine face carries
+  the fused ဋ္ဌ and ဏ္ဍ stacks, the ါ် ligature and U+2012, merged from
+  a fresh trace at each face's own width and height, rebuilt, and
+  re-validated at 0 FAIL — a shared inventory addition now reaches all
+  thirteen families, not just the flagship.
 - **The ဋ္ဌ tangle is fixed — with artwork, as diagnosed.** `uni100B100C`
   (ဋ္ဌ, 27 vocabulary words) and `uni100F100D` (ဏ္ဍ, 21 words) are now
   traced fused glyphs in Myanmar Glyph Sans and the sample font, joined
@@ -17,19 +38,6 @@ versions are git tags with installable font zips on the
   asks contributors for both drawings. VALIDATION.md's "still open"
   section is now a resolved one.
 
-### Fixed
-- **The fused ွှ sat ~100 units too far right** — measured, not felt:
-  Padauk keeps the WA half of its ကွှ ligature exactly where plain ကွ
-  puts wa (right edges 871/872) and lets the ha loop extend left; ours
-  centred the whole 534-unit drawing on the anchor. A per-glyph
-  attachment offset (mirrored `BOTTOM_MARK_DX` in `json_to_ufo.py` and
-  `anchors.js`) brings every fused wa+ha cluster from +81…+125 units of
-  deviation down to −19…+25, inside the showcase's own 40-unit notable
-  threshold. The rendering showcase's flagged rows drop from 11 to 6.
-- **The welcome screen now greets everyone once** — having drawn work no
-  longer suppresses it. The root URL is the site's front door for every
-  browser exactly once; dismissal (or an app shell, or a deep link) is
-  the only thing that skips it.
 - **Three more faces from the same skeletons** —
   [`projects/nway-oo-display`](projects/nway-oo-display) (နွေဦး: bold,
   compact, gently squared, for posters and headlines),
@@ -83,6 +91,37 @@ versions are git tags with installable font zips on the
   repository weekly — badge in the README, results public on
   scorecard.dev — and CodeQL runs static analysis over both the Python
   pipeline and the studio's JavaScript on every push and pull request.
+### Fixed
+- **လှုံ့ stopped crashing into the next word.** In the common alternate
+  storage order (ံ between ှ and ု), `lookupflag 0` kept the ha+u
+  ligature from forming and the unfused chain marched 203 units past the
+  cluster's advance. The fusion now matches across intervening marks the
+  way Padauk does; the escape drops to +121 — the range Padauk itself
+  occupies — and before a ြ-initial word the existing `dist` padding
+  leaves a measured +119-unit gap. One residual, recorded rather than
+  hidden: before a plain-letter word the dot still overlaps by ~60 units
+  where Padauk clears by 13; generalising the `dist` padding to
+  plain-letter followers is the open half.
+- **The fused ွှ sat ~100 units too far right** — measured, not felt:
+  Padauk keeps the WA half of its ကွှ ligature exactly where plain ကွ
+  puts wa (right edges 871/872) and lets the ha loop extend left; ours
+  centred the whole 534-unit drawing on the anchor. A per-glyph
+  attachment offset (mirrored `BOTTOM_MARK_DX` in `json_to_ufo.py` and
+  `anchors.js`) brings every fused wa+ha cluster from +81…+125 units of
+  deviation down to −19…+25, inside the showcase's own 40-unit notable
+  threshold. The rendering showcase's flagged rows drop from 11 to 6.
+- **The welcome screen now greets everyone once** — having drawn work no
+  longer suppresses it. The root URL is the site's front door for every
+  browser exactly once; dismissal (or an app shell, or a deep link) is
+  the only thing that skips it.
+
+- `CITATION.cff` claimed version 0.6.0 with a 2026-08-17 release date.
+- `docs/MOBILE.md` told Android users to run `npx cab open android`.
+- The application dossier contradicted itself about PyPI — §3 said
+  published, §4 still said *"Not yet on PyPI"* — and quoted 81 tests,
+  v0.6.1 release assets and day-old star and PR counts. Re-measured
+  2026-08-18: 107 tests, 40 merged PRs, five stars, v0.7.0 assets
+  including the Android APK.
 
 ### Changed
 - **docs/PLATFORMS.md caught up with the installers.** It still
@@ -92,15 +131,6 @@ versions are git tags with installable font zips on the
   since v0.7.0. The page now leads with what a visitor can actually
   download, keeps the PWA as the recommended zero-download path, and
   routes store publishing through the committed `mobile/` project.
-
-### Fixed
-- `CITATION.cff` claimed version 0.6.0 with a 2026-08-17 release date.
-- `docs/MOBILE.md` told Android users to run `npx cab open android`.
-- The application dossier contradicted itself about PyPI — §3 said
-  published, §4 still said *"Not yet on PyPI"* — and quoted 81 tests,
-  v0.6.1 release assets and day-old star and PR counts. Re-measured
-  2026-08-18: 107 tests, 40 merged PRs, five stars, v0.7.0 assets
-  including the Android APK.
 
 ## [0.7.0] — 2026-08-18
 
@@ -866,6 +896,7 @@ versions are git tags with installable font zips on the
 - Community health files, the contributor guide, the gallery site, and
   GitHub Pages deployment.
 
+[0.8.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.8.0
 [0.7.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.7.0
 [0.6.1]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.6.1
 [0.6.0]: https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases/tag/v0.6.0
