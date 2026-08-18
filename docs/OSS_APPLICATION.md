@@ -209,8 +209,9 @@ the honest case above.
 * **Validated against the whole of a real vocabulary.** Beyond the
   711-word CI corpus, `pipeline/fetch_vocab.py` runs all **12,450** words
   of the [DatarrX Myanmar Word Glyphs](https://huggingface.co/datasets/DatarrX/myanmar-word-glyphs)
-  vocabulary through the same checker: 0 FAIL, 0 WARN in every shipped
-  font. The wide sweep exists to test the *cover*, and has never found
+  vocabulary through the same checker: 0 FAIL in every shipped
+  font, with the remaining WARN-level findings confined to the
+  benchmark classes the reference fonts themselves trip. The wide sweep exists to test the *cover*, and has never found
   anything the 711 words miss — a result about corpus design, published
   rather than assumed.
 * **A second corpus built from literature.** `pipeline/make_reference.py`
@@ -242,7 +243,8 @@ the honest case above.
 * **Benchmarked, not self-graded.** The same harness over the fonts the
   major platforms ship reports findings in each — Padauk 7, Noto Sans
   Myanmar 4, Microsoft's Myanmar Text 7 — while the fonts here clear both
-  corpora at **0 FAIL, 0 WARN in every weight**.
+  corpora at **0 FAIL in every weight**, with single-digit WARN counts of
+  the same neighbour/clearance classes Padauk itself trips.
 * **Runs as an application too:** macOS DMG, Windows installer, Linux
   AppImage/deb, built by CI for every release — the same `web/` directory
   served over a private scheme, offline and sandboxed

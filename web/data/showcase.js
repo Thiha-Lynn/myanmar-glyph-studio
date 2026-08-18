@@ -501,7 +501,7 @@
      ],
      "advance": 859,
      "ink": [
-      40,
+      -60,
       -442,
       886,
       434
@@ -521,13 +521,13 @@
       ],
       "dAdvance": 0,
       "dInk": [
-       136,
+       36,
        -3,
        1,
        -12
       ],
-      "worst": 136,
-      "notable": true
+      "worst": 36,
+      "notable": false
      },
      "rule": "tall stroke fires THROUGH an intervening ha"
     },
@@ -1302,9 +1302,9 @@
      ],
      "advance": 570,
      "ink": [
-      39,
+      -61,
       -442,
-      572,
+      508,
       458
      ],
      "ref": {
@@ -1321,13 +1321,13 @@
       ],
       "dAdvance": 0,
       "dInk": [
-       137,
+       37,
        -3,
-       55,
+       -9,
        12
       ],
-      "worst": 137,
-      "notable": true
+      "worst": 37,
+      "notable": false
      },
      "rule": "fused wa+ha"
     },
@@ -1342,7 +1342,7 @@
      "ink": [
       61,
       -442,
-      940,
+      875,
       443
      ],
      "ref": {
@@ -1361,11 +1361,11 @@
       "dInk": [
        7,
        -3,
-       57,
+       -8,
        -5
       ],
-      "worst": 57,
-      "notable": true
+      "worst": 8,
+      "notable": false
      },
      "rule": "fused wa+ha"
     },
@@ -1380,7 +1380,7 @@
      "ink": [
       60,
       -442,
-      978,
+      927,
       443
      ],
      "ref": {
@@ -1399,11 +1399,11 @@
       "dInk": [
        4,
        -3,
-       44,
+       -7,
        -5
       ],
-      "worst": 44,
-      "notable": true
+      "worst": 7,
+      "notable": false
      },
      "rule": "fused wa+ha"
     },
@@ -1660,7 +1660,7 @@
      "ink": [
       62,
       -442,
-      1154,
+      1090,
       440
      ],
      "ref": {
@@ -1680,11 +1680,11 @@
       "dInk": [
        6,
        -3,
-       72,
+       8,
        -8
       ],
-      "worst": 72,
-      "notable": true
+      "worst": 11,
+      "notable": false
      },
      "rule": "wa+ha under ရ with the left vowel"
     },
@@ -1700,7 +1700,7 @@
      "ink": [
       61,
       -442,
-      940,
+      875,
       769
      ],
      "ref": {
@@ -1720,10 +1720,10 @@
       "dInk": [
        7,
        -3,
-       57,
+       -8,
        -49
       ],
-      "worst": 57,
+      "worst": 49,
       "notable": true
      },
      "rule": "wa+ha with a tone mark above"
@@ -1867,9 +1867,9 @@
      ],
      "advance": 586,
      "ink": [
-      58,
+      -42,
       -442,
-      801,
+      701,
       686
      ],
      "ref": {
@@ -1888,12 +1888,12 @@
       ],
       "dAdvance": 12,
       "dInk": [
-       101,
+       1,
        -3,
-       62,
+       -38,
        -43
       ],
-      "worst": 101,
+      "worst": 43,
       "notable": true
      },
      "rule": "the deepest cluster in ordinary use"
@@ -2404,18 +2404,17 @@
       "uni1000",
       "uni1019",
       "uni1019.sub",
-      "uni100B",
-      "uni100C.sub",
+      "uni100B100C",
       "uni102C",
       "uni1014",
       "uni103A",
       "uni1038"
      ],
-     "advance": 3288,
+     "advance": 3276,
      "ink": [
       60,
-      -448,
-      3239,
+      -435,
+      3227,
       876
      ],
      "ref": {
@@ -2436,14 +2435,14 @@
        3232,
        882
       ],
-      "dAdvance": 13,
+      "dAdvance": 1,
       "dInk": [
        4,
-       -6,
        7,
+       -5,
        -6
       ],
-      "worst": 13,
+      "worst": 7,
       "notable": false
      },
      "rule": "two stacks in one word"
@@ -3288,11 +3287,11 @@
     "uni101B",
     "uni1038"
    ],
-   "advance": 6325,
+   "advance": 6306,
    "ink": [
     63,
     -444,
-    6276,
+    6257,
     923
    ],
    "ref": {
@@ -3323,14 +3322,14 @@
      6285,
      933
     ],
-    "dAdvance": -3,
+    "dAdvance": -22,
     "dInk": [
      9,
      -5,
-     -9,
+     -28,
      -10
     ],
-    "worst": 10,
+    "worst": 28,
     "notable": false
    }
   }

@@ -243,24 +243,31 @@ FAIL, because Padauk trips it too (3 spec rows, 1 word row, 7 of the
 vocabulary) and a gate here would fail the reference implementation. What
 matters is that our count stays beside its count.
 
-### Still open: the ဋ္ဌ stack needs artwork
+### Resolved 2026-08-18: the ဋ္ဌ stack got its artwork
 
-`ကမ္မဋ္ဌာန်း`, `ကိလိဋ္ဌဒေါသ` and the rest of the ဋ ဌ ဍ ဠ family still
-render as a tangle, and **no anchor change can fix it**:
+`ကမ္မဋ္ဌာန်း`, `ကိလိဋ္ဌဒေါသ` and the rest of the ဋ ဌ ဍ ဠ family rendered
+as a tangle for five days, and **no anchor change could fix it**:
 
 * ဋ descends to −431 and ဌ to −436 across the letter's *whole width* —
   the bowl is the descender, so there is no clear column to slide a
   subjoined form into at any probe width.
 * A subjoined letter is ~340 units tall. Below a tail at −436 it would
   need −821. `usWinDescent` is −750. It does not fit vertically either.
-* Padauk's answer is `uni100B100C`: ဋ္ဌ **drawn as one fused glyph, 458
-  units wide** — the footprint of a single letter, not a base with
-  something hanging off it.
+* Padauk's answer is `uni100B100C`: ဋ္ဌ **drawn as one fused glyph** in
+  the footprint of a single letter, not a base with something hanging
+  off it. (A leg-avoidance scan for the stack anchor was written,
+  measured, and reverted when it moved the glyph by almost nothing.)
 
-So the fix is traced artwork plus a GSUB ligature, exactly the pattern
-already used for the wrap+u forms. A leg-avoidance scan for the stack
-anchor was written, measured, and reverted when it turned out to move the
-glyph by almost nothing.
+The fix landed exactly as diagnosed: traced fused artwork plus a GSUB
+ligature, the pattern the wrap+u forms already use. `uni100B100C` (ဋ္ဌ)
+and `uni100F100D` (ဏ္ဍ — the same problem under ဏ's tail, 21 vocabulary
+words) are traced whole from Padauk, behave as bases with full anchors
+(so `အဋ္ဌိ`'s ိ attaches correctly), and a `stack_fuse` lookup in `blws`
+substitutes base + subjoined form for the drawn ligature — emitted only
+in fonts that actually draw it, so a community font without the artwork
+keeps the plain stack. Between them the two glyphs cover the 48
+vocabulary words that used to tangle; shaping now returns the fused
+glyph in every one tested (`ကမ္မဋ္ဌာန်း`, `ပဏ္ဍိတ`, `အဋ္ဌိ`).
 
 ### Below-vowels sat at five different depths
 
