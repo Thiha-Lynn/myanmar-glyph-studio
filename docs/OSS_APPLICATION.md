@@ -104,7 +104,7 @@ Live: https://thiha-lynn.github.io/myanmar-glyph-studio/
 
 | Lane | Bar | Measured 2026-08-18 | Fit |
 |---|---|---|---|
-| Maintainers / library authors | 500+ dependent repos, 100+ dependent packages, or 200k+ monthly downloads | **Published to PyPI 2026-08-17** — [`pip install myanmar-glyph-studio`](https://pypi.org/project/myanmar-glyph-studio/) (0.7.0, via GitHub OIDC trusted publishing, no API token). That makes the software installable rather than merely installable-in-principle; it does **not** approach the bar — zero dependents, and downloads are the publish itself. Eight tagged releases; v0.7.0 ships eight font families plus desktop installers for macOS/Windows/Linux **and an Android APK** | ✗ |
+| Maintainers / library authors | 500+ dependent repos, 100+ dependent packages, or 200k+ monthly downloads | **Published to PyPI 2026-08-17** — [`pip install myanmar-glyph-studio`](https://pypi.org/project/myanmar-glyph-studio/) (0.7.0, via GitHub OIDC trusted publishing, no API token). That makes the software installable rather than merely installable-in-principle; it does **not** approach the bar — zero dependents, and downloads are the publish itself. Nine tagged releases; v0.8.0 ships thirteen font families plus desktop installers for macOS/Windows/Linux **and an Android APK** | ✗ |
 | Core contributors | Committer on CPython/Rust/Node/Apache/CNCF-class projects | No | ✗ |
 | Active contributors | 100+ PRs merged into repos you don't own, 12 mo | **0** (`author:Thiha-Lynn is:merged -user:Thiha-Lynn` → 0; 40 merged PRs total, all in this repo) | ✗ |
 | Community builders | 20+ unique external contributors merged, 12 mo | **0** | ✗ |
@@ -199,8 +199,8 @@ the honest case above.
   judgement, not geometry — and the repo ships a
   [device-test page](https://thiha-lynn.github.io/myanmar-glyph-studio/devicetest.html)
   that walks anyone through it and writes the report.
-* **Automated quality gates on every push and PR:** **113 tests**
-  (`pipeline/tests/`, 112 passing + 1 platform-skipped), both shaping
+* **Automated quality gates on every push and PR:** **117 tests**
+  (`pipeline/tests/`, 116 passing + 1 platform-skipped), both shaping
   corpora against *every* shipped font file — discovered by glob, so a
   font cannot ship untested — a HarfBuzz regression that fails the build
   if the reference font drops any glyph, and fontbakery's universal
@@ -288,7 +288,7 @@ the honest case above.
 | It actually works in a browser | Open the studio, trace a letter, press Export font |
 | The fonts are real and shaped | Download from the gallery, type ကျွန်ုပ်တို့ |
 | Three engines agree | `docs/VALIDATION.md`, then the Actions tab (DirectWrite job) |
-| The tests exist and pass | `pip install -e ".[dev]" && pytest` → 112 passed, 1 skipped |
+| The tests exist and pass | `pip install -e ".[dev]" && pytest` → 116 passed, 1 skipped |
 | The benchmark is honest | `mgs-validate` any Myanmar font on their own machine |
 | The defects are disclosed | `docs/VALIDATION.md` — including bugs in our own fonts |
 | Nothing is padded | Insights → Contributors, Commits, Actions history |

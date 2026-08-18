@@ -35,7 +35,7 @@ length on evidence instead.
 > Aiton, Tai Laing, and Pali. Burmese has a handful of free Unicode
 > fonts. The minority languages that share the script have, in practice,
 > almost none — and every one of them is in this toolkit's inventory of
-> 483 glyphs, because that is the point of it.
+> 484 glyphs, because that is the point of it.
 >
 > The reason is structural, not cultural. Myanmar is a complex script: a
 > font is not a set of pictures but parts plus OpenType rules —
@@ -70,7 +70,7 @@ length on evidence instead.
 >   Myanmar Text 7 — while the fonts here clear both corpora at zero.
 >   Defects found in my own fonts are published in docs/VALIDATION.md
 >   rather than quietly fixed.
-> - 113 tests, fontbakery-gated CI, 11 font families under the SIL Open
+> - 117 tests, fontbakery-gated CI, 13 font families under the SIL Open
 >   Font License, 16 command-line tools, and 14 documents. The studio
 >   runs as a web app, as desktop apps for macOS/Windows/Linux, and as
 >   Android and iOS apps — all from one codebase, so a feature cannot
@@ -96,16 +96,15 @@ on the actual bottleneck.
 > for.
 >
 > First, the expert OpenType work that gates coverage for the languages
-> with the least support. The ဋ္ဌ stack still renders as a tangle in real
-> Pali-Burmese words such as ကမ္မဋ္ဌာန်း, and it cannot be fixed with
-> anchors — those letters descend across their whole width, so the
-> subjoined form would have to sit below the design limit; it needs fused
-> artwork plus a ligature rule, the way Padauk solves it. Beyond that:
-> per-language shaping for Mon, Shan and S'gaw Karen, each needing its
-> own test corpus before it can be trusted, plus Myanmar Extended-C and
-> GDEF mark classes. Shaping correctness is exactly where a
-> minority-language font quietly fails, and exactly where there is nobody
-> to ask.
+> with the least support. The deep ဋ္ဌ stack in words like ကမ္မဋ္ဌာန်း
+> rendered as a tangle until this week — fixed the way Padauk fixes it,
+> traced fused artwork plus a ligature rule — and the same class of work
+> keeps surfacing: the small-form medials Padauk swaps inside stacked
+> clusters (က္ကွိ still measures 40+ units off), per-language shaping for
+> Mon, Shan and S'gaw Karen, each needing its own test corpus before it
+> can be trusted, plus Myanmar Extended-C and GDEF mark classes. Shaping
+> correctness is exactly where a minority-language font quietly fails,
+> and exactly where there is nobody to ask.
 >
 > Second, reviewing community font submissions fast enough that
 > first-time contributors do not drift away. A single drawn glyph is a
@@ -151,7 +150,7 @@ the one thing that reader is best placed to check.
 > repository-local git identity; .mailmap maps them), and the fourth is
 > "claude" — the project is openly AI-assisted, 37 early commits carry
 > co-author trailers, and CLAUDE.md documents the working agreement.
-> Eight of the eleven font families were generated parametrically from one
+> Ten of the thirteen font families were generated parametrically from one
 > set of skeletons rather than drawn by hand; docs/FIVE-FACES.md states
 > that in its second paragraph, with no contributor credited for them.
 > And what is genuinely unusual here is not the reach but the coverage:
