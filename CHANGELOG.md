@@ -8,6 +8,26 @@ versions are git tags with installable font zips on the
 ## [Unreleased]
 
 ### Added
+- **A front door** (`web/js/welcome.js`): the site used to drop every
+  first-time visitor straight onto the drawing canvas with no explanation
+  of what the project is or that seven other pages exist. A one-time
+  welcome screen now opens over the live studio — the pitch in Burmese
+  and English, a shaping sample, and every page of the site one tap away
+  — and then never appears again. It also knows when to stay away
+  entirely: inside the desktop/mobile app shells, on `#g=` deep links
+  (read from the *landing* URL, because the app itself writes the current
+  glyph into the hash at boot), and for anyone whose autosave already
+  contains drawn strokes. The က brand mark reopens it any time. The page
+  list comes from `sitenav.js`, which now exports it — one list, or they
+  drift.
+- **The studio now asks for U+2012** ‒ FIGURE DASH. An audit of every
+  character the shipped corpora use — 12,450 vocabulary words, 1,486 spec
+  clusters, 711 corpus words and the 34-page reading proof, 110 distinct
+  characters in all — found exactly one the inventory never requested,
+  and it is the one VALIDATION.md has been reporting as the lone GAP
+  finding all along. The other 109 were already covered, which is the
+  audit's real result: the inventory is complete against every dataset
+  this project tests with.
 - **The version-drift class of bug now fails the suite** instead of
   shipping: v0.7.0 went out while `CITATION.cff` still said 0.6.0 —
   every version roll so far has missed whichever file was newest. A
