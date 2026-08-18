@@ -203,8 +203,8 @@ the honest case above.
   judgement, not geometry — and the repo ships a
   [device-test page](https://thiha-lynn.github.io/myanmar-glyph-studio/devicetest.html)
   that walks anyone through it and writes the report.
-* **Automated quality gates on every push and PR:** **119 tests**
-  (`pipeline/tests/`, 118 passing + 1 platform-skipped), both shaping
+* **Automated quality gates on every push and PR:** **128 tests**
+  (`pipeline/tests/`, 127 passing + 1 platform-skipped), both shaping
   corpora against *every* shipped font file — discovered by glob, so a
   font cannot ship untested — a HarfBuzz regression that fails the build
   if the reference font drops any glyph, and fontbakery's universal
@@ -271,7 +271,7 @@ the honest case above.
   assistant do not trip the project's invariants.
 * **Installable software:**
   [`pip install myanmar-glyph-studio`](https://pypi.org/project/myanmar-glyph-studio/)
-  — or `pip install -e ".[dev]"` from a checkout — gives sixteen
+  — or `pip install -e ".[dev]"` from a checkout — gives seventeen
   command-line tools (build, variable build, proof, validate,
   CoreText diff, kerning, showcase, gallery, book, PDF, i18n check, …)
   with PEP 621 metadata and an SPDX licence expression; both corpora ship

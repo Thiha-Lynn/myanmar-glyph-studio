@@ -8,6 +8,19 @@ versions are git tags with installable font zips on the
 ## [Unreleased]
 
 ### Added
+- **Kawthaung Corsair**
+  ([`projects/kawthaung-corsair`](projects/kawthaung-corsair)) — the
+  pirate cut proper, and a new pipeline axis to make it:
+  [`pipeline/make_pirate.py`](pipeline/make_pirate.py) (`mgs-pirate`)
+  converts a stroke-skeleton project into weathered filled contours —
+  bone-knuckle terminals, wave-roughened edges, deterministic chip
+  gouges — plus two ornaments drawn from primitives, U+2620 ☠ and
+  U+2693 ⚓, so the Jolly Roger flies in plain text. Marks weather at
+  0.45 amplitude with no knuckles and a nominal-ink ceiling (the first
+  full-strength build measured 289 bounds warnings; the shipped cut
+  validates 0 FAIL, 19 / 9 WARN, fontbakery 0 FAIL). Fifteen families;
+  recipe and the three findings behind it in
+  [docs/FIVE-FACES.md](docs/FIVE-FACES.md).
 - **Myeik Treasure** ([`projects/myeik-treasure`](projects/myeik-treasure))
   — the adventure cut, requested as pirate-comic lettering: the heaviest
   weight the slab nib validates cleanly at (1.85 — weight 2.0 tripped 95

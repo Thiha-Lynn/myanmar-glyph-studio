@@ -51,6 +51,7 @@ def test_discovery_found_every_shipped_font():
         "TaunggyiWide-Regular.ttf",
         "PatheinPoster-Regular.ttf",
         "MyeikTreasure-Regular.ttf",
+        "KawthaungCorsair-Regular.ttf",
     } <= found, f"shipped fonts missing from discovery: {found}"
 
 
