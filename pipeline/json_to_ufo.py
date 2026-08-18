@@ -1396,11 +1396,29 @@ def generate_features(drawn, wide_bases=None, bases=None, dot_advances=None):
                for v, s in (("u-myanmar", "u"), ("uu-myanmar", "uu"))
                if f"medialHa-myanmar.{s}" in drawn and v in drawn]
     if "medialHa-myanmar" in drawn and ha_ligs:
-        block = ["  lookup ha_fuse {", "    lookupflag 0;"]
+        # The filtering set holds only the ligature's own components, so
+        # an anusvara stored between them (လှုံ့ in its common alternate
+        # order လ ှ ံ ု ့) is skipped and the fusion still forms — with
+        # lookupflag 0 that one intervening mark kept ha and u apart and
+        # the unfused chain marched 203 units past the advance into the
+        # next word. Padauk fuses across it; now we do too.
+        block = ["  lookup ha_fuse {",
+                 "    lookupflag UseMarkFilteringSet [medialHa-myanmar "
+                 + " ".join(v for v, _ in ha_ligs) + "];"]
         for vowel, lig in ha_ligs:
             block.append(f"    sub medialHa-myanmar {vowel} by {lig};")
         block.append("  } ha_fuse;")
         pres_lookups.append(block)
+    # ါ + ် fuse into the traced ligature (ခေါ် ပေါ် → Padauk's
+    # uni102B103A): the asat integrates with the tall-aa's stem instead of
+    # hovering across it as a separate mark.
+    if ("uni102B103A" in drawn and "tallAa-myanmar" in drawn
+            and "asat-myanmar" in drawn):
+        pres_lookups.append([
+            "  lookup aa_asat_fuse {",
+            "    lookupflag 0;",
+            "    sub tallAa-myanmar asat-myanmar by uni102B103A;",
+            "  } aa_asat_fuse;"])
     if pres_lookups:
         lines.append("feature pres {")
         for block in pres_lookups:

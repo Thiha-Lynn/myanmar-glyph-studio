@@ -330,6 +330,15 @@
   });
 
   glyphs.push({
+    name: "uni102B103A", cp: null, label: ch(0x102b) + ch(0x103a),
+    variant: "fused",
+    guide: ch(0x1001) + ch(0x1031) + ch(0x102b) + ch(0x103a),
+    hint: "Fused ါ် — tall-aa and asat as one drawing (ခေါ် ပေါ်); draw only the ါ with its integrated hook",
+    hintMy: "ါ် ပေါင်းစပ်ပုံစံ — ါ နှင့် ် ကို တစ်ခုတည်းအဖြစ် ရေးဆွဲပါ (ခေါ် ပေါ်)",
+    mark: false, group: "variants"
+  });
+
+  glyphs.push({
     name: "ra-myanmar.alt", cp: null, label: ch(0x101b), variant: "alt",
     baseVariant: true,
     guide: ch(0x101b) + ch(0x102f),
