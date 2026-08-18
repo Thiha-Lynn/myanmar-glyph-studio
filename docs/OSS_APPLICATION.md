@@ -1,7 +1,7 @@
 # Claude for Open Source — application material
 
 Everything needed to submit to <https://claude.com/contact-sales/claude-for-oss>,
-with every number re-measured on **2026-08-17** against the GitHub API and,
+with every number re-measured on **2026-08-18** against the GitHub API and,
 where it is an engineering claim, re-run rather than quoted.
 
 **Repository:** <https://github.com/Thiha-Lynn/myanmar-glyph-studio>
@@ -11,6 +11,10 @@ where it is an engineering claim, re-run rather than quoted.
 **Licenses:** MIT (toolkit) · SIL OFL 1.1 (every font produced)
 
 ---
+
+The paste-ready answers live in
+[APPLICATION-ANSWERS.md](APPLICATION-ANSWERS.md); this file is the
+reasoning behind them.
 
 ## 1. The submit-tonight pack
 
@@ -34,7 +38,7 @@ Live: https://thiha-lynn.github.io/myanmar-glyph-studio/
 > 40 million people.
 >
 > Let me be straight about the numeric lanes: I meet none of them. The
-> repository is four days old, has three stars, and no external contributors
+> repository is five days old, has four stars, and no external contributors
 > yet. I am applying under "if you maintain something the ecosystem
 > quietly depends on, apply anyway and tell us about it" — with the
 > honest amendment that nothing depends on it *yet*. What I can offer
@@ -98,13 +102,13 @@ Live: https://thiha-lynn.github.io/myanmar-glyph-studio/
 
 ## 2. The lane table — measured, not estimated
 
-| Lane | Bar | Measured 2026-08-17 | Fit |
+| Lane | Bar | Measured 2026-08-18 | Fit |
 |---|---|---|---|
-| Maintainers / library authors | 500+ dependent repos, 100+ dependent packages, or 200k+ monthly downloads | **Published to PyPI 2026-08-17** — [`pip install myanmar-glyph-studio`](https://pypi.org/project/myanmar-glyph-studio/) (0.6.1, via GitHub OIDC trusted publishing, no API token). That makes the software installable rather than merely installable-in-principle; it does **not** approach the bar — zero dependents, and downloads are the publish itself. Seven tagged releases; v0.6.1 ships three font families plus desktop installers for macOS/Windows/Linux | ✗ |
+| Maintainers / library authors | 500+ dependent repos, 100+ dependent packages, or 200k+ monthly downloads | **Published to PyPI 2026-08-17** — [`pip install myanmar-glyph-studio`](https://pypi.org/project/myanmar-glyph-studio/) (0.7.0, via GitHub OIDC trusted publishing, no API token). That makes the software installable rather than merely installable-in-principle; it does **not** approach the bar — zero dependents, and downloads are the publish itself. Eight tagged releases; v0.7.0 ships eight font families plus desktop installers for macOS/Windows/Linux **and an Android APK** | ✗ |
 | Core contributors | Committer on CPython/Rust/Node/Apache/CNCF-class projects | No | ✗ |
-| Active contributors | 100+ PRs merged into repos you don't own, 12 mo | **0** (`author:Thiha-Lynn is:merged -user:Thiha-Lynn` → 0; 26 merged PRs total, all in this repo) | ✗ |
+| Active contributors | 100+ PRs merged into repos you don't own, 12 mo | **0** (`author:Thiha-Lynn is:merged -user:Thiha-Lynn` → 0; 37 merged PRs total, all in this repo) | ✗ |
 | Community builders | 20+ unique external contributors merged, 12 mo | **0** | ✗ |
-| Critical infrastructure | OpenSSF criticality ≥ 0.4 | Created 2026-08-13; 3 stars, 0 forks, 0 watchers, 0 dependents → ≈ 0 | ✗ |
+| Critical infrastructure | OpenSSF criticality ≥ 0.4 | Created 2026-08-13; 4 stars, 0 forks, 0 watchers, 0 dependents → ≈ 0 | ✗ |
 
 **Nought for five, and not narrowly.** Reach in the last fortnight: 58
 views from 4 unique visitors. (293 clones from 102 "uniques" is almost
@@ -123,9 +127,9 @@ buying credibility for a reach claim it cannot support.
 
 ## 3. Three things only you can do before submitting
 
-1. **Publish to PyPI — done, 2026-08-17.**
+1. **Publish to PyPI — done, 2026-08-17; now at 0.7.0.**
    [`pip install myanmar-glyph-studio`](https://pypi.org/project/myanmar-glyph-studio/)
-   installs 0.6.1, uploaded by [`publish.yml`](../.github/workflows/publish.yml)
+   installs 0.7.0, uploaded by [`publish.yml`](../.github/workflows/publish.yml)
    over GitHub OIDC trusted publishing: no API token exists in the
    repository, its secrets, or on any machine. Verified by installing
    from the real index into a clean virtualenv and running a console
