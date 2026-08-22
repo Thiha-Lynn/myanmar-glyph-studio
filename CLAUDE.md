@@ -51,7 +51,7 @@ neither — a mismatch means contributors draw one thing and ship another:
 * `web/data/glyphs-extended*.js`, `glyphs-latin*.js` → `pipeline/gen_inventory.py`
 * `web/data/showcase.js`, `vocabulary.js` → `pipeline/make_showcase.py`
 * `web/data/book.js` → `pipeline/make_book.py`
-* `web/data/tipitaka.js` → `pipeline/make_tipitaka.py` (SuttaCentral public-domain roman text through `pali_translit.py` — never a Burmese edition's files)
+* `web/data/tipitaka.js` + `tipitaka-index.js` → `pipeline/make_tipitaka.py` (curated texts from SuttaCentral's public-domain roman through `pali_translit.py`; the index is only the 61-book catalog — whole books are fetched at reading time from VRI's repository, never committed)
 * `web/gallery-data/**` → `pipeline/make_gallery.py` (not committed)
 
 `web/data/glyphs.js` is the one hand-maintained inventory file.

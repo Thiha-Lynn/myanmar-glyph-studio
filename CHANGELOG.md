@@ -5,6 +5,30 @@ format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions are git tags with installable font zips on the
 [releases page](https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases).
 
+## [0.11.0] - 2026-08-23
+
+### Added
+- **The whole canon in the reader** ([web/tipitaka.html](web/tipitaka.html)):
+  beside the featured texts, every basket now shelves its complete books —
+  all 59 canonical volumes plus the Visuddhimagga on its own companion
+  tome — fetched on demand from the Chaṭṭha Saṅgāyana XML the Vipassana
+  Research Institute publishes (CORS-open, ~8× gzip on the wire, arriving
+  with VRI's latest corrections, attribution shown while you read; nothing
+  is vendored into this repository). Books parse in the browser — verse
+  stanzas keep their line breaks, bare verse numbers join their stanzas,
+  chapter headings feed a jump-to-chapter picker (the Jātaka's 44 vaggas,
+  for example) — and reading position is remembered per book. The catalog
+  (`web/data/tipitaka-index.js`, generated) carries the standard book
+  names through the verified transliterator, so the shelf's titles cannot
+  drift from the orthography the fonts are tested against.
+
+### Fixed
+- The reader paginates against fallback page dimensions when the viewport
+  reports 0×0 (a hidden tab), instead of shredding a book into
+  220-character scraps.
+- Editorial variant notes with markup inside them are now stripped
+  (one exists in the canon); the corpus tooling got the same hardening.
+
 ## [0.10.0] - 2026-08-22
 
 ### Added
