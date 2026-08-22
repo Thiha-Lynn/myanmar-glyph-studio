@@ -1,6 +1,6 @@
 {
   "name": "myanmar-glyph-studio-mobile",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Sketch your own Myanmar font \u2014 Android and iOS shells for the Glyph Studio",
   "main": "index.js",
   "scripts": {

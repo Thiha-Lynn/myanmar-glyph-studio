@@ -5,6 +5,49 @@ format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions are git tags with installable font zips on the
 [releases page](https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases).
 
+## [0.10.0] - 2026-08-22
+
+### Added
+- **ပိဋကတ် သုံးပုံ — the Tipiṭaka reader** ([web/tipitaka.html](web/tipitaka.html)):
+  an immersive book view of the canon's most-recited texts, set entirely
+  in this project's generated fonts. A shelf of three tomes, an animated
+  page turn (reduced-motion aware), verse-aware layout, a live font
+  switcher across all fifteen families, an immersive mode, swipe and
+  keyboard paging. Text: SuttaCentral's public-domain Mahāsaṅgīti root
+  edition — Bodhikathā, Dhammacakkappavattana, Maṅgala and Metta Suttas,
+  the Yamakavagga, the Dhammasaṅgaṇī mātikā and the Paṭṭhāna
+  paccayuddesa.
+- **`pali_translit.py` (`mgs-pali`)** — romanized Pali → Burmese script,
+  the whole orthography (stacks, medials, kinzi, ဿ/ည geminates, the
+  tall-ါ rule fitted from the canon). Verified against the Chaṭṭha
+  Saṅgāyana parallel edition: 62,729 of 62,729 aligned words across five
+  books spanning all three baskets reproduce VRI's own Burmese text.
+- **`fetch_tipitaka.py` (`mgs-fetch-tipitaka`)** — downloads the 61
+  canonical books in Burmese script (22.9 M characters) as validation
+  corpora, in the fetch-not-vendor pattern fetch_vocab.py set; its
+  `--write-cover` regenerates the committed cover.
+- **`pali_corpus.txt` — a third gating corpus**: 1,633 words that
+  between them contain every one of the 2,220 distinct syllable clusters
+  in the whole canon, complete by construction like word_corpus.txt.
+  Every shipped font passes it at 0 FAIL in CI.
+- **`make_tipitaka.py` (`mgs-tipitaka`)** regenerates the reader's data
+  file from source; web/data/tipitaka.js is generated, never hand-edited.
+
+### Fixed
+- **Font errors the canon sweep found**, each measured against Padauk
+  first: ီ + ံ now fuses into a traced `uni102E1036` ligature (ကီံ
+  chained the dot to y=1070, past the ascender); after a kinzi the ring
+  vowels park a following ံ at their shoulder instead of stacking it
+  (လင်္ဂိံ); subjoined တ + ွ weave into one narrow stack
+  (`uni1010.sub.wa` — ဂန္တွာ appears 1,179 times in the canon and its
+  separate pieces ran into the next syllable by 10,338 units²); and ဠ + ှ
+  fuse into one letter (`uni1020.ha` — ဒဠှုဒ္ဓါပံ escaped 242 units into
+  its neighbour, now 0 overlap where Padauk itself grazes 2,445). The
+  Pali cover's findings fell from 25 WARN to 5, all in the
+  neighbour-overhang class Padauk itself trips.
+- The side-form swap (န → leg-free variant) now also fires before the
+  fused sub+wa stack, matching Padauk's ဂန္တွာ.
+
 ## [0.9.0] - 2026-08-22
 
 ### Fixed
