@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
-"""Generate the sample Glyph Studio project by skeletonizing Padauk.
+"""Generate the sample Glyph Studio project by skeletonizing a reference font.
 
 Usage:
     python3 make_sample.py Padauk-Regular.ttf GlyphStudioSample.glyphstudio.json
     python3 make_sample.py Padauk-Regular.ttf out.json --debug /tmp/skel-debug
+
+Padauk is the reference the shipped projects trace, but any Myanmar font
+with working mym2 shaping serves — verified with Noto Sans Myanmar,
+whose taller marks want --y 0.86 to fit this project's 900-unit band.
+Check the source font's licence permits derivatives (OFL does, with the
+renaming it requires).
 
 For every glyph in the studio inventory (web/data/glyphs.js) this script
 extracts a letterform SKELETON from Padauk (an OFL-licensed Myanmar font by
@@ -113,6 +119,23 @@ CONSONANTS = [
     (0x1018, "bha"), (0x1019, "ma"), (0x101A, "ya"), (0x101B, "ra"),
     (0x101C, "la"), (0x101D, "wa"), (0x101E, "sa"), (0x101F, "ha"),
     (0x1020, "lla"), (0x1021, "a"),
+]
+
+# Deep-descender stacks Padauk draws as ONE fused glyph rather than as a
+# base with a subjoined form under it — its complete set for the Myanmar
+# block, read straight out of the font (uniXXXXYYYY glyph names). ဋ ဌ ဍ ဎ
+# ဏ ဠ carry a tail across their whole width, so anything tucked beneath
+# lands on top of it; Padauk's answer is a single drawing in a single
+# letter's footprint, and matching it is the only thing that renders
+# အာယုဝဍ္ဎန (ဍ္ဎ) or ကမ္မဋ္ဌာန်း (ဋ္ဌ) cleanly.
+FUSED_STACKS = [
+    (0x100B, 0x100B),   # ဋ္ဋ
+    (0x100B, 0x100C),   # ဋ္ဌ
+    (0x100D, 0x100D),   # ဍ္ဍ
+    (0x100D, 0x100E),   # ဍ္ဎ
+    (0x100F, 0x100B),   # ဏ္ဋ
+    (0x100F, 0x100D),   # ဏ္ဍ
+    (0x1020, 0x1020),   # ဠ္ဠ
 ]
 
 INDEPENDENT_VOWELS = [
@@ -353,15 +376,16 @@ def build_inventory():
                                   {0})],
                      differ_from="medialYa-myanmar"))
 
-    # Fused deep-descender stacks (ကမ္မဋ္ဌာန်း အဋ္ဌိ ပဏ္ဍိတ → Padauk's
-    # uni100B100C / uni100F100D): ဋ ဌ ဍ ဠ descend across their entire
-    # width, so a subjoined form under them would sit below the design
-    # descender — anchors cannot fix it. Padauk draws each Pali stack as
-    # ONE glyph inside a single letter's footprint; these trace it whole.
-    inv.append(entry("uni100B100C", chr(0x100B) + VIRAMA + chr(0x100C),
-                     "variants"))
-    inv.append(entry("uni100F100D", chr(0x100F) + VIRAMA + chr(0x100D),
-                     "variants"))
+    # Fused deep-descender stacks (ကမ္မဋ္ဌာန်း အဋ္ဌိ ပဏ္ဍိတ အာယုဝဍ္ဎန →
+    # Padauk's uni100B100C, uni100D100E …): ဋ ဌ ဍ ဠ descend across their
+    # entire width, so a subjoined form under them would sit below the
+    # design descender — anchors cannot fix it. Padauk draws each of these
+    # Pali stacks as ONE glyph inside a single letter's footprint, and
+    # this is the complete list of the pairs it fuses; these trace them
+    # whole.
+    for top, bottom in FUSED_STACKS:
+        inv.append(entry(f"uni{top:04X}{bottom:04X}",
+                         chr(top) + VIRAMA + chr(bottom), "variants"))
 
     # Tall-aa + asat fused (ခေါ် ပေါ် → Padauk's uni102B103A): the asat
     # integrates with the ါ stem as one drawing instead of hovering across
@@ -991,6 +1015,37 @@ def squircle_project(glyphs, n):
     return touched
 
 
+def scale_drawing(glyphs, width, y_scale):
+    """Stretch or condense the whole face — the other half of a recipe.
+
+    Weight and the squircle warp reshape the strokes; width and the
+    vertical scale move every point, every advance and every anchor
+    together, so spacing stays proportional and marks stay attached.
+    Stroke widths are deliberately left alone: the pen is meant to read
+    the same across a family set (docs/FIVE-FACES.md).
+
+    Coordinates keep their float precision — rounding here would quantise
+    a 0.86 condensation into visibly uneven stems.
+    """
+    def sc(value, factor):
+        return round(value * factor, 2)
+
+    for glyph in glyphs.values():
+        if width != 1.0 and glyph.get("advance"):
+            glyph["advance"] = sc(glyph["advance"], width)
+        for stroke in glyph.get("strokes", []):
+            for point in stroke.get("points") or []:
+                point[0] = sc(point[0], width)
+                point[1] = sc(point[1], y_scale)
+            for node in stroke.get("bez") or []:
+                for i in range(0, len(node), 2):
+                    node[i] = sc(node[i], width)
+                    node[i + 1] = sc(node[i + 1], y_scale)
+        anchors = glyph.get("anchors") or {}
+        for key, (ax, ay) in list(anchors.items()):
+            anchors[key] = [sc(ax, width), sc(ay, y_scale)]
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Skeletonize Padauk into a sample Glyph Studio project.")
@@ -1008,6 +1063,20 @@ def main(argv=None):
                              "8 = nearly rectangular)")
     parser.add_argument("--weight", type=float, default=1.0, metavar="X",
                         help="multiply every stroke width (1.8 ≈ Bold)")
+    parser.add_argument("--width", type=float, default=1.0, metavar="X",
+                        help="scale the drawing and the advances "
+                             "horizontally (0.84 condensed … 1.28 wide)")
+    parser.add_argument("--y", type=float, default=1.0, metavar="X",
+                        help="scale the drawing vertically; heavy faces "
+                             "compress (0.88–0.97) so raised marks stay "
+                             "inside the design band")
+    parser.add_argument("--only", metavar="NAMES",
+                        help="generate just these glyphs (comma separated) "
+                             "instead of the whole inventory")
+    parser.add_argument("--merge", action="store_true",
+                        help="merge into an existing project file instead of "
+                             "replacing it: every glyph not generated in this "
+                             "run is left exactly as it was")
     args = parser.parse_args(argv)
 
     meta = dict(META)
@@ -1022,6 +1091,16 @@ def main(argv=None):
         core = {"consonants", "vowels", "signs", "medials", "digits",
                 "punctuation", "variants"}
         inventory = [i for i in inventory if i["group"] in core]
+    wanted_names = None
+    if args.only:
+        wanted_names = [n.strip() for n in args.only.split(",") if n.strip()]
+        known = {i["name"] for i in inventory}
+        unknown = [n for n in wanted_names if n not in known]
+        if unknown:
+            sys.exit("not in the inventory: " + ", ".join(unknown))
+        # Kept in inventory order: variant entries lean on the plain
+        # siblings generated before them (differ_from).
+        inventory = [i for i in inventory if i["name"] in set(wanted_names)]
 
     glyphs = {}
     produced = {}          # name -> frozenset of source gids (differ_from)
@@ -1103,13 +1182,38 @@ def main(argv=None):
         print(f"\nSquircle warp n={args.squircle:g}: "
               f"{squared} strokes reshaped")
 
-    project = {
-        "format": "mm-glyph-studio",
-        "version": 1,
-        "meta": meta,
-        "glyphs": glyphs,
-    }
+    if args.width != 1.0 or args.y != 1.0:
+        scale_drawing(glyphs, args.width, args.y)
+        print(f"\nDrawing scaled x{args.width:g} horizontally, "
+              f"x{args.y:g} vertically")
+
     out_path = Path(args.output_json)
+    if args.merge:
+        # Merge: keep the file's own meta and every record this run did
+        # not produce, byte for byte. New glyphs land in inventory order
+        # so the file reads like a freshly generated one.
+        existing = json.loads(out_path.read_text(encoding="utf-8"))
+        order = [i["name"] for i in build_inventory()]
+        rank = {name: i for i, name in enumerate(order)}
+        merged = dict(existing["glyphs"])
+        merged.update(glyphs)
+        project = dict(existing)
+        project["glyphs"] = {
+            name: merged[name]
+            for name in sorted(merged, key=lambda n: (rank.get(n, len(rank)),
+                                                      n))
+        }
+        added = [n for n in glyphs if n not in existing["glyphs"]]
+        print(f"\nMerged into {out_path}: {len(added)} new, "
+              f"{len(glyphs) - len(added)} replaced, "
+              f"{len(existing['glyphs']) - len(glyphs) + len(added)} untouched")
+    else:
+        project = {
+            "format": "mm-glyph-studio",
+            "version": 1,
+            "meta": meta,
+            "glyphs": glyphs,
+        }
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(project, ensure_ascii=False, indent=1),
                         encoding="utf-8")
