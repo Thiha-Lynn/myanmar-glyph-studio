@@ -361,6 +361,31 @@
     mark: true, group: "variants"
   });
 
+  glyphs.push({
+    name: "lla-myanmar.ha", cp: null, label: ch(0x1020) + ch(0x103e),
+    variant: "fused", baseVariant: true,
+    guide: ch(0x1020) + ch(0x103e),
+    hint: "Fused ဠှ — ဠ and ှ woven as one letter (Pali -ḷh-, e.g. မုဠှော); the tail leaves no room beside",
+    hintMy: "ဠ + ှ ပေါင်းစပ်ပုံစံ — တစ်ခုတည်းအဖြစ် ရေးဆွဲပါ (ပါဠိ မုဠှော)",
+    mark: false, group: "variants"
+  });
+
+  glyphs.push({
+    name: "ta-myanmar.sub.wa", cp: null, label: "◌္တွ",
+    guide: ch(0x1014) + "္" + ch(0x1010) + ch(0x103d),
+    hint: "Subjoined တ with ွ woven in (ဂန္တွာ) — draw the small တ and its wa as one narrow stack; draw only the lower part",
+    hintMy: "တဆင့် + ဝဆွဲ ပေါင်းစပ်ပုံစံ (ဂန္တွာ) — အောက်ပိုင်းကိုသာ တစ်ခုတည်းအဖြစ် ဆွဲပါ",
+    mark: true, group: "variants"
+  });
+
+  glyphs.push({
+    name: "iiAnusvara-myanmar", cp: null, label: DOTTED + ch(0x102e) + ch(0x1036),
+    guide: DOTTED + ch(0x102e) + ch(0x1036),
+    hint: "Fused ီ + ံ ligature (ကီံ, common in Pali) — ring and dot drawn as one mark",
+    hintMy: "လုံးကြီးတင်ဆံခတ် + သေးသေးတင် ပေါင်းစပ်ပုံစံ (ကီံ) — တစ်ခုတည်းအဖြစ် ဆွဲပါ",
+    mark: true, group: "variants"
+  });
+
   window.GLYPH_GROUPS = [
     { key: "consonants", en: "Consonants", my: "ဗျည်း" },
     { key: "vowels", en: "Independent vowels", my: "သရ (လွတ်)" },

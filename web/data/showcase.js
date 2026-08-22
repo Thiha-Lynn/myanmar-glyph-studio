@@ -2574,6 +2574,92 @@
       "notable": false
      },
      "rule": "fused ဏ္ဍ under the wide ဏ"
+    },
+    {
+     "text": "ဂန္တွာ",
+     "cps": "U+1002 U+1014 U+1039 U+1010 U+103D U+102C",
+     "glyphs": [
+      "uni1002",
+      "uni1014.alt",
+      "uni1010.sub.wa",
+      "uni102C"
+     ],
+     "advance": 1499,
+     "ink": [
+      60,
+      -482,
+      1441,
+      443
+     ],
+     "ref": {
+      "glyphs": [
+       "uni1002",
+       "uni1014.alt",
+       "uni1010103D.med",
+       "uni102C"
+      ],
+      "advance": 1499,
+      "ink": [
+       54,
+       -440,
+       1445,
+       449
+      ],
+      "dAdvance": 0,
+      "dInk": [
+       6,
+       -42,
+       -4,
+       -6
+      ],
+      "worst": 42,
+      "notable": true
+     },
+     "rule": "subjoined တ with ွ woven in — everywhere in Pali"
+    },
+    {
+     "text": "မုဠှော",
+     "cps": "U+1019 U+102F U+1020 U+103E U+1031 U+102C",
+     "glyphs": [
+      "uni1019",
+      "uni102F",
+      "uni1031",
+      "uni1020.ha",
+      "uni102C"
+     ],
+     "advance": 2113,
+     "ink": [
+      62,
+      -444,
+      2055,
+      444
+     ],
+     "ref": {
+      "glyphs": [
+       "uni1019",
+       "uni102F.med",
+       "uni1031",
+       "uni1020103E",
+       "uni102C"
+      ],
+      "advance": 2114,
+      "ink": [
+       54,
+       -439,
+       2061,
+       448
+      ],
+      "dAdvance": -1,
+      "dInk": [
+       8,
+       -5,
+       -6,
+       -4
+      ],
+      "worst": 8,
+      "notable": false
+     },
+     "rule": "fused ဠှ, the tail letter and its ha as one"
     }
    ]
   }

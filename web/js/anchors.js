@@ -19,7 +19,7 @@
   var TOP_MARKS = {
     "i-myanmar": 1, "ii-myanmar": 1, "ai-myanmar": 1,
     "anusvara-myanmar": 1, "asat-myanmar": 1, "kinzi-myanmar": 1,
-    "iAnusvara-myanmar": 1
+    "iAnusvara-myanmar": 1, "iiAnusvara-myanmar": 1
   };
   var BOTTOM_MARKS = {
     "u-myanmar": 1, "uu-myanmar": 1, "dotBelow-myanmar": 1,
@@ -82,7 +82,7 @@
     if (SPACING_VOWELS[meta.name]) return "spacing-sign";
     if (meta.name === "kinzi-myanmar") return "kinzi";
     if (TOP_MARKS[meta.name]) return "top-mark";
-    if (/\.sub$/.test(meta.name)) return "stack-mark";
+    if (/\.sub(\.|$)/.test(meta.name)) return "stack-mark";
     if (BOTTOM_MARKS[meta.name]) return "bottom-mark";
     // post-base spacing signs (ာ ါ း): sketched against the ◌ carrier but
     // not marks themselves, and marks DO attach to them — ကော် ကာံ
@@ -209,7 +209,15 @@
       defaults.top = [cx, topAnchorY(b.yMax)];
     } else if (role === "top-mark") {
       defaults._top = [cx, b.yMin - 20];
-      defaults.top = [cx, b.yMax + 20];
+      // the ring vowels ိ ီ park the next above-mark at their shoulder,
+      // not on the crown — kinzi + ိံ is the only chain that lands here,
+      // and stacking the ံ above the ring pushes it past the ascender
+      // (mirrors json_to_ufo.py)
+      if (meta.name === "i-myanmar" || meta.name === "ii-myanmar") {
+        defaults.top = [b.xMax + 135, b.yMax - 310];
+      } else {
+        defaults.top = [cx, b.yMax + 20];
+      }
     } else if (role === "bottom-mark") {
       // no plain "bottom" chain: marks that follow a below-mark chain
       // BESIDE it (side/_side, tops aligned) — ha right of wa in ကွှ, the

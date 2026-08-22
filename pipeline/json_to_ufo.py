@@ -120,6 +120,7 @@ def in_myanmar_blocks(cp):
 TOP_MARKS = {
     "i-myanmar", "ii-myanmar", "ai-myanmar", "anusvara-myanmar",
     "asat-myanmar", "kinzi-myanmar", "iAnusvara-myanmar",
+    "iiAnusvara-myanmar",
 }
 # marks that attach BELOW a base
 BOTTOM_MARKS = {
@@ -145,7 +146,12 @@ PRE_BASE_SIGNS = {"e-myanmar", "uni1084"}
 # the base's CENTRE (Padauk: 0.50 of ink width) while below-vowels hang
 # from its right bowl (0.78 on wide letters) — one shared anchor cannot
 # serve both, so stacks use stack/_stack and vowels keep bottom/_bottom
-STACK_MARKS = {f"{n}-myanmar.sub" for _, n in CONSONANTS}
+STACK_MARKS = ({f"{n}-myanmar.sub" for _, n in CONSONANTS}
+               # subjoined တ with the wa medial woven in (Padauk's
+               # uni1010103D.med): ္တ + ွ as separate pieces spans
+               # 651 units and runs into the next syllable's stack —
+               # ဂန္တွာ appears 1,179 times in the Tipiṭaka
+               | {"ta-myanmar.sub.wa"})
 
 BASE_NAMES = {f"{n}-myanmar" for _, n in CONSONANTS} | {"greatSa-myanmar"}
 
@@ -1000,7 +1006,16 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             anchor("top", ax_max + KINZI_SIDE_GAP + pen_pad, ay_min - 20)
         elif name in TOP_MARKS:
             anchor("_top", cx, ay_min - 20)
-            anchor("top", cx, ay_max + 20)
+            # The ring vowels ိ ီ park the NEXT above-mark beside the
+            # ring, not on top of it. The only sequence that reaches this
+            # chain is kinzi + ိံ / ီံ — everywhere else the ligature has
+            # already fused the pair — and stacking the ံ above the ring
+            # sent it to y=1068, past the ascender (Padauk tucks it at the
+            # ring's shoulder: its ံ tops out at 729 beside an 882 ring).
+            if name in ("i-myanmar", "ii-myanmar"):
+                anchor("top", ax_max + 135 + pen_pad, ay_max - 310)
+            else:
+                anchor("top", cx, ay_max + 20)
         elif name in BOTTOM_MARKS:
             # No plain "bottom" chain here: hanging the next mark UNDER a
             # below-mark is how ရွှံ့ ended up 748 units deep. Marks that
@@ -1209,6 +1224,8 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             continue
         if base == "iAnusvara-myanmar":
             ps_names[gname] = "uni102D1036" + dot + suffix      # AGL ligature
+        if base == "iiAnusvara-myanmar":
+            ps_names[gname] = "uni102E1036" + dot + suffix      # AGL ligature
             continue
         # whole name first: the independent-vowel names contain a dot of
         # their own (o.indep-myanmar → U+1029), and splitting at it would
@@ -1469,6 +1486,19 @@ def generate_features(drawn, wide_bases=None, bases=None, dot_advances=None):
     ha_ligs = [(v, f"medialHa-myanmar.{s}")
                for v, s in (("u-myanmar", "u"), ("uu-myanmar", "uu"))
                if f"medialHa-myanmar.{s}" in drawn and v in drawn]
+    if {"lla-myanmar.ha", "lla-myanmar", "medialHa-myanmar"} <= drawn:
+        # ဠ + ှ is one woven letter (Padauk's uni1020103E): ဠ's tail
+        # crosses its whole width, so a separate ှ can only hang beside
+        # the ink, past the advance — ဒဠှုဒ္ဓါပံ escaped 242 units into
+        # the next syllable. This lookup must sit BEFORE ha_fuse: once
+        # ှ+ု fuse into medialHa-myanmar.u there is no ှ left to weave,
+        # and -ḷh- roots are common enough in Pali (2,166 canon hits)
+        # that both orders occur in one paragraph.
+        pres_lookups.append([
+            "  lookup lla_ha_fuse {",
+            "    lookupflag 0;",
+            "    sub lla-myanmar medialHa-myanmar by lla-myanmar.ha;",
+            "  } lla_ha_fuse;"])
     if "medialHa-myanmar" in drawn and ha_ligs:
         # The filtering set holds only the ligature's own components, so
         # an anusvara stored between them (လှုံ့ in its common alternate
@@ -1541,7 +1571,10 @@ def generate_features(drawn, wide_bases=None, bases=None, dot_advances=None):
     # to −890. Padauk swaps the same side form in (uni1014.alt +
     # uni1014.med) — but leaves ရ alone (ရ္ရ keeps the plain letter), so
     # the trigger lists stay per-base, measured rather than assumed.
-    stack_trigs = tuple(f"{n}-myanmar.sub" for _, n in CONSONANTS)
+    # The fused sub+wa counts as a subjoined form here too: Padauk's
+    # ဂန္တွာ swaps in the leg-free န exactly as ဂန္တာ does.
+    stack_trigs = (tuple(f"{n}-myanmar.sub" for _, n in CONSONANTS)
+                   + ("ta-myanmar.sub.wa",))
     # ra gets a lookup of its own: its filtering set holds ONLY u/uu, so
     # the swap looks straight through an intervening ha — Padauk's ရှု is
     # ra.alt + its ha+u ligature. In the shared lookup ha must stay
@@ -1643,6 +1676,12 @@ def generate_features(drawn, wide_bases=None, bases=None, dot_advances=None):
     for lig, top, sub in FUSED_STACK_RULES:
         if lig in drawn and top in drawn and sub in drawn:
             fuse_stack_rules.append(f"    sub {top} {sub} by {lig};")
+    # Subjoined တ + ွ weave into one narrow stack (Padauk's
+    # uni1010103D.med, 338 units wide inside the base's footprint): the
+    # separate pieces span the sub's full 651 plus a wa parked beside it.
+    if {"ta-myanmar.sub.wa", "ta-myanmar.sub", "medialWa-myanmar"} <= drawn:
+        fuse_stack_rules.append(
+            "    sub ta-myanmar.sub medialWa-myanmar by ta-myanmar.sub.wa;")
 
     if (blws_rules or side_rules or ra_side_rules or nya_side_rules
             or medial_rules or fuse_stack_rules):
@@ -1690,14 +1729,18 @@ def generate_features(drawn, wide_bases=None, bases=None, dot_advances=None):
     # and the kinzi slides left when a medial ya follows (အင်္ကျီ), since
     # the vowel then belongs to the ya and would overlap the kinzi's spot.
     abvs_rules = []
-    if {"iAnusvara-myanmar", "i-myanmar", "anusvara-myanmar"} <= drawn:
+    for ring, lig, tag in (("i-myanmar", "iAnusvara-myanmar", "i"),
+                           ("ii-myanmar", "iiAnusvara-myanmar", "ii")):
+        if not {lig, ring, "anusvara-myanmar"} <= drawn:
+            continue
         # …but NOT after a kinzi. The kinzi parks the next above-mark
         # beside its hook, with a gap sized for one mark; the ိံ ligature
         # is a single wide glyph and lands on the hook instead
         # (လင်္ဃိံ — found by the Jātaka corpus, and Padauk avoids it too
         # by fusing the i INTO its kinzi and leaving ံ separate). Left
-        # unligated, ိ and ံ chain one after the other along the existing
-        # side anchors, which already handle exactly this.
+        # unligated, the ring parks the ံ beside itself — the ring
+        # vowels' own "top" continuation anchor points at the shoulder,
+        # not the crown, for exactly this sequence.
         if "kinzi-myanmar" in drawn:
             # `ignore` only suppresses inside its OWN lookup, and a plain
             # ligature rule cannot share one with a chain rule — feaLib
@@ -1705,19 +1748,18 @@ def generate_features(drawn, wide_bases=None, bases=None, dot_advances=None):
             # lookup that does nothing and the ligature fires regardless.
             # Making the ligature contextual too puts both in one GSUB6
             # lookup, where the ignore actually bites.
-            lines.append("lookup iAnusvaraLigature {")
-            lines.append("  sub i-myanmar anusvara-myanmar "
-                         "by iAnusvara-myanmar;")
-            lines.append("} iAnusvaraLigature;")
+            lines.append(f"lookup {tag}AnusvaraLigature {{")
+            lines.append(f"  sub {ring} anusvara-myanmar by {lig};")
+            lines.append(f"}} {tag}AnusvaraLigature;")
             lines.append("")
             abvs_rules.append(
-                "  ignore sub kinzi-myanmar i-myanmar' anusvara-myanmar';")
+                f"  ignore sub kinzi-myanmar {ring}' anusvara-myanmar';")
             abvs_rules.append(
-                "  sub i-myanmar' lookup iAnusvaraLigature "
+                f"  sub {ring}' lookup {tag}AnusvaraLigature "
                 "anusvara-myanmar';")
         else:
             abvs_rules.append(
-                "  sub i-myanmar anusvara-myanmar by iAnusvara-myanmar;")
+                f"  sub {ring} anusvara-myanmar by {lig};")
     kinzi_ya = [n for n in ("medialYa-myanmar", "medialYa-myanmar.beforewa",
                             "medialYa-myanmar.wa", "medialYa-myanmar.ha")
                 if n in drawn]
