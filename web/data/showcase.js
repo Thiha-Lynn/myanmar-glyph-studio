@@ -2446,6 +2446,134 @@
       "notable": false
      },
      "rule": "two stacks in one word"
+    },
+    {
+     "text": "အာယုဝဍ္ဎန",
+     "cps": "U+1021 U+102C U+101A U+102F U+101D U+100D U+1039 U+100E U+1014",
+     "glyphs": [
+      "uni1021",
+      "uni102C",
+      "uni101A",
+      "uni102F",
+      "uni101D",
+      "uni100D100E",
+      "uni1014"
+     ],
+     "advance": 3943,
+     "ink": [
+      62,
+      -444,
+      3881,
+      443
+     ],
+     "ref": {
+      "glyphs": [
+       "uni1021",
+       "uni102C",
+       "uni101A",
+       "uni102F.med",
+       "uni101D",
+       "uni100D100E",
+       "uni1014"
+      ],
+      "advance": 3942,
+      "ink": [
+       54,
+       -439,
+       3889,
+       448
+      ],
+      "dAdvance": 1,
+      "dInk": [
+       8,
+       -5,
+       -8,
+       -5
+      ],
+      "worst": 8,
+      "notable": false
+     },
+     "rule": "the pangram's ဍ္ဎ — a fused single glyph"
+    },
+    {
+     "text": "ဝဋ္ဋ",
+     "cps": "U+101D U+100B U+1039 U+100B",
+     "glyphs": [
+      "uni101D",
+      "uni100B100B"
+     ],
+     "advance": 1117,
+     "ink": [
+      62,
+      -438,
+      1136,
+      446
+     ],
+     "ref": {
+      "glyphs": [
+       "uni101D",
+       "uni100B100B"
+      ],
+      "advance": 1116,
+      "ink": [
+       54,
+       -439,
+       1143,
+       450
+      ],
+      "dAdvance": 1,
+      "dInk": [
+       8,
+       1,
+       -7,
+       -4
+      ],
+      "worst": 8,
+      "notable": false
+     },
+     "rule": "fused ဋ္ဋ, one letter's footprint"
+    },
+    {
+     "text": "ပဏ္ဍိတ",
+     "cps": "U+1015 U+100F U+1039 U+100D U+102D U+1010",
+     "glyphs": [
+      "uni1015",
+      "uni100F100D",
+      "uni102D",
+      "uni1010"
+     ],
+     "advance": 2552,
+     "ink": [
+      60,
+      -444,
+      2502,
+      872
+     ],
+     "ref": {
+      "glyphs": [
+       "uni1015",
+       "uni100F100D",
+       "uni102D",
+       "uni1010"
+      ],
+      "advance": 2552,
+      "ink": [
+       54,
+       -451,
+       2508,
+       882
+      ],
+      "dAdvance": 0,
+      "dInk": [
+       6,
+       7,
+       -6,
+       -10
+      ],
+      "worst": 10,
+      "notable": false
+     },
+     "rule": "fused ဏ္ဍ under the wide ဏ"
     }
    ]
   }

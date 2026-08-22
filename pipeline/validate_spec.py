@@ -384,6 +384,44 @@ def _translated(polys, dx, dy):
     return [[(x + dx, y + dy) for x, y in c] for c in polys]
 
 
+def ink_overlap_area(polys_a, polys_b):
+    """Square units where two ink shapes are drawn on top of each other.
+
+    `ink_clearance` answers "do they touch"; this answers "how badly",
+    which is the only way to compare one font against another. A wrap
+    legitimately encircles its base and a ha sits under one, so overlap
+    on its own is not a defect — overlap far larger than the reference
+    font's for the same cluster is.
+
+    The polygons are the already-flattened contours the collision
+    protocol uses, so counters keep their opposite winding and the
+    nonzero fill sees the same shape the rasterizer would.
+    """
+    import pathops
+
+    def path(polys):
+        out = pathops.Path()
+        pen = out.getPen()
+        drew = False
+        for contour in polys:
+            if len(contour) < 3:
+                continue
+            pen.moveTo(contour[0])
+            for point in contour[1:]:
+                pen.lineTo(point)
+            pen.closePath()
+            drew = True
+        return out if drew else None
+
+    a, b = path(polys_a), path(polys_b)
+    if a is None or b is None:
+        return 0.0
+    try:
+        return abs(pathops.op(a, b, pathops.PathOp.INTERSECTION).area)
+    except Exception:          # degenerate contour: no measurable overlap
+        return 0.0
+
+
 def ink_clearance(polys_a, polys_b):
     """0.0 when the two ink shapes overlap, otherwise their gap in units.
 

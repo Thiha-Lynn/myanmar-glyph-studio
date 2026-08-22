@@ -186,3 +186,162 @@ def test_directwrite_agrees_with_harfbuzz_on_windows():
     _cross_engine_check(
         "DirectWrite", "Windows", "directwrite/DirectWriteShape.exe",
         "directwrite_check.py", "see pipeline/directwrite/README.md")
+
+
+# ---------------------------------------------------------------------------
+# The reference font as the gate: what Padauk draws as one glyph, we draw
+# as one glyph.
+# ---------------------------------------------------------------------------
+
+REFERENCE = ROOT / "web" / "fonts" / "Padauk-Regular.ttf"
+VIRAMA = "္"
+# ဋ ဌ ဍ ဎ ဏ ဠ — the letters whose tail runs the width of the glyph.
+DEEP_LETTERS = [chr(cp) for cp in range(0x100B, 0x1011) if cp != 0x1010]
+DEEP_LETTERS.append("ဠ")
+
+
+def _reference_font():
+    if not REFERENCE.exists():
+        pytest.skip("bundled Padauk reference not present")
+    return vs.FontUnderTest(REFERENCE)
+
+
+def test_every_stack_the_reference_fuses_is_in_the_inventory():
+    """ဍ္ဎ shipped as a tangle for a week because this test did not exist.
+
+    Two of Padauk's seven fused deep stacks had been traced; the other
+    five were left stacking a subjoined form under a full-width tail,
+    which is exactly the tangle the traced pair existed to avoid. The
+    reference font states the whole set — so read it, do not list it.
+    """
+    ref = _reference_font()
+    expected = set()
+    for top in DEEP_LETTERS:
+        for bottom in DEEP_LETTERS:
+            glyphs, _ = ref.shape(top + VIRAMA + bottom)
+            if len(glyphs) == 1 and glyphs[0].name.startswith("uni"):
+                expected.add(glyphs[0].name)
+    assert expected, "reference font fused nothing — is this Padauk?"
+    import json
+    project = json.loads(
+        (ROOT / "projects" / "myanmar-glyph-sans"
+         / "MyanmarGlyphSans.glyphstudio.json").read_text(encoding="utf-8"))
+    missing = sorted(expected - set(project["glyphs"]))
+    assert not missing, (
+        "Padauk draws these stacks as one glyph and the project has no "
+        f"artwork for them: {missing}")
+
+
+# The four pairs Padauk answers with a subjoined SIZE this project does
+# not have. Its subjoined forms come in two sizes — uni100D.med at ~75%
+# of the letter and uni100D.sml at ~55% — and after ဍ, whose tail leaves
+# the smallest pocket of the six, only the .sml one fits at any position.
+# Ours are all one size (the .med one), so these four stay worse than the
+# reference until a small subjoined class exists. None of them occurs in
+# either corpus, in the 12,450-word vocabulary, or in the Jataka text:
+# they are spellable, not written. Listed rather than tolerated silently,
+# and the test still fails if the list has to grow.
+KNOWN_DEEP_STACK_GAPS = {"ဍ္ဋ", "ဍ္ဌ", "ဍ္ဏ", "ဍ္ဠ"}
+
+
+@pytest.mark.parametrize("font_path", SHIPPED, ids=lambda p: p.stem)
+def test_every_font_fuses_the_stacks_the_reference_fuses(font_path):
+    """The structural half of the check, and it holds at every weight.
+
+    A pair Padauk draws as one glyph must shape to one glyph here too. A
+    font that stacks a subjoined form under a full-width tail instead is
+    the ဍ္ဎ tangle again, whatever the pen is doing.
+    """
+    if not font_path.exists():
+        pytest.skip(f"{font_path.name} not present")
+    ref = _reference_font()
+    font = vs.FontUnderTest(font_path)
+    unfused = []
+    for top in DEEP_LETTERS:
+        for bottom in DEEP_LETTERS:
+            text = top + VIRAMA + bottom
+            ref_glyphs, _ = ref.shape(text)
+            if len(ref_glyphs) != 1:
+                continue                       # Padauk stacks it too
+            ours, _ = font.shape(text)
+            if len(ours) != 1:
+                unfused.append(f"{text}: {[g.name for g in ours]}")
+    assert not unfused, (
+        f"{font_path.name} stacks what Padauk fuses:\n  " + "\n  ".join(unfused))
+
+
+# The four pairs Padauk answers with a subjoined SIZE this project does
+# not have. Its subjoined forms come in two sizes — uni100D.med at ~75%
+# of the letter and uni100D.sml at ~55% — and after ဍ, whose tail leaves
+# the smallest pocket of the six, only the .sml one fits at any position.
+# Ours are all one size (the .med one), so these four stay worse than the
+# reference until a small subjoined class exists. None of them occurs in
+# either corpus, in the 12,450-word vocabulary, or in the Jataka text:
+# they are spellable, not written. Listed rather than tolerated silently,
+# and the test still fails if the list has to grow.
+KNOWN_DEEP_STACK_GAPS = {"ဍ္ဋ", "ဍ္ဌ", "ဍ္ဏ", "ဍ္ဠ"}
+
+# Ink-on-ink area scales with the pen: a black display cut doubles every
+# stroke and doubles the square units where two strokes cross, without
+# anything having moved. So the geometric comparison runs on the face
+# whose weight matches the reference — the display cuts are covered by
+# the structural test above, which no pen can affect.
+REGULAR_WEIGHT_FACE = (ROOT / "projects" / "myanmar-glyph-sans"
+                       / "MyanmarGlyphSans-Regular.ttf")
+
+
+def test_deep_stacks_are_never_drawn_through_each_other():
+    """A subjoined form under a full-width tail is ink on ink.
+
+    Measured against the reference rather than against a constant: some
+    of the 36 pairs overlap a little in Padauk too, and a threshold
+    picked out of the air would either miss the tangles or fail the
+    reference implementation. What must not happen is being *worse* than
+    the font we trace.
+    """
+    if not REGULAR_WEIGHT_FACE.exists():
+        pytest.skip("shipped font not present")
+    ref = _reference_font()
+    font = vs.FontUnderTest(REGULAR_WEIGHT_FACE)
+    worse = []
+    for top in DEEP_LETTERS:
+        for bottom in DEEP_LETTERS:
+            text = top + VIRAMA + bottom
+            if text in KNOWN_DEEP_STACK_GAPS:
+                continue
+            ours = _cluster_ink_overlap(font, text)
+            theirs = _cluster_ink_overlap(ref, text)
+            if ours > theirs + 2000:
+                worse.append(f"{text}: {ours:.0f} vs Padauk {theirs:.0f}")
+    assert not worse, (
+        "MyanmarGlyphSans-Regular draws ink through ink where Padauk does "
+        "not:\n  " + "\n  ".join(worse))
+
+
+def test_the_known_deep_stack_gaps_are_still_only_those_four():
+    """An allowlist that is never re-checked is a licence, not a record."""
+    ref = _reference_font()
+    font = vs.FontUnderTest(REGULAR_WEIGHT_FACE)
+    still_bad = set()
+    for text in KNOWN_DEEP_STACK_GAPS:
+        if (_cluster_ink_overlap(font, text)
+                > _cluster_ink_overlap(ref, text) + 2000):
+            still_bad.add(text)
+    fixed = KNOWN_DEEP_STACK_GAPS - still_bad
+    assert not fixed, (
+        f"these are no longer worse than Padauk — take them off "
+        f"KNOWN_DEEP_STACK_GAPS: {sorted(fixed)}")
+
+
+def _cluster_ink_overlap(font, text):
+    """Total ink-on-ink area between the glyphs of one shaped cluster."""
+    glyphs, _ = font.shape(text)
+    total = 0.0
+    for i, a in enumerate(glyphs):
+        for b in glyphs[i + 1:]:
+            if a.cluster != b.cluster:
+                continue
+            total += vs.ink_overlap_area(
+                vs._translated(font.outline(a.name), a.x, a.y),
+                vs._translated(font.outline(b.name), b.x, b.y))
+    return total

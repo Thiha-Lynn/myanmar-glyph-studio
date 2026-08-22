@@ -155,13 +155,53 @@ BASE_NAMES = {f"{n}-myanmar" for _, n in CONSONANTS} | {"greatSa-myanmar"}
 # descender — ကမ္မဋ္ဌာန်း rendered as a tangle until these existed. They
 # behave as bases (full base anchors, GDEF base) but never join the
 # wide-base wrap measurement, exactly like the .alt side-form variants.
-FUSED_STACK_BASES = {"uni100B100C", "uni100F100D"}
+#
+# The pairs are Padauk's own complete set (its uniXXXXYYYY glyphs), and
+# the same list drives the tracing in make_sample.py. Anything missing
+# here renders as a tangle in real Pali: အာယုဝဍ္ဎန (ဍ္ဎ) was the report
+# that turned the two-entry version of this list into the whole class.
+FUSED_STACK_PAIRS = [
+    (0x100B, 0x100B),   # ဋ္ဋ
+    (0x100B, 0x100C),   # ဋ္ဌ
+    (0x100D, 0x100D),   # ဍ္ဍ
+    (0x100D, 0x100E),   # ဍ္ဎ
+    (0x100F, 0x100B),   # ဏ္ဋ
+    (0x100F, 0x100D),   # ဏ္ဍ
+    (0x1020, 0x1020),   # ဠ္ဠ
+]
+
+_LETTER_NAME = dict(CONSONANTS)
+
+# (fused glyph, base letter, subjoined form) for the GSUB rule below.
+FUSED_STACK_RULES = [
+    (f"uni{top:04X}{bottom:04X}",
+     f"{_LETTER_NAME[top]}-myanmar",
+     f"{_LETTER_NAME[bottom]}-myanmar.sub")
+    for top, bottom in FUSED_STACK_PAIRS
+]
+
+FUSED_STACK_BASES = {lig for lig, _, _ in FUSED_STACK_RULES}
 
 # The fused wa+ha keeps its WA half where plain wa sits and lets the ha
 # loop extend LEFT: Padauk's ကွ and ကွှ share a right edge (871/872),
 # while centring the 558-wide ligature put ours 100 units right of it.
 # Moving the attachment point right moves the placed ink left. Mirrored
 # in web/js/anchors.js (bottom-mark role).
+# The six letters whose tail crosses the whole glyph, plus their fused
+# stacks — the only bases whose marks move BESIDE the ink (below). ဉ's
+# stand-in ဥ is deep at every column too, but Padauk answers it with a
+# tucked SMALL subjoined form, not a beside one: moving its stack out
+# sideways pushed မဉ္ဇူ's subjoined ဇ into the following ူ, which is a
+# worse tangle than the one being avoided.
+DEEP_TAIL_STEMS = {"tta-myanmar", "ttha-myanmar", "dda-myanmar",
+                   "ddha-myanmar", "nna-myanmar", "lla-myanmar"}
+
+# A letter that descends at every column has no gap to tuck a below-mark
+# into, so the mark stands beside it — measured off Padauk, whose ဌု ဌွ
+# ဌ့ ဠွ ဋွ place the mark's ink centre 67–181 units past the letter's
+# right ink edge, overhanging the advance rather than crossing the tail.
+BESIDE_LEG_DX = 130
+
 BOTTOM_MARK_DX = {"medialWa-myanmar.ha": 100, "medialWa-myanmar.ha.small": 75}
 
 # Signs that wrap around their base (medial ra). Their sketched coordinates
@@ -832,23 +872,39 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
         # tail sweeps under its right bowl), slide the bottom anchor to the
         # nearest genuinely open column band so the below-mark is not drawn
         # through the leg. Letters with a clear underside at the preferred
-        # spot (က ခ န ရ …) are untouched, and letters that are deep
-        # everywhere keep the preferred spot — the −50 depth clamp already
-        # handles those.
+        # spot (က ခ န ရ …) are untouched.
+        #
+        # The band search runs from 0.25, not 0.40: ဍ's tail leaves its
+        # pocket on the LEFT, and Padauk puts ဍွ ဍှ at 0.32 of the ink —
+        # a search that started at 0.40 could not see it and clamped the
+        # mark onto the tail instead.
+        #
+        # And when a letter is deep at EVERY column — ဋ ဌ ဠ carry the tail
+        # right across — there is no band to find, so the mark goes BESIDE
+        # the ink rather than on top of it. That is Padauk's own answer:
+        # its ဌု ဌွ ဌ့ ဠွ ဋွ all sit past the letter's right ink edge
+        # (+67 … +181 units), overhanging the advance, while our clamp put
+        # them through the middle of the tail.
         bottom_x = mark_x
+        is_deep_tail = (name.partition(".")[0] in DEEP_TAIL_STEMS
+                        or name in FUSED_STACK_BASES)
+        beside_leg = False
         if not is_mark:
             band = column_depth(anchor_polys, mark_x - 50, mark_x + 50)
             if band is not None and band < -160:
                 best = None
-                for i in range(19):                    # 0.40 … 0.85
-                    cand = ax_min + ink_w * (0.40 + i * 0.025)
+                for i in range(25):                    # 0.25 … 0.85
+                    cand = ax_min + ink_w * (0.25 + i * 0.025)
                     d = column_depth(anchor_polys, cand - 50, cand + 50)
                     if (d is None or d >= -160) and (
                             best is None
                             or abs(cand - mark_x) < abs(best - mark_x)):
                         best = cand
+                beside_leg = best is None and is_deep_tail
                 if best is not None:
                     bottom_x = best
+                elif is_deep_tail:
+                    bottom_x = ax_max + BESIDE_LEG_DX
         # U+25CC DOTTED CIRCLE also carries base anchors: shaping engines
         # place it under isolated marks, and the mark must attach to it.
         is_myanmar_base = bool(
@@ -885,7 +941,15 @@ def build_ufo(project, out_dir, width_scale=1.0, style_name=None,
             # the base does (uni1014.alt + uni1014.med, uni101B + uni101B.med),
             # because following the leg all the way down puts န္န at −890 —
             # 290 units past the descender, into the next line of text.
-            anchor("stack", cx, max(min(ay_min, 0), STACK_FLOOR) - 40)
+            # A subjoined form under a full-width tail moves out beside the
+            # letter for the same reason its below-marks do: Padauk's ဌ္ဌ
+            # ဌ္ဎ ဋ္ဏ hang the .med form from 54–141 units past the base's
+            # right ink edge, overhanging the advance, rather than centring
+            # it on the tail. Everything with an open underside stays at
+            # dead centre, which is where Padauk keeps က္က and ကမ္မ.
+            anchor("stack",
+                   ax_max + BESIDE_LEG_DX if beside_leg else cx,
+                   max(min(ay_min, 0), STACK_FLOOR) - 40)
             if not is_base_variant:
                 # variants are GSUB-only stand-ins: they never follow a
                 # wrap and must not skew the wide-base measurement
@@ -1274,15 +1338,25 @@ def generate_features(drawn, wide_bases=None, bases=None, dot_advances=None):
     """Emit only rules whose glyphs were actually drawn.
 
     Rules are written before any script statement so they register under
-    every declared languagesystem: DFLT (fallback shaping), mym2 (the
-    current Myanmar shaping model) and mymr (legacy engines).
+    every declared languagesystem: DFLT (fallback shaping) and mym2, the
+    current Myanmar shaping model these rules are written for.
+
+    NOT `mymr`. That tag means the 2005 Myanmar model, whose reordering
+    rules are a different design, and advertising it is a trap rather
+    than a courtesy: HarfBuzz picks its shaper from the tag it resolves,
+    and anything that is not mym2 selects the **Zawgyi** shaper, which
+    does no reordering at all. Registering these lookups under mymr as
+    well was measured on this font — with mym2 dropped so the legacy tag
+    wins, ကေ shapes to [ka, e] instead of [e, ka] and မြန်မာ leaves the ြ
+    behind its base: correctly encoded Unicode rendered as nonsense, in
+    any client that asks for the legacy tag. Padauk and Noto Sans Myanmar
+    both register mym2 alone; so do we now.
     """
     lines = [
         "# Auto-generated Myanmar shaping features (mym2 starter set).",
         "# Regenerated by json_to_ufo.py — refine by hand as the font matures.",
         "languagesystem DFLT dflt;",
         "languagesystem mym2 dflt;",
-        "languagesystem mymr dflt;",
         "",
     ]
 
@@ -1426,17 +1500,26 @@ def generate_features(drawn, wide_bases=None, bases=None, dot_advances=None):
         lines.append("} pres;")
         lines.append("")
 
-    # blws: short u/uu after subjoined forms AND after bases whose own ink
-    # descends below the baseline (န ရ ဋ ဌ ဠ — measured, not listed).
+    # blws: short u/uu after subjoined forms AND after the three letters
+    # whose tail runs the whole width of the glyph.
     # The mark-filtering set lets the context see through intervening
     # marks (ကျွန်ုပ် is န + ် + ု: the asat must not break the match)
     # while still matching the u/uu target itself.
-    # The long .alt vowels apply ONLY after subjoined forms — beside a
-    # descender leg the plain vowel at the clamped side anchor is already
-    # Padauk's med-form answer (see the anchor comment above).
+    #
+    # ဋ ဍ ဠ and every fused stack take the SPACING vowel, standing after
+    # the letter instead of tucked under it — measured in Padauk, which
+    # renders ဋု ဍု ဠု ဍ္ဎု with its default uni102F at advance 699–713
+    # and keeps the tucked uni102F.med for ဌ ဎ ဏ က န ရ ည ဉ. An earlier
+    # reading of this had the clamped side anchor standing in for the
+    # med form; it does not — the curl lands ON the tail, 5,000–7,000
+    # units² of ink drawn through ink in ဠု ဋု ဠူ.
+    deep_tail_bases = [n for n in ("tta-myanmar", "dda-myanmar",
+                                   "lla-myanmar")
+                       if n in drawn]
+    deep_tail_bases += [lig for lig, _, _ in FUSED_STACK_RULES if lig in drawn]
     sub_ctx = [f"{n}-myanmar.sub" for _, n in CONSONANTS
                if f"{n}-myanmar.sub" in drawn]
-    desc_ctx = list(sub_ctx)
+    desc_ctx = list(sub_ctx) + deep_tail_bases
     blws_rules = []
     filter_marks = list(sub_ctx)  # subjoined forms are marks the context
     if desc_ctx:                  # must SEE (skipping them breaks စက္ကူ)
@@ -1472,14 +1555,22 @@ def generate_features(drawn, wide_bases=None, bases=None, dot_advances=None):
     # *across* an asat (ကျွန်ုပ်), and a filtering set that contains asat
     # makes it visible and blocks that match. So ဉ gets its own lookup,
     # for the same reason ra has one.
+    # The FUSED ha+vowel forms have to be named alongside plain ha, for
+    # the same reason the medial contexts below do: pres has already
+    # turned ှ + ု into medialHa-myanmar.u by the time blws runs, so a
+    # list that says only "medialHa-myanmar" stops matching exactly where
+    # the swap matters most. နှုတ် နှိုက် ညှို့ kept the leg and drew the
+    # fused hook straight through it (~14,000 units² of ink on ink);
+    # Padauk swaps uni1014.alt / uni100A.alt in front of uni103E102F.
+    ha_vowel_trigs = ("medialHa-myanmar.u", "medialHa-myanmar.uu")
     side_specs = (
         ("na-myanmar", ("u-myanmar", "uu-myanmar", "medialWa-myanmar",
                         "medialHa-myanmar", "medialWa-myanmar.ha",
                         "medialYa-myanmar", "medialYa-myanmar.beforewa")
-         + stack_trigs, "na", None),
+         + ha_vowel_trigs + stack_trigs, "na", None),
         ("nnya-myanmar", ("u-myanmar", "uu-myanmar", "medialWa-myanmar",
                           "medialHa-myanmar", "medialWa-myanmar.ha")
-         + stack_trigs, "na", None),
+         + ha_vowel_trigs + stack_trigs, "na", None),
         ("ra-myanmar", ("u-myanmar", "uu-myanmar", "medialWa-myanmar.ha",
                         "medialHa-myanmar.u", "medialHa-myanmar.uu"),
          "ra", None),
@@ -1549,8 +1640,7 @@ def generate_features(drawn, wide_bases=None, bases=None, dot_advances=None):
     # structure — ကမ္မဋ္ဌာန်း ပဏ္ဍိတ). Emitted only when the fused glyph
     # is drawn, so fonts without the artwork keep the plain stack.
     fuse_stack_rules = []
-    for lig, top, sub in (("uni100B100C", "tta-myanmar", "ttha-myanmar.sub"),
-                          ("uni100F100D", "nna-myanmar", "dda-myanmar.sub")):
+    for lig, top, sub in FUSED_STACK_RULES:
         if lig in drawn and top in drawn and sub in drawn:
             fuse_stack_rules.append(f"    sub {top} {sub} by {lig};")
 
