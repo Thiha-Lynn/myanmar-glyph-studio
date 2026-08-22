@@ -25,7 +25,7 @@ If you cannot measure a claim, do not implement it. The tools to measure
 with are already here:
 
 ```bash
-mgs-validate <font.ttf>          # 1,486 spec clusters + 711 real words
+mgs-validate <font.ttf>          # 1,486 spec clusters + 711 words + 1,633 Pali
 python3 pipeline/coretext_check.py <font.ttf>   # vs Apple's engine (macOS)
 pytest                                          # 81 tests, ~20s
 ```
@@ -51,6 +51,7 @@ neither — a mismatch means contributors draw one thing and ship another:
 * `web/data/glyphs-extended*.js`, `glyphs-latin*.js` → `pipeline/gen_inventory.py`
 * `web/data/showcase.js`, `vocabulary.js` → `pipeline/make_showcase.py`
 * `web/data/book.js` → `pipeline/make_book.py`
+* `web/data/tipitaka.js` → `pipeline/make_tipitaka.py` (SuttaCentral public-domain roman text through `pali_translit.py` — never a Burmese edition's files)
 * `web/gallery-data/**` → `pipeline/make_gallery.py` (not committed)
 
 `web/data/glyphs.js` is the one hand-maintained inventory file.
