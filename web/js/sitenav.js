@@ -31,6 +31,7 @@
     specimen: '<path d="M12 3l2.1 5.4L19.5 10l-5.4 2.1L12 17.5l-2.1-5.4L4.5 10l5.4-1.6z"/>',
     styles: '<path d="M12 3c-4.9 0-9 3.6-9 8.2 0 4.5 3.6 7.8 8 7.8 1.4 0 2.4-.9 2.4-2 0-1-.6-1.6-.6-2.4 0-.9.7-1.5 1.7-1.5H16c3 0 5-2 5-5C21 5.9 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="11" cy="7.5" r="1"/><circle cx="15.5" cy="8.5" r="1"/>',
     book: '<path d="M4 5.5C4 4.7 4.7 4 5.5 4H10a2 2 0 012 2v13a2 2 0 00-2-1.6H5.5A1.5 1.5 0 014 16z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H14a2 2 0 00-2 2v13a2 2 0 012-1.6h4.5a1.5 1.5 0 001.5-1.4z"/>',
+    tipitaka: '<rect x="4" y="14.5" width="16" height="3.2" rx=".6"/><rect x="5.2" y="10.6" width="13.6" height="3.2" rx=".6"/><rect x="6.4" y="6.7" width="11.2" height="3.2" rx=".6"/><path d="M12 3.2v2.4"/>',
     devicetest: '<rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M10.5 18.5h3"/>',
     contribute: '<path d="M12 20.5s-7.2-4.3-7.2-9.4A4.1 4.1 0 0112 8.6a4.1 4.1 0 017.2 2.5c0 5.1-7.2 9.4-7.2 9.4z"/>',
     source: '<path d="M9.5 8.5L5.5 12l4 3.5"/><path d="M14.5 8.5l4 3.5-4 3.5"/>'
@@ -46,6 +47,7 @@
     { file: "styles.html", icon: "styles", en: "Font styles", my: "ဖောင့်စတိုင်များ" },
     { file: "showcase.html", icon: "showcase", en: "Rendering showcase", my: "ရေးသားပြသချက်" },
     { file: "book.html", icon: "book", en: "Reading proof", my: "စာအုပ်ဖြင့် စမ်းသပ်ချက်" },
+    { file: "tipitaka.html", icon: "tipitaka", en: "Tipiṭaka reader", my: "ပိဋကတ် သုံးပုံ" },
     { file: "devicetest.html", icon: "devicetest", en: "Device test", my: "ဖုန်းပေါ်တွင် စမ်းရန်" },
     { file: "contribute.html", icon: "contribute", en: "Contribute", my: "လက်တွဲပါ" },
     { file: "https://github.com/Thiha-Lynn/myanmar-glyph-studio", icon: "source", en: "Source", my: "ကုဒ်" }
