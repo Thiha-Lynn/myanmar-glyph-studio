@@ -26,7 +26,7 @@ Myanmar Glyph Sans, the typeface this toolkit built.</em></p>
 · **✦ Type specimen: <https://thiha-lynn.github.io/myanmar-glyph-studio/specimen.html>**
 · **🎨 Font styles: <https://thiha-lynn.github.io/myanmar-glyph-studio/styles.html>**
 · **📖 Reading proof: <https://thiha-lynn.github.io/myanmar-glyph-studio/book.html>**
-· **🪷 Tipiṭaka reader: <https://thiha-lynn.github.io/myanmar-glyph-studio/tipitaka.html>**
+· **🪷 Tipiṭaka reader (the whole canon): <https://thiha-lynn.github.io/myanmar-glyph-studio/tipitaka.html>**
 · **🇲🇲 မြန်မာဘာသာဖြင့် ဖတ်ရန် → [README.my.md](README.my.md)**
 
 An open-source toolkit for the Myanmar fonts community. Anyone who can draw
