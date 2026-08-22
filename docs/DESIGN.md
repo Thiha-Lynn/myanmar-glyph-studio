@@ -36,7 +36,10 @@ the Google Fonts onboarding path (OFL 1.1 + fontbakery checks).
 The OpenType feature logic is the expert-level part and it is nearly the
 same for every font. `json_to_ufo.py` generates the `mym2` starter rules
 (`blwf`, `rphf`, `pres`, `blws`) from whichever glyphs a contributor drew,
-registered under the DFLT/mym2/mymr language systems, and places default
+registered under the DFLT and mym2 language systems (never the legacy
+mymr tag — HarfBuzz answers that tag with its Zawgyi shaper, which does
+no reordering, so advertising it renders correct Unicode wrong), and
+places default
 mark anchors — `top`/`bottom` on bases, `_top`/`_bottom` plus a stacking
 anchor on marks — so ufo2ft emits GPOS `mark` *and* `mkmk`. Contributors
 only draw; the build system does the shaping, and the studio's anchor mode

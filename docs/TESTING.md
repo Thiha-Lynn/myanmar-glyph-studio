@@ -21,7 +21,7 @@ python3 proof.py build/MyFont-Regular.ttf "ကျွန်ုပ်တို့ 
 ```
 
 For a graded, measured pass over the much larger specification corpus
-(1 484 clusters, collision detection included) run
+(1 486 clusters, collision detection included) run
 `python3 validate_spec.py build/MyFont-Regular.ttf` — checks and
 severities in [SHAPING_SPEC.md](SHAPING_SPEC.md) §6, symptom-by-symptom
 triage in [DEBUGGING.md](DEBUGGING.md).
