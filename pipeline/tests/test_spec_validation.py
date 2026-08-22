@@ -19,6 +19,10 @@ import validate_spec as vs  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent.parent
 CORPUS = Path(__file__).resolve().parent.parent / "spec_corpus.txt"
 WORDS = Path(__file__).resolve().parent.parent / "word_corpus.txt"
+# 1,633 Pali words covering every syllable cluster in the 61 canonical
+# books of the Tipitaka — the canon is the largest body of Burmese-script
+# text there is, and its orthography is stacked consonants wall to wall.
+PALI = Path(__file__).resolve().parent.parent / "pali_corpus.txt"
 
 # Discovered, never listed. A hand-written list is only correct until
 # someone ships a file that is not on it: the two variable fonts were
@@ -64,7 +68,8 @@ def test_corpus_parses_and_covers_all_blocks():
     assert {c.language for c in cases if c.block == "K"} >= {"mnw", "shn", "ksw"}
 
 
-@pytest.mark.parametrize("corpus", [CORPUS, WORDS], ids=["spec", "words"])
+@pytest.mark.parametrize("corpus", [CORPUS, WORDS, PALI],
+                         ids=["spec", "words", "pali"])
 @pytest.mark.parametrize("font_path", SHIPPED, ids=lambda p: p.stem)
 def test_shipped_font_has_no_spec_failures(font_path, corpus):
     if not font_path.exists():
