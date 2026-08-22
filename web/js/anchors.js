@@ -45,6 +45,13 @@
     "medialRa-myanmar.wa.tall": 1, "medialRa-myanmar.wa.tall.wide": 1
   };
   var TOP_CLEARANCE = 60;   // ink-to-mark gap above a letter (Padauk: 76)
+  // a letter deep at every column has no gap to tuck a below-mark into,
+  // so the mark stands beside it — Padauk's ဌု ဌွ ဠွ ဋွ sit 67–181
+  // units past the letter's right ink edge (mirrors json_to_ufo.py);
+  // only these six letters (and their fused stacks) qualify
+  var BESIDE_LEG_DX = 130;
+  var DEEP_TAIL_STEMS = ["tta-myanmar", "ttha-myanmar", "dda-myanmar",
+                         "ddha-myanmar", "nna-myanmar", "lla-myanmar"];
   var STACK_FLOOR = -50;    // deepest a subjoined letter may hang from
   var KINZI_SIDE_GAP = 225; // how far right of the kinzi the next mark sits
   var SIDE_GAP = 55;        // below-mark side chain: next ink starts this
@@ -147,14 +154,21 @@
       var mx = b.xMin + w * (w > 700 ? 0.75 : 0.55);
       // leg avoidance (below-marks only): if the letter's own ink descends
       // through the anchor spot (ည's tail), slide the BOTTOM anchor to the
-      // nearest open column band — mirrors json_to_ufo.py; letters that
-      // are deep everywhere keep the spot
+      // nearest open column band — mirrors json_to_ufo.py. The search
+      // starts at 0.25 because ဍ's open pocket is on the LEFT, and the
+      // six letters that are deep at EVERY column (ဋ ဌ ဍ ဎ ဏ ဠ, plus
+      // their fused stacks) put the mark BESIDE the ink instead of on the
+      // tail — Padauk's own answer. Other deep glyphs (ဥ standing in for
+      // ဉ) keep the spot: Padauk tucks their marks, and moving them out
+      // sideways ran မဉ္ဇူ's subjoined ဇ into the following vowel.
+      var isDeepTail = DEEP_TAIL_STEMS.indexOf(meta.name.split(".")[0]) >= 0 ||
+                       /^uni10[0-9A-F]{2}10[0-9A-F]{2}$/.test(meta.name);
       var bx = mx;
       var band = columnDepth(polys, mx - 50, mx + 50);
       if (band !== null && band < -160) {
         var best = null;
-        for (var k = 0; k < 19; k++) {          // 0.40 … 0.85
-          var cand = b.xMin + w * (0.40 + k * 0.025);
+        for (var k = 0; k < 25; k++) {          // 0.25 … 0.85
+          var cand = b.xMin + w * (0.25 + k * 0.025);
           var d = columnDepth(polys, cand - 50, cand + 50);
           if ((d === null || d >= -160) &&
               (best === null || Math.abs(cand - mx) < Math.abs(best - mx))) {
@@ -162,6 +176,7 @@
           }
         }
         if (best !== null) bx = best;
+        else if (isDeepTail) bx = b.xMax + BESIDE_LEG_DX;
       }
       defaults.top = [mx, topAnchorY(b.yMax)];
       // bottom marks stay near baseline depth even under deep legs (န ရ) —
