@@ -73,7 +73,7 @@ permits redistribution; it must never be subset or converted in place).
 | --- | --- | --- |
 | `json_to_ufo.py` | `mgs-build` | project JSON → UFO, generated `mym2` shaping (blwf/rphf/pres/blws/psts/abvs/dist), mark anchors, kerning hookup |
 | `make_variable.py` | `mgs-variable` | weight masters by pen scaling → statics + variable font (the committed Regular/Light/Bold/VF all come from its `dist/<name>/variable/` output) |
-| `make_sample.py` | `mgs-sample` | regenerate the sample/Sans projects from traced artwork; `--weight`, `--squircle`, `--pen` knobs |
+| `make_sample.py` | `mgs-sample` | trace a project from any shaping-capable reference font (Padauk by default); `--weight`, `--squircle`, `--width`, `--y` knobs, `--only`/`--merge` for regenerating single glyphs into an existing project |
 | `make_kerning.py` | `mgs-kerning` | kerning measured band-by-band from the drawn outlines vs an HH control |
 | `validate_spec.py` | `mgs-validate` | the shaping audit: FAIL/WARN/GAP/SPEC per cluster over both corpora |
 | `shaping_diff.py` | — | shared engine-comparison logic + exclusion rules (unit-tested everywhere) |

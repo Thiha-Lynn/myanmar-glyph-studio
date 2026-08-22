@@ -121,7 +121,7 @@ Run the gates locally first; CI runs the same ones and takes ~2.5 minutes:
 ```bash
 pip install -e ".[dev]"        # once
 python3 -m pytest pipeline/tests/ -q          # unit + corpus regressions
-mgs-validate projects/*/MyanmarGlyphSans-Regular.ttf   # 1,484-cluster audit
+mgs-validate projects/*/MyanmarGlyphSans-Regular.ttf   # 1,486-cluster audit
 mgs-validate <font> --corpus pipeline/word_corpus.txt  # 711 real words
 fontbakery check-universal --succinct -l FAIL <font>   # release QA
 ```

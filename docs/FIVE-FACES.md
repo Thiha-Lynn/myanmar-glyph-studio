@@ -21,17 +21,23 @@ exist yet.
 | **Thanlwin Black** | 2.05 | 2 (round) | 2 (round) | 1.00 | 0.88 |
 | **Sagaing Square** | 1.45 | 8 (max squared) | 8 (slab) | 0.86 | 0.97 |
 
-Weight and skeleton warp come from `mgs-sample`; the nib is `meta.pen` in
-the project file; width and the vertical scale are affine transforms on
-the skeleton — every point, every bezier control, every anchor, and the
+Weight, skeleton warp, width and the vertical scale all come from
+`mgs-sample` (`--weight`, `--squircle`, `--width`, `--y`); the nib is
+`meta.pen` in the project file. Width and y are affine transforms on the
+skeleton — every point, every bezier control, every anchor, and the
 advance together, so spacing stays proportional and marks stay attached.
 
 ```bash
-mgs-sample web/fonts/Padauk-Regular.ttf ShweHair.glyphstudio.json \
-    --font-name "Shwe Hair" --weight 0.70 --squircle 2
+mgs-sample web/fonts/Padauk-Regular.ttf MandalaySlab.glyphstudio.json \
+    --font-name "Mandalay Slab" --weight 1.30 --squircle 2 --width 1.10 --y 0.97
 # then set meta.pen in the JSON, and build:
-./pipeline/build.sh projects/shwe-hair/ShweHair.glyphstudio.json build/
+./pipeline/build.sh projects/mandalay-slab/MandalaySlab.glyphstudio.json build/
 ```
+
+Every recipe in these tables reproduces its shipped project exactly —
+`--only uni100B100C --merge` regenerates a single glyph into an existing
+project, which is how the fused deep stacks reached all fourteen
+families without disturbing a point of their other drawings.
 
 ## Two things this set taught, both by measurement
 

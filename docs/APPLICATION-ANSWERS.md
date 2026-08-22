@@ -35,7 +35,7 @@ length on evidence instead.
 > Aiton, Tai Laing, and Pali. Burmese has a handful of free Unicode
 > fonts. The minority languages that share the script have, in practice,
 > almost none — and every one of them is in this toolkit's inventory of
-> 484 glyphs, because that is the point of it.
+> 489 glyphs, because that is the point of it.
 >
 > The reason is structural, not cultural. Myanmar is a complex script: a
 > font is not a set of pictures but parts plus OpenType rules —
@@ -52,7 +52,7 @@ length on evidence instead.
 > mark anchors and UFO sources, then compiles a real font through the
 > standard fontmake stack. (Those ~150 drawings are a complete Burmese
 > font; the optional groups — Shan, Mon, Karen, Kayah, Khamti, full
-> Latin — take the inventory to the 484 above.) No font engineering
+> Latin — take the inventory to the 489 above.) No font engineering
 > required, and no desktop computer required.
 >
 > I would rather you heard the numbers from me: the repository is five

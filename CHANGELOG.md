@@ -5,9 +5,56 @@ format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions are git tags with installable font zips on the
 [releases page](https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases).
 
-## [Unreleased]
+## [0.9.0] - 2026-08-22
+
+### Fixed
+- **အာယုဝဍ္ဎန rendered its ဍ္ဎ as a tangle** (user-reported, from the
+  rendering of the specimen pangram itself): only two of the seven deep
+  stacks Padauk draws as fused single glyphs existed. All seven —
+  ဋ္ဋ ဋ္ဌ ဍ္ဍ ဍ္ဎ ဏ္ဋ ဏ္ဍ ဠ္ဠ — are now traced fused drawables in
+  every family (`FUSED_STACKS` in `make_sample.py`, mirrored as
+  `FUSED_STACK_PAIRS` in `json_to_ufo.py` and the studio inventory), and
+  a reference-driven test reads the set out of Padauk so a missing pair
+  can no longer ship silently.
+- **Below-marks after the full-tail letters ဋ ဌ ဍ ဎ ဏ ဠ** measured
+  against Padauk and fixed three ways: ု/ူ after ဋ ဍ ဠ and the fused
+  stacks take the tall spacing form (Padauk's uni102F at advance
+  699–713, not the curl on the tail); a below-mark whose base is deep at
+  every column stands beside the ink (`BESIDE_LEG_DX`, Padauk's ဌု ဌွ
+  ဠွ answer) instead of through the tail; and the leg-avoidance band
+  scan starts at 0.25 so ဍ's left pocket is visible. Total ink-on-ink
+  across both corpora fell from 925k to 465k units² — Padauk's own
+  figure is 474k — with zero clusters regressing.
+- **နှုတ် နှိုက် ညှို့ kept the leg** — the side-form swap listed plain
+  ha as a trigger but not the fused ha+vowel ligatures pres builds
+  first, so နှု drew the fused hook through န's leg. The
+  `medialHa-myanmar.u`/`.uu` triggers now fire the swap, matching
+  Padauk's uni1014.alt + uni103E102F.
+- **The legacy `mymr` script tag is no longer registered.** HarfBuzz
+  answers `mymr` with its Zawgyi shaper, which does no reordering —
+  measured on these fonts: with `mym2` masked, ကေ shapes to [ka, e] and
+  မြန်မာ leaves its wrap behind the base. Padauk and Noto register
+  `mym2` alone; so do we now.
+- Stale corpus counts in TESTING.md, SHAPING_SPEC.md and CONTRIBUTING.md
+  (1,484 → the actual 1,486).
 
 ### Added
+- **`mgs-sample --width` and `--y`** — the affine half of every recipe,
+  previously applied by hand, is now a tool knob; each family README's
+  recipe reproduces its shipped project byte-for-byte. **`--only` and
+  `--merge`** regenerate named glyphs into an existing project without
+  touching the rest, which is how the five new fused stacks reached all
+  fourteen families.
+- **Any-reference tracing documented and verified**: `mgs-sample` takes
+  any Myanmar font with working `mym2` shaping as its reference, not
+  just Padauk — verified against Noto Sans Myanmar (needs `--y 0.86`
+  for this project's 900-unit band; licence and renaming rules apply).
+- Three fused-stack rows in the rendering showcase (အာယုဝဍ္ဎန, ဝဋ္ဋ,
+  ပဏ္ဍိတ), each measuring within 40 units of Padauk.
+- The deep-stack regression tests: every pair Padauk fuses must fuse in
+  every shipped font, and the Regular face may never draw more ink
+  through ink on the 36 deep pairs than Padauk does (the four ဍ_◌ pairs
+  needing a small-subjoined class are listed, re-checked exceptions).
 - **Kawthaung Corsair**
   ([`projects/kawthaung-corsair`](projects/kawthaung-corsair)) — the
   pirate cut proper, and a new pipeline axis to make it:

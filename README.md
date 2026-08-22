@@ -217,6 +217,16 @@ python3 pipeline/make_sample.py Padauk-Regular.ttf \
         projects/sample/GlyphStudioSample.glyphstudio.json
 ```
 
+Padauk is the bundled default, but the tracer takes **any Myanmar font
+with working `mym2` shaping** as its reference — point it at a newer
+face you prefer and the skeletons, variants and fused stacks are traced
+from that instead (check the licence permits derivatives; OFL fonts
+like Noto Sans Myanmar do, renaming required). Measured caveat: Noto's
+marks sit taller than this project's 900-unit band, so compress with
+`--y 0.86` or expect ~800 bounds warnings from `mgs-validate`. The same
+goes for the studio itself — **⚙ → Guide font** traces over any TTF/OTF
+you load, kept on your device.
+
 ## Project structure
 
 ```

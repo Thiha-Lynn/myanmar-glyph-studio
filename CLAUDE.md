@@ -44,6 +44,7 @@ neither — a mismatch means contributors draw one thing and ship another:
 | any file under `web/` | `web/sw.js` — bump `VERSION`, extend `ASSETS` |
 | either corpus `.txt` | the counts quoted in TESTING.md, VALIDATION.md, OSS_APPLICATION.md, README, CHANGELOG |
 | shaping rules in `json_to_ufo.py` | **rebuild every committed font** (below) |
+| fused deep-stack pairs (`FUSED_STACKS` in `make_sample.py`) | `FUSED_STACK_PAIRS` in `json_to_ufo.py` + the fused entries in `web/data/glyphs.js` |
 
 ## Generated files — regenerate, never hand-edit
 
@@ -85,6 +86,16 @@ discovers every committed `.ttf` by glob, so a font cannot ship untested
   draw one; project files must not contain one.
 * **Myanmar digits are tabular.** The kerning tool refuses to touch
   them and fontbakery checks it.
+* **The fonts register `mym2` only, never the legacy `mymr` tag.**
+  HarfBuzz answers `mymr` with its Zawgyi shaper, which does no
+  reordering — advertising the tag makes correctly encoded Unicode
+  render wrong in any client that asks for it. Adding `mymr` back
+  "for legacy engines" is the trap, not the fix.
+* **ဋ ဌ ဍ ဎ ဏ ဠ have no underside.** Their tail crosses the whole
+  glyph, so below-marks stand BESIDE their ink (Padauk's answer) and
+  the seven stack pairs Padauk fuses are single traced glyphs
+  (`FUSED_STACK_PAIRS`). A subjoined form centred under one of these
+  letters is ink drawn through ink — အာယုဝဍ္ဎန was the report.
 
 ## House style
 

@@ -39,7 +39,7 @@ the font).
 | kinzi overlaps the vowel in kinzi+ya words (အင်္ကျီ) | the vowel belongs to the ya (a base — the mark chain restarts), so it cannot chain beside the kinzi | the abvs kinzi→kinzi.left substitution handles it; check the rule survived a features edit |
 | စက္ကူ loses its long vowel after editing features | the blws filtering set lost the `.sub` glyphs — the context must SEE them | keep `.sub` glyphs + the vowels in `UseMarkFilteringSet` |
 | stack works alone but breaks after ိ or ် | filtering set includes too much/too little: intervening marks must be invisible to the context, triggers visible | compare with the generated `side_bases` lookup |
-| everything right in hb-view, wrong in an app | app-side itemization or a legacy engine | test `mymr` script tag; on Windows check DirectWrite with the real app, file per TESTING.md §real devices |
+| everything right in hb-view, wrong in an app | app-side itemization or a legacy engine | the fonts register `mym2` only (a legacy `mymr` request falls back to `DFLT`, deliberately — see json_to_ufo.py); on Windows check DirectWrite with the real app, file per TESTING.md §real devices |
 | glyphs from another font appear | font fallback hid a GAP | run `validate_spec.py`; hollow boxes in proof.py are the honest view |
 
 ## Reading a cluster dump
