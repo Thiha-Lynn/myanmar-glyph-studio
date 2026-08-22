@@ -59,6 +59,80 @@ SELECTION = [
      "ပဋ္ဌာန်း ပစ္စယုဒ္ဒေသ", None, "3.1"),
 ]
 
+# ---------------------------------------------------------------------------
+# The whole-canon catalog: every mūla book of the Chaṭṭha Saṅgāyana
+# edition, by its standard name. The reader fetches these ON DEMAND from
+# VRI's own public repository (CORS-open, ~8× gzip on the wire) — nothing
+# is vendored; the page states the attribution while you read. Burmese
+# titles are produced by our verified transliterator from the standard
+# Pali names, so the catalog cannot drift from the orthography the fonts
+# are tested against. e0101n/e0102n are the Visuddhimagga — Buddhaghosa's
+# path manual, bundled with this edition but NOT one of the three
+# baskets — so they shelve under their own group, honestly labelled.
+CANON = [
+    ("vin01m.mul",  "vinaya", "pārājikapāḷi", ""),
+    ("vin02m1.mul", "vinaya", "pācittiyapāḷi", ""),
+    ("vin02m2.mul", "vinaya", "mahāvaggapāḷi", ""),
+    ("vin02m3.mul", "vinaya", "cūḷavaggapāḷi", ""),
+    ("vin02m4.mul", "vinaya", "parivārapāḷi", ""),
+    ("s0101m.mul", "sutta", "sīlakkhandhavaggapāḷi", "ဒီဃနိကာယ်"),
+    ("s0102m.mul", "sutta", "mahāvaggapāḷi", "ဒီဃနိကာယ်"),
+    ("s0103m.mul", "sutta", "pāthikavaggapāḷi", "ဒီဃနိကာယ်"),
+    ("s0201m.mul", "sutta", "mūlapaṇṇāsapāḷi", "မဇ္ဈိမနိကာယ်"),
+    ("s0202m.mul", "sutta", "majjhimapaṇṇāsapāḷi", "မဇ္ဈိမနိကာယ်"),
+    ("s0203m.mul", "sutta", "uparipaṇṇāsapāḷi", "မဇ္ဈိမနိကာယ်"),
+    ("s0301m.mul", "sutta", "sagāthāvaggapāḷi", "သံယုတ္တနိကာယ်"),
+    ("s0302m.mul", "sutta", "nidānavaggapāḷi", "သံယုတ္တနိကာယ်"),
+    ("s0303m.mul", "sutta", "khandhavaggapāḷi", "သံယုတ္တနိကာယ်"),
+    ("s0304m.mul", "sutta", "saḷāyatanavaggapāḷi", "သံယုတ္တနိကာယ်"),
+    ("s0305m.mul", "sutta", "mahāvaggapāḷi", "သံယုတ္တနိကာယ်"),
+    ("s0401m.mul", "sutta", "ekakanipātapāḷi", "အင်္ဂုတ္တရနိကာယ်"),
+    ("s0402m1.mul", "sutta", "dukanipātapāḷi", "အင်္ဂုတ္တရနိကာယ်"),
+    ("s0402m2.mul", "sutta", "tikanipātapāḷi", "အင်္ဂုတ္တရနိကာယ်"),
+    ("s0402m3.mul", "sutta", "catukkanipātapāḷi", "အင်္ဂုတ္တရနိကာယ်"),
+    ("s0403m1.mul", "sutta", "pañcakanipātapāḷi", "အင်္ဂုတ္တရနိကာယ်"),
+    ("s0403m2.mul", "sutta", "chakkanipātapāḷi", "အင်္ဂုတ္တရနိကာယ်"),
+    ("s0403m3.mul", "sutta", "sattakanipātapāḷi", "အင်္ဂုတ္တရနိကာယ်"),
+    ("s0404m1.mul", "sutta", "aṭṭhakanipātapāḷi", "အင်္ဂုတ္တရနိကာယ်"),
+    ("s0404m2.mul", "sutta", "navakanipātapāḷi", "အင်္ဂုတ္တရနိကာယ်"),
+    ("s0404m3.mul", "sutta", "dasakanipātapāḷi", "အင်္ဂုတ္တရနိကာယ်"),
+    ("s0404m4.mul", "sutta", "ekādasakanipātapāḷi", "အင်္ဂုတ္တရနိကာယ်"),
+    ("s0501m.mul", "sutta", "khuddakapāṭhapāḷi", "ခုဒ္ဒကနိကာယ်"),
+    ("s0502m.mul", "sutta", "dhammapadapāḷi", "ခုဒ္ဒကနိကာယ်"),
+    ("s0503m.mul", "sutta", "udānapāḷi", "ခုဒ္ဒကနိကာယ်"),
+    ("s0504m.mul", "sutta", "itivuttakapāḷi", "ခုဒ္ဒကနိကာယ်"),
+    ("s0505m.mul", "sutta", "suttanipātapāḷi", "ခုဒ္ဒကနိကာယ်"),
+    ("s0506m.mul", "sutta", "vimānavatthupāḷi", "ခုဒ္ဒကနိကာယ်"),
+    ("s0507m.mul", "sutta", "petavatthupāḷi", "ခုဒ္ဒကနိကာယ်"),
+    ("s0508m.mul", "sutta", "theragāthāpāḷi", "ခုဒ္ဒကနိကာယ်"),
+    ("s0509m.mul", "sutta", "therīgāthāpāḷi", "ခုဒ္ဒကနိကာယ်"),
+    ("s0510m1.mul", "sutta", "apadānapāḷi (1)", "ခုဒ္ဒကနိကာယ်"),
+    ("s0510m2.mul", "sutta", "apadānapāḷi (2)", "ခုဒ္ဒကနိကာယ်"),
+    ("s0511m.mul", "sutta", "buddhavaṁsapāḷi", "ခုဒ္ဒကနိကာယ်"),
+    ("s0512m.mul", "sutta", "cariyāpiṭakapāḷi", "ခုဒ္ဒကနိကာယ်"),
+    ("s0513m.mul", "sutta", "jātakapāḷi (1)", "ခုဒ္ဒကနိကာယ်"),
+    ("s0514m.mul", "sutta", "jātakapāḷi (2)", "ခုဒ္ဒကနိကာယ်"),
+    ("s0515m.mul", "sutta", "mahāniddesapāḷi", "ခုဒ္ဒကနိကာယ်"),
+    ("s0516m.mul", "sutta", "cūḷaniddesapāḷi", "ခုဒ္ဒကနိကာယ်"),
+    ("s0517m.mul", "sutta", "paṭisambhidāmaggapāḷi", "ခုဒ္ဒကနိကာယ်"),
+    ("s0519m.mul", "sutta", "milindapañhapāḷi", "ခုဒ္ဒကနိကာယ်"),
+    ("abh01m.mul", "abhidhamma", "dhammasaṅgaṇīpāḷi", ""),
+    ("abh02m.mul", "abhidhamma", "vibhaṅgapāḷi", ""),
+    ("abh03m1.mul", "abhidhamma", "dhātukathāpāḷi", ""),
+    ("abh03m2.mul", "abhidhamma", "puggalapaññattipāḷi", ""),
+    ("abh03m3.mul", "abhidhamma", "kathāvatthupāḷi", ""),
+    ("abh03m4.mul", "abhidhamma", "yamakapāḷi (1)", ""),
+    ("abh03m5.mul", "abhidhamma", "yamakapāḷi (2)", ""),
+    ("abh03m6.mul", "abhidhamma", "yamakapāḷi (3)", ""),
+    ("abh03m7.mul", "abhidhamma", "paṭṭhānapāḷi (1)", ""),
+    ("abh03m8.mul", "abhidhamma", "paṭṭhānapāḷi (2)", ""),
+    ("abh03m9.mul", "abhidhamma", "paṭṭhānapāḷi (3)", ""),
+    ("abh03m10.mul", "abhidhamma", "paṭṭhānapāḷi (4)", ""),
+    ("abh03m11.mul", "abhidhamma", "paṭṭhānapāḷi (5)", ""),
+    ("e0101n.mul", "anna", "visuddhimagga (1)", ""),
+    ("e0102n.mul", "anna", "visuddhimagga (2)", ""),
+]
+
 BASKETS = [
     ("vinaya", "Vinaya Piṭaka", "ဝိနယပိဋက",
      "The basket of discipline — where the canon's story begins, under "
@@ -171,6 +245,39 @@ def main(argv=None):
             n = sum(len(p) for p in t["paras"])
             print(f"  {bid:10} {t['id']:14} {len(t['paras']):3} paragraphs, "
                   f"{n:,} chars{' (excerpt)' if t['excerpt'] else ''}")
+
+    books = []
+    xml_dir = Path(__file__).resolve().parent / "build-tipitaka" / "xml"
+    for fid, group, roman, nikaya in CANON:
+        base = roman.split(" (")[0].replace("ṁ", "ṃ")
+        vol = roman[len(base):].strip() if roman.startswith(base) else ""
+        title_my = translit(base) + ((" " + vol) if vol else "")
+        cached = xml_dir / f"{fid}.xml"
+        kb = round(cached.stat().st_size / 2048) if cached.exists() else None
+        books.append({"id": fid, "group": group, "roman": roman,
+                      "title": title_my, "nikaya": nikaya, "kb": kb})
+    index = {
+        "raw": ("https://raw.githubusercontent.com/VipassanaTech/"
+                "tipitaka-xml/main/mymr/"),
+        "books": books,
+    }
+    index_out = out.parent / "tipitaka-index.js"
+    index_out.write_text(
+        "/*\n"
+        " * The whole-canon catalog for the reader's on-demand mode —\n"
+        " * GENERATED by pipeline/make_tipitaka.py. Books are fetched at\n"
+        " * reading time from the Chaṭṭha Saṅgāyana XML the Vipassana\n"
+        " * Research Institute publishes (with attribution and thanks);\n"
+        " * only this small catalog of standard book names lives here.\n"
+        " */\n"
+        "(function () {\n"
+        '  "use strict";\n'
+        f"  window.TIPITAKA_INDEX = "
+        f"{json.dumps(index, ensure_ascii=False, indent=1)};\n"
+        "}());\n",
+        encoding="utf-8")
+    print(f"{index_out}: {len(books)} books, "
+          f"{index_out.stat().st_size / 1024:.0f} KB")
 
     body = json.dumps(data, ensure_ascii=False, indent=1)
     out.write_text(

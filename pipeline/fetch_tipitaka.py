@@ -64,7 +64,8 @@ ABHIDHAMMA = (["abh01m.mul", "abh02m.mul"]
 BASKETS = [("vinaya", VINAYA), ("sutta", SUTTA), ("abhidhamma", ABHIDHAMMA)]
 
 TAG = re.compile(r"<[^>]+>")
-NOTE = re.compile(r"<note>[^<]*</note>")
+# non-greedy across markup: one canon note carries a tag inside it
+NOTE = re.compile(r"<note>.*?</note>", re.S)
 
 MYANMAR_TOKEN = re.compile(r"[\u1000-\u109F\uAA60-\uAA7F\uA9E0-\uA9FF]+")
 BASES = (set(range(0x1000, 0x1022)) | set(range(0x1023, 0x102B))
