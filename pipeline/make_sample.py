@@ -278,6 +278,9 @@ def build_inventory():
     inv.append(entry("iAnusvara-myanmar",
                      DOTTED + chr(0x102D) + chr(0x1036), "variants",
                      exclude={0}))
+    inv.append(entry("iiAnusvara-myanmar",
+                     DOTTED + chr(0x102E) + chr(0x1036), "variants",
+                     exclude={0}))
 
     # Wrap + u fused forms (ပြု ကြု မြို ကြို → Padauk's uni103C102F set):
     # the sweep retracts and တစ်ချောင်းငင် stands as a straight bar in the
@@ -386,6 +389,19 @@ def build_inventory():
     for top, bottom in FUSED_STACKS:
         inv.append(entry(f"uni{top:04X}{bottom:04X}",
                          chr(top) + VIRAMA + chr(bottom), "variants"))
+
+    # ဠ + ှ woven as one letter (Padauk's uni1020103E) and subjoined တ
+    # with the wa medial woven in (Padauk's uni1010103D.med): the two
+    # fused forms the Tipiṭaka corpus showed running into their
+    # neighbours as separate pieces (-ḷh- roots and ဂန္တွာ).
+    inv.append(entry("lla-myanmar.ha", chr(0x1020) + chr(0x103E),
+                     "variants", differ_from="lla-myanmar"))
+    inv.append(entry("ta-myanmar.sub.wa",
+                     chr(0x1014) + VIRAMA + chr(0x1010) + chr(0x103D),
+                     "variants", exclude={0},
+                     alternates=[(chr(0x1002) + VIRAMA + chr(0x1010)
+                                  + chr(0x103D), {0})],
+                     differ_from="ta-myanmar.sub", is_sub=True))
 
     # Tall-aa + asat fused (ခေါ် ပေါ် → Padauk's uni102B103A): the asat
     # integrates with the ါ stem as one drawing instead of hovering across

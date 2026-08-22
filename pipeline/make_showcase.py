@@ -166,6 +166,8 @@ FAMILIES = [
             ("အာယုဝဍ္ဎန", "the pangram's ဍ္ဎ — a fused single glyph"),
             ("ဝဋ္ဋ", "fused ဋ္ဋ, one letter's footprint"),
             ("ပဏ္ဍိတ", "fused ဏ္ဍ under the wide ဏ"),
+            ("ဂန္တွာ", "subjoined တ with ွ woven in — everywhere in Pali"),
+            ("မုဠှော", "fused ဠှ, the tail letter and its ha as one"),
         ],
     },
 ]
