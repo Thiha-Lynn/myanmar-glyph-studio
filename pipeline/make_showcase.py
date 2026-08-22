@@ -163,6 +163,9 @@ FAMILIES = [
             ("သင်္ချိုင်း", "kinzi with a full cluster after it"),
             ("ခန္ဓာ", "stack plus a post-base vowel"),
             ("ကမ္မဋ္ဌာန်း", "two stacks in one word"),
+            ("အာယုဝဍ္ဎန", "the pangram's ဍ္ဎ — a fused single glyph"),
+            ("ဝဋ္ဋ", "fused ဋ္ဋ, one letter's footprint"),
+            ("ပဏ္ဍိတ", "fused ဏ္ဍ under the wide ဏ"),
         ],
     },
 ]

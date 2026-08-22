@@ -82,6 +82,7 @@
   ];
 
   function ch(cp) { return String.fromCodePoint(cp); }
+  function hex(cp) { return cp.toString(16).toUpperCase(); }
 
   var glyphs = [];
 
@@ -311,23 +312,28 @@
     mark: false, group: "variants"
   });
 
-  glyphs.push({
-    name: "uni100B100C", cp: null, label: ch(0x100b) + "္" + ch(0x100c),
-    variant: "fused", baseVariant: true,
-    guide: ch(0x100b) + "္" + ch(0x100c),
-    hint: "Fused ဋ္ဌ stack — ဋ and ဌ woven as ONE letter-width glyph (ကမ္မဋ္ဌာန်း); their full-width descenders leave no room to stack",
-    hintMy: "ဋ္ဌ ပေါင်းစပ်ပုံစံ — ဋ နှင့် ဌ ကို စာလုံးတစ်လုံးအကျယ်တွင် တစ်ခုတည်းအဖြစ် ရေးဆွဲပါ (ကမ္မဋ္ဌာန်း)",
-    mark: false, group: "variants"
-  });
-
-  glyphs.push({
-    name: "uni100F100D", cp: null, label: ch(0x100f) + "္" + ch(0x100d),
-    variant: "fused", baseVariant: true,
-    guide: ch(0x100f) + "္" + ch(0x100d),
-    hint: "Fused ဏ္ဍ stack — ဏ and ဍ woven as ONE letter-width glyph (ပဏ္ဍိတ); the descender tails leave no room to stack",
-    hintMy: "ဏ္ဍ ပေါင်းစပ်ပုံစံ — ဏ နှင့် ဍ ကို စာလုံးတစ်လုံးအကျယ်တွင် တစ်ခုတည်းအဖြစ် ရေးဆွဲပါ (ပဏ္ဍိတ)",
-    mark: false, group: "variants"
-  });
+  // Fused deep-descender stacks — Padauk's complete set (uni100B100B …
+  // uni10201020). ဋ ဌ ဍ ဎ ဏ ဠ carry a tail across their whole width, so
+  // nothing can stack underneath: each pair is one drawing in a single
+  // letter's footprint. Same list as pipeline/json_to_ufo.py.
+  [[0x100b, 0x100b, "ဝဋ္ဋ"], [0x100b, 0x100c, "ကမ္မဋ္ဌာန်း"],
+   [0x100d, 0x100d, "ခိဍ္ဍာ"], [0x100d, 0x100e, "အာယုဝဍ္ဎန"],
+   [0x100f, 0x100b, "ကဏ္ဋက"], [0x100f, 0x100d, "ပဏ္ဍိတ"],
+   [0x1020, 0x1020, ""]].forEach(function (row) {
+     var pair = ch(row[0]) + "္" + ch(row[1]);
+     var eg = row[2] ? " (" + row[2] + ")" : "";
+     glyphs.push({
+       name: "uni" + hex(row[0]) + hex(row[1]), cp: null, label: pair,
+       variant: "fused", baseVariant: true,
+       guide: pair,
+       hint: "Fused " + pair + " stack" + eg + " — the two letters woven " +
+             "into ONE letter-width glyph; their full-width descenders " +
+             "leave no room to stack",
+       hintMy: pair + " ပေါင်းစပ်ပုံစံ" + eg + " — စာလုံးနှစ်လုံးကို " +
+               "စာလုံးတစ်လုံးအကျယ်တွင် တစ်ခုတည်းအဖြစ် ရေးဆွဲပါ",
+       mark: false, group: "variants"
+     });
+   });
 
   glyphs.push({
     name: "uni102B103A", cp: null, label: ch(0x102b) + ch(0x103a),
