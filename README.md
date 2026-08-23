@@ -160,7 +160,7 @@ install [Padauk](https://software.sil.org/padauk/) (free, OFL).
 ```bash
 cd pipeline
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt   # exact, hash-verified versions
 ./build.sh ~/Downloads/MyFont.glyphstudio.json build/
 ```
 

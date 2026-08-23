@@ -7,6 +7,20 @@ versions are git tags with installable font zips on the
 
 ## [Unreleased]
 
+### Security
+- **Every Python install in CI is hash-verified.**
+  `pipeline/requirements.txt` and two smaller siblings are now compiled
+  with `pip-compile --generate-hashes` from `.in` sources, and every
+  workflow installs them with `--require-hashes`. `pip install fonttools`
+  takes whatever PyPI serves that minute; a hashed pin cannot be
+  substituted, so a tampered or yanked-and-replaced release cannot enter
+  a build. Verified by installing both files into clean environments
+  under `--require-hashes` and importing the whole toolchain, not only by
+  compiling them.
+- Mobile CI installs the committed lockfile (`npm ci`) instead of
+  resolving afresh (`npm install`), which could otherwise have quietly
+  undone the `uuid` override.
+
 ### Added
 - **The vendored library is now identifiable.**
   `web/vendor/opentype.min.js` is checked into the repository rather than

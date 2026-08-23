@@ -43,7 +43,7 @@ jobs:
           python-version: "3.12"
       - name: Build sdist and wheel
         run: |
-          python -m pip install --upgrade build twine
+          python -m pip install --require-hashes -r pipeline/requirements-publish.txt
           python -m build
           python -m twine check --strict dist/*
       - name: Show what would ship

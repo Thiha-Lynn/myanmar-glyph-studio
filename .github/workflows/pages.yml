@@ -35,7 +35,7 @@ jobs:
         run: |
           # brotli is what lets make_gallery compress the WOFF2 webfont
           # kits — without it they are silently skipped
-          pip install fonttools brotli
+          pip install --require-hashes -r pipeline/requirements-tools.txt
           python3 pipeline/make_gallery.py web/gallery-data
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
         with:

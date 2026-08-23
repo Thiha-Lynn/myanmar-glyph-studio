@@ -63,6 +63,12 @@ defect the day they were written.
 
 `web/data/glyphs.js` is the one hand-maintained inventory file.
 
+* `pipeline/requirements*.txt` → `pip-compile --generate-hashes
+  --strip-extras --allow-unsafe` from the matching `.in`. Edit the `.in`,
+  never the `.txt`: the pins carry hashes, and hand-editing is how a hash
+  and its version drift apart. CI installs with `--require-hashes`, so a
+  mismatch fails the build rather than installing something else.
+
 ## Rebuilding the committed fonts
 
 Shipped fonts live in `projects/` and go stale silently — this repo
