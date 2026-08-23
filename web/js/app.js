@@ -110,24 +110,31 @@
   }
 
   // ---- letter filter -------------------------------------------------
-  // 484 glyphs is a lot of scrolling to reach the one letter you meant to
-  // draw. The box narrows the list by anything you might know about a
-  // glyph — the letter itself, its Unicode name, its code point, the
-  // English or Burmese hint, or the group it lives in — and while a
-  // filter is on, [ ] and "Next empty" walk only the matches, so it
-  // doubles as a way to work through one block at a time.
+  // The inventory is most of a thousand entries, which is a lot of
+  // scrolling to reach the one letter you meant to draw. The box narrows
+  // the list by anything you might know about a glyph — the letter
+  // itself, its Unicode name, its code point, the English or Burmese
+  // hint, or the group it lives in — and while a filter is on, [ ] and
+  // "Next empty" walk only the matches, so it doubles as a way to work
+  // through one block at a time.
   var filterText = "";
   var filterUndrawn = false;
+  var byName = null, byKey = null;
 
   function filterActive() { return !!filterText || filterUndrawn; }
 
-  function groupFor(key) {
-    var hit = null;
-    window.GLYPH_GROUPS.forEach(function (g) { if (g.key === key) hit = g; });
-    return hit;
+  /* Lookups, built once: this runs per keystroke over every chip, and
+     scanning the inventory inside that loop is a square. */
+  function index() {
+    if (byName) return;
+    byName = {};
+    byKey = {};
+    window.GLYPHS.forEach(function (g) { byName[g.name] = g; });
+    window.GLYPH_GROUPS.forEach(function (g) { byKey[g.key] = g; });
   }
 
   function glyphMatches(g) {
+    index();
     if (filterUndrawn && window.Store.hasInk(g.name)) return false;
     if (!filterText) return true;
     var q = filterText;                       // already lower-cased
@@ -136,7 +143,7 @@
     if (g.hint && g.hint.toLowerCase().indexOf(q) >= 0) return true;
     if (g.hintMy && g.hintMy.indexOf(filterText) >= 0) return true;
     if (g.cp && ("u+" + g.cp.toString(16)).indexOf(q) >= 0) return true;
-    var grp = groupFor(g.group);
+    var grp = byKey[g.group];
     if (grp && (grp.en.toLowerCase().indexOf(q) >= 0 ||
                 (grp.my && grp.my.indexOf(filterText) >= 0))) return true;
     return false;
@@ -149,6 +156,7 @@
   }
 
   function applyFilter() {
+    index();
     var on = filterActive();
     var shown = 0;
     var byGroup = {};
@@ -157,9 +165,7 @@
       if (hit) { shown++; byGroup[g.group] = (byGroup[g.group] || 0) + 1; }
     });
     document.querySelectorAll(".chip").forEach(function (chip) {
-      var name = chip.dataset.glyph;
-      var g = null;
-      window.GLYPHS.forEach(function (x) { if (x.name === name) g = x; });
+      var g = byName[chip.dataset.glyph];
       chip.hidden = !!(on && g && !glyphMatches(g));
     });
     document.querySelectorAll("#glyphBrowser details").forEach(function (det) {
