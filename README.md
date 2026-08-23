@@ -70,12 +70,15 @@ same code, so a feature cannot exist on one and not another.
    only the small lower letter; for vowel signs you draw only the mark next
    to the dotted circle ◌.
 
-   Built for real drawing hands: works on phone, tablet, and desktop;
-   **Apple Pencil / stylus pressure** varies your stroke width, and
-   **Taper** does the same from drawing speed if you have no stylus; once
-   a pen is detected, fingers pan and zoom while the pen draws (palm
-   rejection); pinch or scroll to **zoom** into details (a precision grid
-   appears); **focus mode** (⛶) hides everything but the canvas.
+   Built for real drawing hands: works on phone, tablet, and desktop.
+   **Apple Pencil / stylus pressure** varies your stroke width — how far
+   is yours to set — and **Tilt** broadens the stroke as you lay the pen
+   over, the way a chisel nib does; **Taper** does the same from drawing
+   speed if you have no stylus. Hovering a Pencil is enough to switch to
+   pen-draws/fingers-pan (palm rejection), and flipping it over reaches
+   for the eraser. Pinch or scroll to **zoom** into details (a precision
+   grid appears); **☰** folds the glyph list away for a full-width canvas
+   on a tablet; **focus mode** (⛶) hides everything but the canvas.
 
    **Steady** takes the tremor out of a shaky hand — not by averaging the
    pointer (which rounds off deliberate corners and leaves every stroke
@@ -93,6 +96,14 @@ same code, so a feature cannot exist on one and not another.
    after the fact, line/rectangle/circle shapes with **grid & guide
    snapping**, and a two-mode **eraser** that can rub away just part of a
    stroke. Everything stays in the same portable project format.
+
+   The canvas tells you where you are: a **letter-height line measured
+   from the guide face itself** (Myanmar consonants top out around 448 per
+   1000 em — a hundred units below the 550 line, which is where *marks*
+   attach, not where letters end), the glyph's **ink width and
+   sidebearings** under its name, turning red if the ink passes the
+   ascender or descender, and **Fit width** to set the advance from the
+   ink.
 
    And built to be lived in: **Find a letter** narrows 492 glyphs by
    letter, Unicode name, code point or hint (and `[` `]` then walk only
