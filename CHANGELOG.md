@@ -5,7 +5,7 @@ format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions are git tags with installable font zips on the
 [releases page](https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases).
 
-## [Unreleased]
+## [0.12.0] - 2026-08-23
 
 ### Added
 - **A stabilizer that actually removes tremor** ([web/js/stabilizer.js](web/js/stabilizer.js)):
@@ -49,6 +49,43 @@ versions are git tags with installable font zips on the
 - `pipeline/tests/test_outline_mirror.py` — node runs `web/js/outline.js`
   directly and both stroke expanders are asked the same question, so the
   studio and the pipeline can no longer drift apart silently.
+- **The studio measures the guide face and draws the height its letters
+  actually reach.** The canvas has always had a line at 550 labelled
+  "body", and a line across a canvas reads as *the height to draw up to* —
+  but 550 is where top marks attach, and measured in the bundled Padauk
+  every Myanmar consonant tops out at 439–449 per 1000 em, a hundred
+  units below it. (This project's own font, traced against that guide
+  with nothing to aim at, came out ranging 420–458.) A gold line now sits
+  at the measured height, labelled with the number, and follows any face
+  loaded through **Guide font**. One line is honest for the whole
+  alphabet because Myanmar does not overshoot — round letters and flat
+  ones share their extremes exactly — while Latin, in the same file, does,
+  so Latin glyphs sample flat letters and get cap height or x-height as
+  appropriate. The 550 line is still there, now labelled **marks 550**.
+- **Stylus depth**: **Pressure** is an amount (0–10) rather than a
+  checkbox — 10 is the curve the studio always had, lower amounts suit a
+  pen with a narrow usable range, 0 is off — and **Tilt** broadens the
+  stroke as an Apple Pencil is laid over, reading `altitudeAngle` in
+  Safari and `tiltX`/`tiltY` elsewhere. Both write the per-point width the
+  pipeline already reads, so nothing else changed. Palm rejection now
+  arms when a hover-capable Pencil is merely *near* the glass, instead of
+  the first stroke being the one that discovers it.
+- **The glyph list folds away at any width** (**☰**). An iPad in portrait
+  is 1032 points — above the drawer breakpoint — so the list was a
+  permanent 300-point column with no way to dismiss it while drawing;
+  folding it takes the canvas from 648 points to 948.
+- **Metrics under the glyph's name**: ink width, both sidebearings, and
+  how far the ink reaches above and below the baseline — in red when it
+  passes the ascender or descender, which the build otherwise reports
+  much later. **⚙ → Fit width** sets the advance from the ink with even
+  sidebearings.
+- `pipeline/tests/test_guide_font.py` pins the measurements the
+  letter-height line depends on, so replacing the bundled guide re-checks
+  them.
+
+### Changed
+- The canvas refuses iPadOS's callout and text selection, so a resting
+  palm cannot raise a menu over the drawing.
 
 ### Fixed
 - The pipeline kept a repeated end point that the studio dropped, because
