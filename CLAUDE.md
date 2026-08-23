@@ -63,11 +63,15 @@ defect the day they were written.
 
 `web/data/glyphs.js` is the one hand-maintained inventory file.
 
-* `pipeline/requirements*.txt` → `pip-compile --generate-hashes
-  --strip-extras --allow-unsafe` from the matching `.in`. Edit the `.in`,
-  never the `.txt`: the pins carry hashes, and hand-editing is how a hash
-  and its version drift apart. CI installs with `--require-hashes`, so a
-  mismatch fails the build rather than installing something else.
+* `pipeline/requirements*.txt` → `uv pip compile --universal
+  --generate-hashes` from the matching `.in`. Edit the `.in`, never the
+  `.txt`: the pins carry hashes, and hand-editing is how a hash and its
+  version drift apart. CI installs with `--require-hashes`, so a mismatch
+  fails the build rather than installing something else.
+  **`--universal` is not optional.** A lock resolved on one platform
+  omits the dependencies only another platform needs — `keyring` pulls
+  `SecretStorage` on Linux alone, so a lock compiled on macOS installed
+  perfectly there and failed the Linux runner outright.
 
 ## Rebuilding the committed fonts
 
