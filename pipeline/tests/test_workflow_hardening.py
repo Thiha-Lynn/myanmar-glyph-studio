@@ -102,6 +102,18 @@ def test_dependabot_watches_every_dependency_tree():
             "%s is not watched by dependabot" % lock.relative_to(ROOT))
 
 
+@pytest.mark.parametrize("path", WORKFLOWS, ids=lambda p: p.name)
+def test_npm_installs_come_from_the_lockfile(path):
+    """`npm install` may resolve differently from the committed lockfile —
+    which would quietly undo the `uuid` override in mobile/ — while
+    `npm ci` installs exactly what is locked and fails if package.json
+    disagrees."""
+    text = path.read_text(encoding="utf-8")
+    assert not re.search(r"npm\s+install\b(?!\s+-g)", text), (
+        "%s runs `npm install`; use `npm ci` so CI installs the lockfile"
+        % path.name)
+
+
 def test_released_binaries_carry_provenance():
     """Signed-Releases was 0: nothing shipped said what built it."""
     for name in ("release.yml", "desktop.yml", "mobile.yml"):
