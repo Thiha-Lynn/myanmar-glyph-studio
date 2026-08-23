@@ -11,6 +11,6 @@ fontbakery>=1.1.0
 pytest>=9.1.1
 # the workflow-hardening tests parse .github/workflows/*.yml; it arrives
 # transitively today, and a test that quietly skips is not a test
-pyyaml>=6.0
+pyyaml>=6.0.3
 # WOFF2 web-font compression (fonttools ttLib.woff2)
 brotli>=1.2.0
