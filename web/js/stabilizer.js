@@ -126,7 +126,10 @@
         winLen -= Math.hypot(b[0] - a[0], b[1] - a[1]);
         win.shift();
       }
-      if (win.length < 3 || winLen < 10) return;
+      // enough path to measure a turn from, in font units — scaled with
+      // the window itself, or zoomed right in the gate never opens and
+      // the cap never engages
+      if (win.length < 3 || winLen < Math.min(10, maxWin * 0.5)) return;
       var m = win[Math.floor((win.length - 1) / 2)];
       var last = win[win.length - 1];
       var v1x = m[0] - win[0][0], v1y = m[1] - win[0][1];
