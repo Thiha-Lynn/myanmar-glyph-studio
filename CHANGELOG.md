@@ -5,6 +5,25 @@ format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions are git tags with installable font zips on the
 [releases page](https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases).
 
+## [Unreleased]
+
+### Added
+- **The vendored library is now identifiable.**
+  `web/vendor/opentype.min.js` is checked into the repository rather than
+  installed, so no lockfile mentions it, `npm audit` cannot see it and
+  Dependabot cannot open a PR for it — and nothing recorded which version
+  it was, because the minified file carries no version string. It is
+  **opentype.js 1.3.4**, established by matching its bytes against the
+  official npm tarball; `web/vendor/README.md` now records that with its
+  SHA-256, its licence and how to re-check it, and
+  `pipeline/tests/test_vendored_js.py` fails if the file, the record or
+  the set of callers drifts apart. (No advisories exist for opentype.js
+  at any version — this closes an audit gap, not a vulnerability.)
+- The audit results for every dependency tree, in
+  [docs/SUPPLY-CHAIN.md](docs/SUPPLY-CHAIN.md): both npm trees, the
+  Python requirements, the whole installed Python environment, and the
+  vendored file — all clean at v0.13.0.
+
 ## [0.13.0] - 2026-08-23
 
 A supply-chain pass, prompted by an

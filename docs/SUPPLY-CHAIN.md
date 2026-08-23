@@ -58,6 +58,48 @@ plus a `uuid` bounds-check advisory reaching `mobile/` through
 The test suite asserts that every `package-lock.json` in the repository
 has a matching Dependabot entry, so a new one cannot arrive unwatched.
 
+## Everything, audited (2026-08-23)
+
+Four dependency manifests are tracked in this repository, and one file is
+vendored. All five were checked at the v0.13.0 commit:
+
+| What | Tool | Result |
+|---|---|---|
+| `desktop/package-lock.json` | `npm audit` | 0 vulnerabilities |
+| `mobile/package-lock.json` | `npm audit` | 0 vulnerabilities |
+| `pipeline/requirements.txt` | `pip-audit` | no known vulnerabilities |
+| the whole installed Python environment (every transitive dependency) | `pip-audit --path` | no known vulnerabilities |
+| `web/vendor/opentype.min.js` | OSV query | no advisories exist for opentype.js at any version |
+
+`pyproject.toml`'s dependencies are a subset of
+`pipeline/requirements.txt`, so they are covered by the same run. There
+are no committed Gradle or CocoaPods files: Capacitor generates the
+Android and iOS projects at build time from the Capacitor version, which
+Dependabot watches.
+
+To repeat any of it:
+
+```bash
+(cd desktop && npm audit) && (cd mobile && npm audit)
+pip-audit -r pipeline/requirements.txt
+```
+
+## The one file no scanner can see
+
+`web/vendor/opentype.min.js` is checked in rather than installed, so it
+appears in no lockfile: `npm audit` cannot see it and Dependabot cannot
+open a PR for it. It is the only third-party code here that could sit at
+an old version indefinitely with nobody noticing.
+
+Nothing needs fixing — opentype.js has no advisories at any version — but
+the *ability to check* did. `web/vendor/README.md` now records the
+package, the version (**1.3.4**, established by matching the bytes
+against the official npm tarball, since the minified file carries no
+version string), its SHA-256 and its licence;
+`pipeline/tests/test_vendored_js.py` fails if the file changes without
+that record changing, if a second vendored file appears undocumented, or
+if anything other than `fontexport.js` starts calling into it.
+
 ## Releases say what built them
 
 Every binary attached to a release — the font zips, the five desktop
