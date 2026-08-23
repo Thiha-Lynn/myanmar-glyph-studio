@@ -80,7 +80,15 @@ button { touch-action: manipulation; }
   border-bottom: 2px solid var(--line);
   flex-shrink: 0;
 }
-.drawer-toggle { display: none; font-size: 1.1rem; }
+.drawer-toggle { font-size: 1.1rem; }
+/* Above the drawer breakpoint the glyph list is a column, not an overlay,
+   and it used to be permanent — on an iPad in portrait that is 300 of
+   1032 points spent on a list while you draw. The same button folds it
+   away and the canvas takes the room. Below the breakpoint the sidebar
+   IS the drawer, so the class must not reach it. */
+@media (min-width: 1001px) {
+  body.list-hidden .sidebar { display: none; }
+}
 .brand { display: flex; align-items: center; gap: 0.6rem; min-width: 0; }
 .brand-mark {
   font-size: 1.7rem; color: var(--accent); line-height: 1;
@@ -229,6 +237,13 @@ button { touch-action: manipulation; }
 .glyph-id { min-width: 0; overflow: hidden; }
 .glyph-id > div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hint { font-size: 0.8rem; color: var(--muted); }
+.metrics {
+  font-size: 0.72rem; color: var(--muted); white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+/* ink that has climbed past the ascender or dropped past the descender:
+   the build reports it much later, in a file nobody reads mid-drawing */
+.metrics .m-warn { color: var(--accent); font-weight: 600; }
 .stepper { margin-left: auto; display: flex; gap: 0.3rem; }
 
 /* ---- contextual tool-options bar (Photoshop-style) ---- */
@@ -305,7 +320,13 @@ button { touch-action: manipulation; }
   border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
   background: var(--canvas-bg);
 }
-#glyphCanvas { display: block; cursor: crosshair; width: 100%; height: 100%; }
+#glyphCanvas {
+  display: block; cursor: crosshair; width: 100%; height: 100%;
+  /* a resting palm or a long press must not raise iPadOS's callout or
+     start selecting the page behind the canvas */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none; user-select: none;
+}
 .canvas-tip {
   position: absolute; bottom: 6px; right: 10px; font-size: 0.68rem;
   color: var(--muted); pointer-events: none; opacity: 0.8;

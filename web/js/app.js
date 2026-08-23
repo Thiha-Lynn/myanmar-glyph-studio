@@ -12,7 +12,9 @@
   var PREFS_KEY = "mm-glyph-studio-prefs";
   var prefs = {
     theme: "auto", lang: "en", penWidth: 60, stabilizer: 3, taper: 0,
-    guideOpacity: 22, guideSize: 1000, pressure: true, touchDraws: true,
+    listHidden: false,
+    guideOpacity: 22, guideSize: 1000, pressure: true, pressureAmount: 10,
+    tilt: 0, touchDraws: true,
     ghost: "", tool: "brush", snap: false, eraserMode: "partial",
     eraserSize: 60, fillShape: false
   };
@@ -222,6 +224,29 @@
     }
   }
 
+  /* The numbers a font maker works to, kept under the glyph's name. */
+  function refreshMetrics() {
+    var box = $("#glyphMetrics");
+    var m = window.Editor.metrics();
+    if (!m) { box.textContent = ""; return; }
+    if (m.empty) {
+      box.innerHTML = "";
+      box.appendChild(el("span", "", window.I18N.t("noInk") + " · " +
+        window.I18N.t("advanceShort") + " " + m.advance));
+      return;
+    }
+    box.innerHTML = "";
+    var add = function (text, warn) {
+      box.appendChild(el("span", warn ? "m-warn" : "", text));
+    };
+    add(window.I18N.t("advanceShort") + " " + m.advance);
+    add("  " + window.I18N.t("inkShort") + " " + m.width);
+    add("  ◧ " + m.left);
+    add("  ◨ " + m.right);
+    add("  ↑ " + m.top, m.overAscender);
+    add("  ↓ " + m.bottom, m.underDescender);
+  }
+
   function selectGlyph(g) {
     current = g;
     // shareable deep link — issues can point at the exact glyph to draw
@@ -239,6 +264,7 @@
     $("#advanceInput").placeholder = "auto " + window.Editor.measureGuideAdvance();
     refreshBrowser();
     applyFilter();
+    refreshMetrics();
     var chip = document.querySelector('.chip[data-glyph="' + g.name + '"]');
     if (chip && !chip.hidden && !isMobile()) {
       chip.scrollIntoView({ block: "nearest" });
@@ -365,11 +391,34 @@
     $("#sidebar").classList.remove("open");
     $("#drawerOverlay").hidden = true;
   }
+  /* Wide screens: the same button folds the glyph list away entirely and
+     gives the canvas its 300px. An iPad in portrait is 1032 points wide,
+     which is above the drawer breakpoint, so before this the list could
+     not be dismissed at all while drawing. */
+  function setListHidden(on) {
+    document.body.classList.toggle("list-hidden", !!on);
+    prefs.listHidden = !!on; savePrefs();
+    var b = $("#btnDrawer");
+    b.setAttribute("aria-expanded", on ? "false" : "true");
+    b.title = window.I18N.t(on ? "showList" : "hideList");
+    window.Editor.resize();
+  }
+
   function wireDrawer() {
     $("#btnDrawer").addEventListener("click", function () {
-      if ($("#sidebar").classList.contains("open")) closeDrawer(); else openDrawer();
+      if (isMobile()) {
+        if ($("#sidebar").classList.contains("open")) closeDrawer(); else openDrawer();
+      } else {
+        setListHidden(!document.body.classList.contains("list-hidden"));
+      }
     });
     $("#drawerOverlay").addEventListener("click", closeDrawer);
+    // narrowing to phone width must not leave the drawer stuck hidden
+    window.matchMedia("(max-width: 1000px)").addEventListener("change", function (e) {
+      if (e.matches) document.body.classList.remove("list-hidden");
+      else if (prefs.listHidden) document.body.classList.add("list-hidden");
+      window.Editor.resize();
+    });
   }
 
   // ---- toolbar -----------------------------------------------------------
@@ -523,11 +572,27 @@
     $("#guideSize").addEventListener("input", function () {
       window.Editor.guideSize = +this.value;
       prefs.guideSize = +this.value; savePrefs();
-      window.Editor.render();
+      window.Editor.render();   // the band is keyed on the size, so it follows
     });
-    $("#pressureToggle").addEventListener("change", function () {
-      window.Editor.pressureEnabled = this.checked;
-      prefs.pressure = this.checked; savePrefs();
+    $("#pressureAmount").addEventListener("input", function () {
+      var v = +this.value;
+      window.Editor.pressureAmount = v;
+      window.Editor.pressureEnabled = v > 0;
+      $("#pressureVal").textContent = v;
+      prefs.pressureAmount = v; prefs.pressure = v > 0; savePrefs();
+    });
+    $("#tiltAmount").addEventListener("input", function () {
+      var v = +this.value;
+      window.Editor.tiltAmount = v;
+      $("#tiltVal").textContent = v;
+      prefs.tilt = v; savePrefs();
+    });
+    $("#btnFitAdvance").addEventListener("click", function () {
+      var w = window.Editor.fitAdvance();
+      if (w == null) return;
+      $("#advanceInput").value = w;
+      refreshMetrics();
+      toast(window.I18N.t("fitWidthDone").replace("{n}", w));
     });
     $("#touchDraws").addEventListener("change", function () {
       window.Editor.touchDraws = this.checked;
@@ -550,6 +615,7 @@
       var v = parseInt(this.value, 10);
       window.Store.getGlyph(current.name).advance = isNaN(v) ? null : v;
       window.Store.emit();
+      refreshMetrics();
       window.Editor.render();
     });
     // letter filter
@@ -683,6 +749,7 @@
       if (window.GuideFont && window.GuideFont.isCustom()) {
         window.GuideFont.reset();
         this.classList.remove("active");
+        window.Editor.resetGuideBand();
         toast(window.I18N.t("guideFontReset"));
       } else {
         $("#guideFontInput").click();
@@ -692,6 +759,8 @@
       if (!this.files.length) return;
       window.GuideFont.use(this.files[0]).then(function (name) {
         $("#btnGuideFont").classList.add("active");
+        window.Editor.resetGuideBand();
+        refreshMetrics();
         toast(window.I18N.t("guideFontSet") + " " + name);
       }).catch(function (e) {
         alert("Could not load that font: " + (e.message || e));
@@ -921,6 +990,7 @@
     });
     window.Editor.onInkChange = function () {
       refreshBrowser();
+      refreshMetrics();
       schedulePreview();
     };
   }
@@ -944,7 +1014,12 @@
     window.Editor.taper = prefs.taper || 0;
     window.Editor.guideOpacity = prefs.guideOpacity / 100;
     window.Editor.guideSize = prefs.guideSize;
-    window.Editor.pressureEnabled = prefs.pressure;
+    // pressure used to be a checkbox; an old "off" becomes an amount of 0
+    var pAmt = prefs.pressure === false ? 0
+      : (prefs.pressureAmount == null ? 10 : prefs.pressureAmount);
+    window.Editor.pressureAmount = pAmt;
+    window.Editor.pressureEnabled = pAmt > 0;
+    window.Editor.tiltAmount = prefs.tilt || 0;
     window.Editor.touchDraws = prefs.touchDraws;
     window.Editor.ghostName = prefs.ghost || null;
     window.Editor.snapEnabled = !!prefs.snap;
@@ -959,7 +1034,10 @@
     $("#taperVal").textContent = prefs.taper || 0;
     $("#guideOpacity").value = prefs.guideOpacity;
     $("#guideSize").value = prefs.guideSize;
-    $("#pressureToggle").checked = prefs.pressure;
+    $("#pressureAmount").value = pAmt;
+    $("#pressureVal").textContent = pAmt;
+    $("#tiltAmount").value = prefs.tilt || 0;
+    $("#tiltVal").textContent = prefs.tilt || 0;
     $("#touchDraws").checked = prefs.touchDraws;
     $("#snapToggle").checked = !!prefs.snap;
     $("#fillShape").checked = !!prefs.fillShape;
@@ -968,6 +1046,7 @@
 
     buildBrowser();
     wireDrawer();
+    if (prefs.listHidden && !isMobile()) setListHidden(true);
     wireMobile();
     wireToolbar();
     wireProject();
@@ -1007,14 +1086,26 @@
           return window.GuideFont.warmUp();
         })
         .then(function () {
+          window.Editor.resetGuideBand();
           window.Editor.render();
+          // the fallback advance is MEASURED from the guide face, so both
+          // the placeholder and the metrics line are wrong until it loads
+          if (current) {
+            $("#advanceInput").placeholder =
+              "auto " + window.Editor.measureGuideAdvance();
+          }
+          refreshMetrics();
           if (!window.Editor.guideShapesStacks()) {
             toast(window.I18N.t("guideNoShape"));
           }
         });
     }
     if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(function () { window.Editor.render(); });
+      document.fonts.ready.then(function () {
+        window.Editor.resetGuideBand();
+        window.Editor.render();
+        refreshMetrics();
+      });
     }
 
     // PWA: offline support + add-to-home-screen on tablets

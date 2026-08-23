@@ -65,6 +65,8 @@
     ghostName: null,   // another glyph's strokes shown as a style reference
     fillPreview: false,
     pressureEnabled: true,
+    pressureAmount: 10, // 0 … 10 — how far pressure may move the width
+    tiltAmount: 0,     // 0 … 10 — laying an Apple Pencil down broadens it
     stabilizer: 3,     // 0 (off) … 10 (heavy) — see js/stabilizer.js
     taper: 0,          // 0 (off) … 10: speed varies the width, for people
                        // drawing with a mouse or a finger instead of a pen
@@ -541,15 +543,47 @@
      * the same optional third element, which outline.js and the Python
      * pipeline already read.
      */
+    /*
+     * How far the stylus is laid over, 0 (upright) … 1 (flat on the
+     * glass). Safari gives Apple Pencil's altitudeAngle in radians;
+     * Chromium-family browsers give tiltX/tiltY in degrees. Both are
+     * read, because an iPad and a Wacom should feel the same.
+     */
+    tiltOf: function (e) {
+      if (!e) return 0;
+      if (typeof e.altitudeAngle === "number" && isFinite(e.altitudeAngle)) {
+        return Math.max(0, Math.min(1, 1 - e.altitudeAngle / (Math.PI / 2)));
+      }
+      if (typeof e.tiltX === "number" && (e.tiltX || e.tiltY)) {
+        return Math.max(0, Math.min(1, Math.hypot(e.tiltX, e.tiltY) / 90));
+      }
+      return 0;
+    },
+
     strokePoint: function (pt, e) {
       var w = null;
-      if (this.pressureEnabled && e && e.pointerType === "pen" && e.pressure > 0) {
-        w = this.penWidth * (0.35 + 1.3 * e.pressure);
+      var pen = e && e.pointerType === "pen";
+      if (this.pressureEnabled && pen && e.pressure > 0) {
+        // amount 10 is the curve the studio always had (0.35 + 1.3p);
+        // lower amounts pull it toward a constant width, for pens (and
+        // hands) with a narrow usable range
+        var k = Math.max(0, Math.min(10, this.pressureAmount)) / 10;
+        w = this.penWidth * (1 + k * (1.3 * e.pressure - 0.65));
       } else if (this.taper > 0) {
         var k = this.taper / 10;
         var vn = Math.min(1, this._speed / TAPER_FULL);
         w = this.penWidth *
           Math.max(0.4, Math.min(1.5, 1 + k * (0.45 - 0.9 * vn)));
+      }
+      // Tilt broadens the stroke the way laying a broad nib over does.
+      // It multiplies whatever width dynamic is already in play, so a
+      // stylus can use pressure and tilt together.
+      if (pen && this.tiltAmount > 0) {
+        var t = this.tiltOf(e);
+        if (t > 0) {
+          w = (w == null ? this.penWidth : w) *
+            (1 + (this.tiltAmount / 10) * t * 0.6);
+        }
       }
       var out = [Math.round(pt[0]), Math.round(pt[1])];
       if (w != null) out.push(Math.max(2, Math.round(w)));
@@ -638,6 +672,14 @@
         return;
       }
 
+      // A hovering Apple Pencil (M2 and later) announces itself before it
+      // touches down: arm palm rejection then, rather than making the
+      // first stroke the one that discovers it.
+      if (e.pointerType === "pen" && !this.penSeen) {
+        this.penSeen = true;
+        this.touchDraws = false;
+        if (this.onPenDetected) this.onPenDetected();
+      }
       if (rec) { rec.x = scr[0]; rec.y = scr[1]; }
       this.hoverScr = scr;    // size ring + the corner coordinate readout
       var p = this.toUnits(e);
@@ -989,6 +1031,46 @@
       this.render();
     },
 
+    /*
+     * What a font maker needs to see about the glyph in front of them:
+     * the ink's bounds, the two sidebearings, and whether anything has
+     * climbed above the ascender or dropped below the descender — which
+     * the build validates and rejects far later, in a report, long after
+     * the drawing that caused it is out of mind.
+     */
+    metrics: function () {
+      if (!this.glyph) return null;
+      var data = window.Store.getGlyph(this.glyph.name);
+      var advance = data.advance || this.measureGuideAdvance();
+      var b = window.Outline.bounds(window.Outline.glyphPolygons(data));
+      if (!b) return { advance: advance, empty: true };
+      return {
+        advance: advance,
+        empty: false,
+        left: Math.round(b.xMin),
+        right: Math.round(advance - b.xMax),
+        width: Math.round(b.xMax - b.xMin),
+        top: Math.round(b.yMax),
+        bottom: Math.round(b.yMin),
+        overAscender: b.yMax > 900,
+        underDescender: b.yMin < -600
+      };
+    },
+
+    /* Set the advance from the ink, giving it the same sidebearing on
+       both sides as it already has on the left. */
+    fitAdvance: function () {
+      var m = this.metrics();
+      if (!m || m.empty) return null;
+      var data = window.Store.getGlyph(this.glyph.name);
+      var side = Math.max(0, m.left);
+      data.advance = Math.round(m.left + m.width + side);
+      window.Store.emit();
+      if (this.onInkChange) this.onInkChange(this.glyph.name);
+      this.render();
+      return data.advance;
+    },
+
     /* Shift all ink so it sits horizontally centered in the advance width. */
     centerInk: function () {
       if (!this.glyph) return;
@@ -1042,6 +1124,103 @@
     },
 
     // ---- guide metrics -------------------------------------------------
+    /*
+     * Where the guide face actually puts its letters.
+     *
+     * The canvas has always drawn a line at 550 labelled "body", which is
+     * the height TOP MARKS attach at (json_to_ufo's BODY). Read as a
+     * height to draw up to — which is how a line across the canvas reads
+     * — it is about 100 units too tall: measured, every Myanmar consonant
+     * in Padauk tops out at 439–449 per 1000 em, and this project's own
+     * font, traced against that same guide with no line to aim at, came
+     * out ranging 420–458.
+     *
+     * So measure the guide face itself: render a spread of consonants
+     * offscreen and read the ink's extremes. One line is honest for the
+     * whole alphabet because Myanmar has NO overshoot — measured in
+     * Padauk, round letters (ဝ ဂ ပ င ဒ သ) and flat ones (က ခ တ မ လ)
+     * share their extremes exactly, unlike Latin, where an O must
+     * overshoot an H. Works for a loaded guide font too, which is the
+     * point: trace any face and the line follows it.
+     */
+    SAMPLE_LETTERS: "ကခဂငစဆညတထနပဖမလဝသဟအ",
+
+    /*
+     * Which letters this glyph should line up with. The inventory also
+     * carries 188 Latin entries, and a Myanmar consonant height is the
+     * wrong target for a capital H — Latin has two heights of its own,
+     * and punctuation has no shared one at all.
+     *
+     * The Latin samples are FLAT letters only, because Latin (unlike
+     * Myanmar) really does overshoot: measured in Padauk, H E X top at
+     * 628 while O reaches 640, and x n u sit at 435-445 while o and v
+     * round past them. A line at the round height would have every flat
+     * letter drawn 12 units tall.
+     */
+    bandSample: function () {
+      var cp = this.glyph && this.glyph.cp;
+      if (!cp || cp >= 0x1000) return this.SAMPLE_LETTERS;
+      var g = this.glyph.group || "";
+      if (g === "latinUpper" || g === "latinDigits") return "HEX";
+      if (g === "latinLower") return "xnu";
+      if (g === "latinExtraLetters") {
+        return this.glyph.guide &&
+          this.glyph.guide === this.glyph.guide.toUpperCase() ? "HEX" : "xnu";
+      }
+      return null;   // punctuation and symbols share no height worth drawing
+    },
+
+    measureGuideBand: function () {
+      var sample = this.bandSample();
+      if (!sample) return null;
+      var key = (window.GuideFont && window.GuideFont.isCustom() ?
+                 "custom" : "padauk") + "|" + this.guideSize + "|" + sample;
+      if (this._bandKey === key && this._band) return this._band;
+      var band = null;
+      try {
+        var size = 480;                       // px; 1 px is ~2 font units
+        var pad = Math.round(size * 0.9);
+        var c = document.createElement("canvas");
+        c.width = Math.round(size * 2.2);
+        c.height = Math.round(size * 2.4);
+        var g = c.getContext("2d", { willReadFrequently: true });
+        g.fillStyle = "#000";
+        g.textBaseline = "alphabetic";
+        g.font = size + "px " + GUIDE_FONTS;
+        var baseY = c.height - pad;
+        // all of them at the same place: only the vertical extremes matter
+        sample.split("").forEach(function (ch) {
+          g.fillText(ch, 4, baseY);
+        });
+        var data = g.getImageData(0, 0, c.width, c.height).data;
+        // half coverage, not any coverage: the antialiased fringe is
+        // roughly a pixel wide, and at any lower threshold the line comes
+        // out a fringe too high (measured 456 against a known 448)
+        var top = -1;
+        for (var y = 0; y < c.height && top < 0; y++) {
+          for (var x = 0; x < c.width; x++) {
+            if (data[(y * c.width + x) * 4 + 3] >= 128) { top = y; break; }
+          }
+        }
+        if (top >= 0) {
+          band = { top: Math.round((baseY - top) / size * this.guideSize) };
+          // a face that measures nonsense (no coverage for the sample,
+          // so the browser drew tofu or nothing) is no guide
+          if (band.top < 200 || band.top > 900) band = null;
+        }
+      } catch (err) { band = null; }
+      this._bandKey = key;
+      this._band = band;
+      return band;
+    },
+
+    /* The guide face changed (or finished loading): measure it again. */
+    resetGuideBand: function () {
+      this._bandKey = null;
+      this._band = null;
+      this.render();
+    },
+
     measureGuideAdvance: function () {
       if (!this.glyph) return 600;
       this.ctx.save();
@@ -1061,6 +1240,7 @@
       var colAccent = css.getPropertyValue("--accent").trim() || "#a8352f";
       var colBg = css.getPropertyValue("--canvas-bg").trim() || "#fff";
       var colMuted = css.getPropertyValue("--muted").trim() || "#777";
+      var colGold = css.getPropertyValue("--gold").trim() || "#96701c";
 
       ctx.save();
       ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1121,7 +1301,11 @@
       }
 
       hline(900, colFaint, true, "ascender 900");
-      hline(550, colFaint, false, "body 550");
+      // 550 is where top marks attach, not where letters end — the label
+      // used to imply otherwise, and letters were drawn to it
+      hline(550, colFaint, false, "marks 550");
+      var band = this.measureGuideBand();
+      if (band) hline(band.top, colGold, true, "letters " + band.top);
       hline(0, colAccent, false, "baseline 0");
       hline(-600, colFaint, true, "descender −600");
       vline(0, colAccent, false);
