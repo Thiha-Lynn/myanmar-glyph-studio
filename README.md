@@ -71,11 +71,19 @@ same code, so a feature cannot exist on one and not another.
    to the dotted circle ◌.
 
    Built for real drawing hands: works on phone, tablet, and desktop;
-   **Apple Pencil / stylus pressure** varies your stroke width; once a pen
-   is detected, fingers pan and zoom while the pen draws (palm rejection);
-   pinch or scroll to **zoom** into details (a precision grid appears);
-   a **stabilizer** steadies shaky lines; **focus mode** (⛶) hides
-   everything but the canvas.
+   **Apple Pencil / stylus pressure** varies your stroke width, and
+   **Taper** does the same from drawing speed if you have no stylus; once
+   a pen is detected, fingers pan and zoom while the pen draws (palm
+   rejection); pinch or scroll to **zoom** into details (a precision grid
+   appears); **focus mode** (⛶) hides everything but the canvas.
+
+   **Steady** takes the tremor out of a shaky hand — not by averaging the
+   pointer (which rounds off deliberate corners and leaves every stroke
+   ending short of where you lifted) but by dragging the ink behind it on
+   a rope, so shake smaller than the rope never reaches the page and the
+   stroke still ends exactly where your hand did. It is measured, not
+   asserted: [docs/EDITOR.md](docs/EDITOR.md) has the numbers, and
+   `pytest` drives the filter directly.
 
    And built for design hands too — an Illustrator-style toolset lives in
    the tool rail: a **Bézier pen** (click corners, drag curves, close for
@@ -85,6 +93,14 @@ same code, so a feature cannot exist on one and not another.
    after the fact, line/rectangle/circle shapes with **grid & guide
    snapping**, and a two-mode **eraser** that can rub away just part of a
    stroke. Everything stays in the same portable project format.
+
+   And built to be lived in: **Find a letter** narrows 492 glyphs by
+   letter, Unicode name, code point or hint (and `[` `]` then walk only
+   the matches, so you can work through one block end to end), undo
+   history belongs to each glyph rather than the session, `,` and `.`
+   resize the brush without reaching for a slider, holding **Shift**
+   mid-stroke draws a dead-straight stem, and flipping a Wacom or Surface
+   pen over reaches for the eraser.
 2. **Test** — the test-drive box previews your drawn letters live, and
    **Export font** gives an installable TTF in one click. The in-app
    **Help** explains how to use it everywhere: install on
@@ -236,8 +252,8 @@ pipeline/   project JSON → UFO → fontmake build, feature generation,
             make_sample.py (sample generator), proof.py (visual proof sheets),
             test_corpus.txt (shaping test sentences)
 projects/   community font projects — one folder per family
-docs/       design notes, the shaping spec + validation report, testing
-            and debugging guides
+docs/       design notes, how the drawing side works (EDITOR.md), the
+            shaping spec + validation report, testing and debugging guides
 ```
 
 The full map — every module, the data flow, the pairs of files that must
