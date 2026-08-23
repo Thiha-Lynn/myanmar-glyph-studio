@@ -40,7 +40,8 @@ install, and lets the build run identically in CI.
 | module | job |
 | --- | --- |
 | `js/app.js` | boots the studio, sidebar, presets, project meta |
-| `js/editor.js` | canvas, pointer routing, brush/line/rect/circle/eraser tools, undo (`ed._preSnapshot` → `ed.pushUndo()`) |
+| `js/editor.js` | canvas, pointer routing, brush/line/rect/circle/eraser tools, width dynamics, per-glyph undo (`ed._preSnapshot` → `ed.pushUndo()`) |
+| `js/stabilizer.js` | the Steady setting: a pulled-string filter that takes hand tremor out of freehand input ([EDITOR.md](EDITOR.md)) — pure geometry, no DOM, driven directly by `pipeline/tests/test_web_stabilizer.py` |
 | `js/vectools.js` | select / direct-edit / bézier pen tools; bez strokes carry `bez` + `closed`, and `points` is always the flattened polyline the pipeline reads |
 | `js/outline.js` | stroke → outline expansion (**mirrored in `pipeline/json_to_ufo.py`**), superellipse pen nibs |
 | `js/anchors.js` | mark-anchor defaults and roles (**mirrored in `pipeline/json_to_ufo.py`**) |

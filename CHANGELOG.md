@@ -5,6 +5,48 @@ format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions are git tags with installable font zips on the
 [releases page](https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases).
 
+## [Unreleased]
+
+### Added
+- **A stabilizer that actually removes tremor** ([web/js/stabilizer.js](web/js/stabilizer.js)):
+  the **Steady** setting no longer averages the pointer — the ink is
+  dragged behind it on a rope, so movement smaller than the rope (hand
+  tremor is an 8–12 Hz oscillation, correlated across a dozen samples at
+  a 120 Hz pointer, which averaging barely touches) never reaches the
+  page at all, while a deliberate curve keeps its curvature. The rope is
+  capped by the curvature the hand is describing, so a Myanmar curl is
+  not swallowed at heavy settings, and it is spent on lift, so **strokes
+  now end where the hand lifted** — the old filter stopped 6 font units
+  short at the default setting and 28 at the heaviest. Measured against
+  a simulated hand on four letter shapes: better or equal in 14 of 16
+  cases, and the endpoint gap gone everywhere
+  (`node pipeline/stabilizer/bench.js`, written up in
+  [docs/EDITOR.md](docs/EDITOR.md)). A dashed leash shows where the
+  pointer really is while a steadied stroke is live.
+- **Taper**: drawing speed can vary stroke width for anyone without a
+  stylus — slow thickens, quick thins — through the same per-point width
+  that stylus pressure already used, so the pipeline needed no change.
+  Off by default.
+- **Comfort in the drawing panel**: a nib-sized ring under the brush
+  cursor, a live position readout in font units, **Shift** for a
+  dead-straight run mid-stroke, `,` / `.` for brush or eraser size, and a
+  flipped stylus (Wacom/Surface eraser end) borrowing the eraser and
+  handing the tool back.
+- **Undo history now belongs to each glyph** instead of the session, so
+  hopping to the next letter and back no longer discards it (last 12
+  glyphs).
+- **Find a letter**: a filter above the glyph list matching the letter,
+  the Unicode name, a code point, the English or Burmese hint or the
+  group, with an *Only empty* toggle. While a filter is on, `[` `]` and
+  *Next empty* walk only the matches, so one block can be worked through
+  end to end. `/` jumps to the box.
+- [docs/EDITOR.md](docs/EDITOR.md) — how the drawing side works and what
+  the measurements say.
+- `pipeline/tests/test_web_assets.py` — every stylesheet and script the
+  pages load must be in the service worker's cache list, and every path
+  in that list must exist. Forgetting half of the "bump `sw.js`" rule
+  used to be invisible until someone opened the studio offline.
+
 ## [0.11.0] - 2026-08-23
 
 ### Added
