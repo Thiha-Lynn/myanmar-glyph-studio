@@ -5,6 +5,60 @@ format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions are git tags with installable font zips on the
 [releases page](https://github.com/Thiha-Lynn/myanmar-glyph-studio/releases).
 
+## [0.13.0] - 2026-08-23
+
+A supply-chain pass, prompted by an
+[OpenSSF Scorecard](https://securityscorecards.dev) run that graded the
+project 4.6 with three checks at zero. Two were real, mechanical gaps;
+the third cannot be fixed by a project with one maintainer, and
+[docs/SUPPLY-CHAIN.md](docs/SUPPLY-CHAIN.md) says so plainly rather than
+working around it.
+
+### Security
+- **49 dependency advisories closed — `npm audit` now reports 0 in both
+  npm trees.** Every one of them was in `desktop/` or `mobile/`, the two
+  trees Dependabot was not watching. **Electron 34 → 43** (nine major
+  versions, and most of the count on its own: ASAR integrity bypass,
+  a string of use-after-frees, context-isolation bypasses), plus
+  **electron-builder 25 → 26.15.3**, which clears the `app-builder-lib`
+  AppImage search-path advisory, a *critical* `node-tar` hardlink path
+  traversal reached through `node-gyp`, and `extract-zip`'s symlink
+  traversal. In `mobile/`, an npm `overrides` entry forces the patched
+  `uuid` that `@capacitor/cli` → `xcode` still pins below.
+  **Anyone running the desktop app from a release before this one should
+  update.**
+- **Dependabot now watches npm in `/desktop` and `/mobile`** as well as
+  Actions and pip. That absence is the reason the advisories piled up,
+  and the test suite now asserts every `package-lock.json` in the
+  repository has a matching entry.
+- **Every action is pinned to a commit SHA** with the version in a
+  trailing comment. A tag can be repointed at new code by anyone who can
+  push to the action's repository; a commit cannot.
+- **Every workflow declares its token permissions**, defaulting to
+  `contents: read`. `build.yml` declared none at all and ran with
+  whatever the repository default grants. Where a job really writes —
+  attaching installers or font zips to a release — the write is declared
+  on that job, so the rest of the file stays read-only.
+- **Released binaries carry SLSA provenance.** The font zips, the five
+  desktop installers and the APK are attested with
+  `actions/attest-build-provenance`, and the bundle ships beside each as
+  `*.intoto.jsonl`. Verify with
+  `gh attestation verify <file> --repo Thiha-Lynn/myanmar-glyph-studio`.
+
+### Added
+- [docs/SUPPLY-CHAIN.md](docs/SUPPLY-CHAIN.md) — what is pinned, watched
+  and attested, and an honest account of the checks still at zero
+  (code review by a second person being the one that matters).
+- `pipeline/tests/test_workflow_hardening.py` — 35 assertions that keep
+  all of the above from regressing: no moving action refs, no
+  un-commented pins, no workflow without declared permissions, no
+  top-level `contents: write`, no unwatched lockfile, no release
+  attached without provenance.
+
+### Changed
+- The desktop app is built on Electron 43 (verified by running the
+  packaged self-test locally, not only by a green build).
+
 ## [0.12.0] - 2026-08-23
 
 ### Added
