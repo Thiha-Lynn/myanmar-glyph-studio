@@ -38,6 +38,32 @@ the same file get a read-only token.
 what Scorecard's *Token-Permissions 0* was pointing at: it ran with
 whatever the repository default grants.
 
+## Python installs are hash-verified
+
+`pipeline/requirements.txt` and its two smaller siblings are compiled
+with `pip-compile --generate-hashes` from `.in` sources, and every CI job
+installs them with `--require-hashes`. `pip install fonttools` takes
+whatever PyPI serves that minute; a hashed pin cannot be substituted, so
+a tampered or yanked-and-replaced release cannot enter a build.
+
+| File | Used by | Holds |
+|---|---|---|
+| `requirements.txt` | the font builds, the test suite, contributors | the whole toolchain (51 pins) |
+| `requirements-tools.txt` | the DirectWrite shaping check, the gallery kits | fontTools, uharfbuzz, brotli |
+| `requirements-publish.txt` | the PyPI job | build, twine |
+
+Edit the `.in`, then recompile:
+
+```bash
+pip install pip-tools
+cd pipeline && pip-compile --generate-hashes --strip-extras --allow-unsafe \
+  --output-file requirements.txt requirements.in
+```
+
+The package's own dependencies in `pyproject.toml` stay as `>=` ranges —
+pinning the toolchain a project builds *with* is not the same as pinning
+what people who `pip install myanmar-glyph-studio` are forced to resolve.
+
 ## Dependencies are watched — all of them now
 
 Dependabot covers four trees: GitHub Actions, the Python toolchain in

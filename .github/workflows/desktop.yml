@@ -44,7 +44,7 @@ jobs:
       # render the built fonts offline, same as the deployed site.
       - name: Build gallery webfont kits
         run: |
-          pip install fonttools brotli
+          pip install --require-hashes -r pipeline/requirements-tools.txt
           python pipeline/make_gallery.py
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0

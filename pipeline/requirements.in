@@ -1,0 +1,16 @@
+ufoLib2>=0.18.1
+fonttools>=4.63.0
+fontmake>=3.12.1
+# fast, robust overlap removal for the stroke outlines fontmake compiles
+skia-pathops>=0.9.2
+# testing / proofing / sample generation (proof.py, make_sample.py)
+uharfbuzz>=0.56.0
+pillow>=12.3.0
+# font QA (CI and local checks)
+fontbakery>=1.1.0
+pytest>=9.1.1
+# the workflow-hardening tests parse .github/workflows/*.yml; it arrives
+# transitively today, and a test that quietly skips is not a test
+pyyaml>=6.0.3
+# WOFF2 web-font compression (fonttools ttLib.woff2)
+brotli>=1.2.0

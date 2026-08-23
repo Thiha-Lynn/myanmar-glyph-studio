@@ -28,7 +28,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install toolchain
-        run: pip install -r pipeline/requirements.txt
+        run: pip install --require-hashes -r pipeline/requirements.txt
 
       - name: Unit tests
         run: python3 -m pytest pipeline/tests/ -q

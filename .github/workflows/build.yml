@@ -28,7 +28,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install toolchain
-        run: pip install -r pipeline/requirements.txt
+        run: pip install --require-hashes -r pipeline/requirements.txt
 
       - name: Unit tests (pipeline)
         run: python3 -m pytest pipeline/tests/ -q
@@ -142,7 +142,7 @@ jobs:
       # Only what the diff needs — fontmake and fontbakery build fonts,
       # and this job tests the ones already committed in projects/.
       - name: Install the shaping dependencies
-        run: pip install "fonttools>=4.63.0" "uharfbuzz>=0.56.0"
+        run: pip install --require-hashes -r pipeline/requirements-tools.txt
 
       - name: Build the DirectWrite shaper
         shell: cmd
