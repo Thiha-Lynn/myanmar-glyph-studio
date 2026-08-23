@@ -52,7 +52,10 @@ jobs:
       - name: Install and add the Android platform
         working-directory: mobile
         run: |
-          npm install
+          # ci, not install: it installs exactly the committed lockfile
+          # and fails if package.json disagrees, so the uuid override
+          # cannot be quietly re-resolved away
+          npm ci
           npx cap add android
           npx cap sync android
       - name: Build APK
@@ -107,7 +110,7 @@ jobs:
       - name: Install and add the iOS platform
         working-directory: mobile
         run: |
-          npm install
+          npm ci
           npx cap add ios
           npx cap sync ios
       - name: Build for the simulator
