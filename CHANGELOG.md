@@ -46,6 +46,18 @@ versions are git tags with installable font zips on the
   pages load must be in the service worker's cache list, and every path
   in that list must exist. Forgetting half of the "bump `sw.js`" rule
   used to be invisible until someone opened the studio offline.
+- `pipeline/tests/test_outline_mirror.py` — node runs `web/js/outline.js`
+  directly and both stroke expanders are asked the same question, so the
+  studio and the pipeline can no longer drift apart silently.
+
+### Fixed
+- The pipeline kept a repeated end point that the studio dropped, because
+  it compared whole points where the browser compares position: a stroke
+  ending on the same place with a different per-point width expanded into
+  two different letterforms. Unreachable until now — no committed
+  drawing contains one, verified across all 20,566 of them at three
+  weights, so no font changes — but **Taper** and the stabilizer's
+  catch-up both write exactly that kind of point.
 
 ## [0.11.0] - 2026-08-23
 

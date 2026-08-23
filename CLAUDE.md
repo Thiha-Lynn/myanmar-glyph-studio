@@ -46,6 +46,13 @@ neither — a mismatch means contributors draw one thing and ship another:
 | shaping rules in `json_to_ufo.py` | **rebuild every committed font** (below) |
 | fused deep-stack pairs (`FUSED_STACKS` in `make_sample.py`) | `FUSED_STACK_PAIRS` in `json_to_ufo.py` + the fused entries in `web/data/glyphs.js` |
 
+Two of those rows are now enforced rather than trusted: node runs the
+browser half directly, so `pipeline/tests/test_outline_mirror.py` asks
+both stroke expanders the same question and fails on any disagreement,
+and `pipeline/tests/test_web_assets.py` fails when a file the pages load
+is missing from the service worker's cache list. Both found a real
+defect the day they were written.
+
 ## Generated files — regenerate, never hand-edit
 
 * `web/data/glyphs-extended*.js`, `glyphs-latin*.js` → `pipeline/gen_inventory.py`
