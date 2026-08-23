@@ -1,5 +1,10 @@
-# Keep CI actions and the Python toolchain current with weekly PRs.
-# Updates arrive grouped (one PR per ecosystem) so the queue stays quiet.
+# Keep every dependency current with weekly PRs, grouped one per
+# ecosystem so the queue stays quiet.
+#
+# npm was missing here until 2026-08-23, and that is the whole story
+# behind the 49 vulnerabilities OpenSSF Scorecard reported: nothing was
+# watching desktop/ or mobile/, so Electron drifted nine major versions
+# behind while every other ecosystem stayed current.
 version: 2
 updates:
   - package-ecosystem: "github-actions"
@@ -15,4 +20,20 @@ updates:
       interval: "weekly"
     groups:
       python-toolchain:
+        patterns: ["*"]
+
+  - package-ecosystem: "npm"
+    directory: "/desktop"
+    schedule:
+      interval: "weekly"
+    groups:
+      electron-toolchain:
+        patterns: ["*"]
+
+  - package-ecosystem: "npm"
+    directory: "/mobile"
+    schedule:
+      interval: "weekly"
+    groups:
+      capacitor:
         patterns: ["*"]
