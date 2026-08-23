@@ -88,6 +88,12 @@
   <div id="drawerOverlay" class="drawer-overlay" hidden></div>
   <aside class="sidebar" id="sidebar">
     <div class="progress-line" id="totalProgress"></div>
+    <div class="glyph-filter">
+      <input id="glyphFilter" type="search" class="mm" spellcheck="false"
+        autocomplete="off" data-i18n-ph="filterPh" placeholder="Find a letter — က, ka, 1004…">
+      <label class="check" title="Show only the letters that still have no ink"><input id="filterUndrawn" type="checkbox"> <span data-i18n="onlyEmpty">Only empty</span></label>
+      <span id="filterCount" class="filter-count"></span>
+    </div>
     <div id="glyphBrowser"></div>
     <div class="sidebar-note">
       <strong>Export font</strong> gives a draft TTF for quick testing. For a
@@ -119,8 +125,13 @@
           <span id="penWidthVal" class="opt-val">60</span></label>
       </div>
       <div class="opt-group" data-for="brush">
-        <label title="How strongly shaky input is steadied"><span data-i18n="steady">Steady</span>
-          <input id="stabilizer" type="range" min="0" max="10" value="3"></label>
+        <label title="Steadies a shaky hand: the ink follows the pointer on a short rope, so tremor never reaches the page"><span data-i18n="steady">Steady</span>
+          <input id="stabilizer" type="range" min="0" max="10" value="3">
+          <span id="stabilizerVal" class="opt-val">3</span></label>
+        <label title="Let drawing speed vary the width — press slowly for a thick stroke, flick for a thin one (a stylus uses real pressure instead)"><span data-i18n="taper">Taper</span>
+          <input id="taper" type="range" min="0" max="10" value="0">
+          <span id="taperVal" class="opt-val">0</span></label>
+        <span class="opt-hint" data-i18n="brushHint">hold Shift: straight stroke · , . resize</span>
       </div>
       <div class="opt-group" data-for="pen rect circle">
         <label class="check" title="Commit the closed shape as a solid filled contour"><input id="fillShape" type="checkbox"> <span data-i18n="fillShape">Fill</span></label>
@@ -308,12 +319,15 @@
         <li><strong>Select (V)</strong>: click or drag a box around strokes, then move them, scale with the corner handles, rotate with the knob above (Shift snaps to 15°), nudge with the arrow keys (Shift = ×10), <strong>Alt-drag</strong> to duplicate. <strong>Ctrl/Cmd+A</strong> select all · <strong>Ctrl/Cmd+C/X/V</strong> copy/cut/paste — paste works across glyphs, so you can reuse a bowl or stem you already drew · <strong>Ctrl/Cmd+D</strong> duplicate · <strong>Del</strong> delete. Double-click a stroke to edit its points.</li>
         <li><strong>Pen (P)</strong> draws Bézier paths like Illustrator: click for corners, drag for smooth curves, click the first point (or press <strong>Close</strong>) to close the shape, <strong>Enter</strong>/double-click to finish, <strong>Backspace</strong> removes the last point. With <strong>Fill</strong> on, closed paths become solid shapes.</li>
         <li><strong>Edit points (D)</strong>: drag points and their curve handles (hand-drawn strokes bend with a soft falloff), double-click the path to add a point, double-click a point to toggle corner/smooth, <strong>Del</strong> removes it.</li>
+        <li><strong>Brush (B)</strong>: <strong>Steady</strong> pulls the ink along behind the pointer on a short rope, so hand tremor never reaches the page — the dashed leash shows where your pointer really is, and the stroke always ends exactly where you lifted. <strong>Taper</strong> lets drawing speed vary the width (slow = thick, quick = thin) for anyone without a stylus; a stylus uses its own pressure instead. Hold <strong>Shift</strong> mid-stroke for a dead-straight run — the stems and cross-bars of a letter, drawn by hand but true. The ring under the cursor is the real nib size, and the corner readout is the exact position in font units.</li>
         <li><strong>Eraser (E)</strong> has two modes: <em>Partial</em> rubs away just where you touch (splitting the stroke), <em>Whole</em> removes an entire stroke per tap.</li>
         <li><strong>Snap</strong> pulls the pen, shapes and point edits onto a 10-unit grid and the baseline/body/ascender guides.</li>
-        <li><strong>Ctrl/Cmd+Z</strong> undo · <strong>Ctrl/Cmd+Shift+Z</strong> redo · <strong>[ ]</strong> previous / next glyph · <strong>N</strong> next empty · <strong>+ − 0</strong> zoom · <strong>F</strong> focus mode · hold <strong>Space</strong> or drag the middle mouse button to pan.</li>
+        <li><strong>Ctrl/Cmd+Z</strong> undo · <strong>Ctrl/Cmd+Shift+Z</strong> redo · <strong>[ ]</strong> previous / next glyph · <strong>N</strong> next empty · <strong>, .</strong> brush or eraser size (hold Shift for bigger steps) · <strong>/</strong> jump to the letter filter · <strong>+ − 0</strong> zoom · <strong>F</strong> focus mode · hold <strong>Space</strong> or drag the middle mouse button to pan. Undo history now belongs to each glyph, so it survives hopping to the next letter and back.</li>
+        <li><strong>Find a letter</strong> at the top of the glyph list: type Burmese (က), the Unicode name (<code>ka</code>, <code>medialRa</code>), a code point (<code>1004</code>) or an English hint, and the list narrows to what matches. Tick <strong>Only empty</strong> to see just the letters still to draw. While a filter is on, <strong>[ ]</strong> and <strong>Next empty</strong> walk only the matches — filter to “shan”, and the arrows step through the Shan block alone.</li>
         <li><strong>Ghost</strong> overlays a glyph you already drew (e.g. your က) so every letter keeps the same style; <strong>Copy from</strong> duplicates strokes between similar letters (ခ→ဂ, ပ→ဖ…). Both live under <strong>⚙</strong>.</li>
         <li><strong>⚓ Anchors</strong> shows where vowel signs and marks will attach in the full build — drag a point to adjust it, double-click to reset. <strong>Import SVG</strong> brings a vectorized paper sketch (Inkscape/Illustrator trace) onto the current glyph.</li>
         <li><strong>⚙ → Copy glyph / Paste glyph</strong> turns one drawing into a small text snippet — share it in a GitHub issue, a chat, or an e-mail, and anyone can paste it into their studio. It's how you contribute a glyph <em>without knowing Git</em>. The page address always points at the glyph you're on (<code>#g=…</code>), so you can link someone straight to a letter.</li>
+        <li>On a Wacom or Surface pen, <strong>flipping the stylus over</strong> switches to the eraser while the eraser end is down, then hands your tool straight back.</li>
         <li>On iPad: draw with the Apple Pencil (pressure varies the stroke), pan &amp; zoom with two fingers. Add the studio to your Home Screen — it works offline.</li>
       </ul>
       <h3>Touch gestures (phone &amp; tablet)</h3>
@@ -366,6 +380,7 @@
 <script src="js/savefile.js"></script>
 <script src="js/svgimport.js"></script>
 <script src="js/vectools.js"></script>
+<script src="js/stabilizer.js"></script>
 <script src="js/editor.js"></script>
 <script src="js/fontexport.js"></script>
 <script src="js/app.js"></script>
