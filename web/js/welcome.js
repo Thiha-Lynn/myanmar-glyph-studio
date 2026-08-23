@@ -131,6 +131,8 @@
       '<ul class="welcome-pitch">' +
       "<li>Trace ≈150 glyph parts over dimmed guides — phone, tablet with a stylus, or desktop, fully offline." +
       '<span class="my mm">ဖုန်း၊ တက်ဘလက် သို့မဟုတ် ကွန်ပျူတာဖြင့် အရိပ်ပုံပေါ် လိုက်ရေးဆွဲပါ — အင်တာနက် မလိုပါ</span></li>' +
+      "<li>A shaky hand is fine — <strong>Steady</strong> pulls the ink along behind you on a short rope, so tremor never reaches the page and the stroke still ends where you lifted." +
+      '<span class="my mm">လက်တုန်ရင်လည်း ရပါတယ် — “တည်ငြိမ်” က မျဉ်းကို ပြေပြေဆွဲပေးပြီး လက်တင်လိုက်တဲ့နေရာမှာပဲ အဆုံးသတ်ပါတယ်</span></li>' +
       "<li>The hard part is automatic: OpenType shaping, mark anchors and a real installable TTF are generated for you." +
       '<span class="my mm">ခက်ခဲသော OpenType အပိုင်းကို ကိရိယာက အလိုအလျောက် ပြုလုပ်ပြီး တပ်ဆင်နိုင်သော TTF ဖောင့် ထုတ်ပေးပါသည်</span></li>' +
       "<li>Everything you make is yours, under the SIL Open Font License — free for the whole community, forever." +
