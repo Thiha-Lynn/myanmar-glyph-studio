@@ -131,6 +131,7 @@ pipeline will build. Change both or neither:
 
 | workflow | what it gates |
 | --- | --- |
+| supply chain: pinned actions, scoped tokens, provenance ([SUPPLY-CHAIN.md](SUPPLY-CHAIN.md)) | guarded by `pipeline/tests/test_workflow_hardening.py` |
 | `build.yml` — `build` job | pytest (incl. the 1,486-cluster audit on every committed font), fontbakery universal FAILs, sample-font shaping with 0 missing glyphs. Required by branch protection. |
 | `build.yml` — `directwrite` job | DirectWrite vs HarfBuzz on `windows-latest`, 0 differences required for Myanmar Glyph Sans |
 | `pages.yml` | deploys `web/` to GitHub Pages |

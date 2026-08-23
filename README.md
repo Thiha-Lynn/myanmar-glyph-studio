@@ -264,7 +264,8 @@ pipeline/   project JSON → UFO → fontmake build, feature generation,
             test_corpus.txt (shaping test sentences)
 projects/   community font projects — one folder per family
 docs/       design notes, how the drawing side works (EDITOR.md), the
-            shaping spec + validation report, testing and debugging guides
+            shaping spec + validation report, supply-chain posture,
+            testing and debugging guides
 ```
 
 The full map — every module, the data flow, the pairs of files that must

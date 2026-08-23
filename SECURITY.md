@@ -22,6 +22,19 @@ if it is enabled on the repository. You will get a response within a week.
 * Fonts built by CI from community PRs are artifacts; they are only
   published to the gallery after a maintainer merges the PR.
 
+## How the build itself is protected
+
+Actions pinned to commits, least-privilege workflow tokens, Dependabot on
+every dependency tree, and SLSA provenance attached to every released
+binary — with an honest list of what is *not* covered — are written up in
+[docs/SUPPLY-CHAIN.md](docs/SUPPLY-CHAIN.md).
+
+To check that a file you downloaded came from this repository:
+
+```bash
+gh attestation verify <file> --repo Thiha-Lynn/myanmar-glyph-studio
+```
+
 ## Supported versions
 
 The `main` branch and the latest release are supported with fixes.
