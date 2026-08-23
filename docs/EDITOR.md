@@ -121,6 +121,86 @@ stylus still wins where it is present: real pressure beats a guess.
 Off by default — it changes the shape of what you draw, and that should
 be a decision.
 
+## Drawing with a stylus
+
+The studio has always read stylus pressure. Two settings under **⚙** make
+that a tool rather than a fixed behaviour, and both are stylus-only —
+they do nothing under a finger or a mouse.
+
+**Pressure** (0–10) is how far pressure may move the width. 10 is the
+curve the studio always had, `0.35 + 1.3p`; lower amounts pull it toward
+a constant width, which is what you want with a pen (or a hand) whose
+usable range is narrow, and 0 turns it off. It replaced a checkbox, and
+an old unticked box becomes an amount of 0.
+
+**Tilt** (0–10) broadens the stroke as you lay the pen over, the way a
+chisel nib does. Safari gives Apple Pencil's `altitudeAngle`; Chromium
+browsers give `tiltX`/`tiltY`; both are read, so an iPad and a Wacom feel
+the same. It multiplies whatever width dynamic is already in play, so
+pressure and tilt work together.
+
+Both write the same optional per-point width that the pipeline already
+reads. Nothing else in the toolchain had to change.
+
+Two smaller things a pen user meets first:
+
+* **Palm rejection arms on hover.** An Apple Pencil that supports hover
+  announces itself before it touches down, so the switch to
+  pen-draws/fingers-pan happens then, instead of the first stroke being
+  the one that discovers it.
+* **Flip the pen over** and the eraser end borrows the eraser for as long
+  as it is down — and hands the tool back when *that* pointer lifts, so a
+  resting finger coming up does not end the erase.
+
+## On an iPad
+
+An iPad in portrait is 1032 points wide, which is *above* the studio's
+drawer breakpoint — so the glyph list was a permanent 300-point column
+with no way to dismiss it while drawing. **☰** now folds it away at any
+width and remembers the choice; on the iPad that is the difference
+between a 648-point canvas and a 948-point one.
+
+The canvas also refuses iPadOS's callout and text selection, so a resting
+palm cannot raise a menu over your drawing.
+
+## The numbers under the glyph's name
+
+Ink width, the two sidebearings (◧ ◨), and how far the ink reaches above
+and below the baseline — turning red when it passes the ascender (900) or
+the descender (−600), which the full build checks and reports much later,
+in a file nobody reads mid-drawing. **⚙ → Fit width** sets the advance
+from the ink with the same sidebearing on both sides; **Center** moves
+the ink inside the advance you already have.
+
+## The letter-height line
+
+The canvas has always drawn a line at 550. It was labelled "body", and a
+line across a canvas reads as *the height to draw up to*. It is not: 550
+is where top marks attach (`BODY` in `json_to_ufo.py`).
+
+Measured in the bundled Padauk, every Myanmar consonant tops out at
+**439–449 per 1000 em** — around a hundred units below that line. This
+project's own font, traced against that same guide with nothing to aim
+at, came out ranging 420 to 458.
+
+So the canvas now measures the guide face itself — it renders a spread of
+consonants offscreen and reads the ink's top edge — and draws a gold line
+there, labelled with the number. Trace a different face with **Guide
+font** and the line follows it.
+
+One line is honest for the whole alphabet because **Myanmar does not
+overshoot**: measured in Padauk, round letters (ဝ ဂ ပ င ဒ သ) and flat
+ones (က ခ တ မ လ) share their extremes exactly. Latin, in the same file,
+does overshoot — O reaches 640 where H E X stop at 628 — so when the
+glyph being drawn is Latin the studio samples flat letters only, and uses
+cap height for capitals and x-height for lowercase. Those measurements
+are pinned in
+[`pipeline/tests/test_guide_font.py`](../pipeline/tests/test_guide_font.py),
+so swapping the bundled guide re-checks them.
+
+The 550 line is still drawn, now labelled **marks 550**, because that is
+what it is.
+
 ## The rest of the drawing panel
 
 | | |
@@ -132,6 +212,7 @@ be a decision.
 | **Flip the stylus** | A Wacom or Surface pen's eraser end borrows the eraser for as long as it is down, then hands your tool back. |
 | **Per-glyph undo** | Undo history belongs to the glyph, not to the session, so hopping to the next letter and back no longer throws it away. The last 12 glyphs keep their stacks. |
 | **Find a letter** | The filter above the glyph list matches the letter itself, the Unicode name, a code point, the English or Burmese hint, or the group. While a filter is on, `[` `]` and **Next empty** walk only the matches — filter to “shan” and the arrows step through that block alone. `/` jumps to the box. |
+| **☰** | Folds the glyph list away at any screen width (on phones it is the drawer, as before). |
 
 ## Where the code lives
 
