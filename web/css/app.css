@@ -161,6 +161,26 @@ button { touch-action: manipulation; }
   font-size: 0.78rem; font-weight: 600; color: var(--gold);
   padding-bottom: 0.5rem; border-bottom: 1px solid var(--line); margin-bottom: 0.4rem;
 }
+.glyph-filter {
+  display: flex; align-items: center; gap: 0.4rem;
+  flex-wrap: wrap; padding-bottom: 0.45rem;
+}
+.glyph-filter input[type="search"] {
+  flex: 1 1 7rem; min-width: 0; padding: 0.32rem 0.5rem;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--canvas-bg); color: var(--ink); font-size: 0.85rem;
+}
+.glyph-filter input[type="search"]:focus {
+  outline: 2px solid var(--accent); outline-offset: 1px;
+}
+.glyph-filter .check {
+  display: flex; align-items: center; gap: 0.25rem;
+  font-size: 0.72rem; color: var(--muted); white-space: nowrap;
+}
+.filter-count {
+  font-size: 0.72rem; color: var(--gold); font-variant-numeric: tabular-nums;
+}
+.filter-count[hidden] { display: none; }
 .sidebar details { margin-bottom: 0.3rem; }
 .sidebar summary {
   cursor: pointer; display: flex; align-items: baseline; gap: 0.45rem;

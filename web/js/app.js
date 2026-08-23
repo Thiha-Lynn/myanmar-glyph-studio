@@ -11,7 +11,7 @@
 
   var PREFS_KEY = "mm-glyph-studio-prefs";
   var prefs = {
-    theme: "auto", lang: "en", penWidth: 60, stabilizer: 3,
+    theme: "auto", lang: "en", penWidth: 60, stabilizer: 3, taper: 0,
     guideOpacity: 22, guideSize: 1000, pressure: true, touchDraws: true,
     ghost: "", tool: "brush", snap: false, eraserMode: "partial",
     eraserSize: 60, fillShape: false
@@ -80,6 +80,7 @@
     window.GLYPH_GROUPS.forEach(function (grp) {
       var members = window.GLYPHS.filter(function (g) { return g.group === grp.key; });
       var det = document.createElement("details");
+      det.dataset.group = grp.key;
       det.open = grp.key === "consonants";
       var sum = document.createElement("summary");
       var first = prefs.lang === "my" ? grp.my : grp.en;
@@ -106,6 +107,75 @@
       box.appendChild(det);
     });
     refreshBrowser();
+  }
+
+  // ---- letter filter -------------------------------------------------
+  // 484 glyphs is a lot of scrolling to reach the one letter you meant to
+  // draw. The box narrows the list by anything you might know about a
+  // glyph — the letter itself, its Unicode name, its code point, the
+  // English or Burmese hint, or the group it lives in — and while a
+  // filter is on, [ ] and "Next empty" walk only the matches, so it
+  // doubles as a way to work through one block at a time.
+  var filterText = "";
+  var filterUndrawn = false;
+
+  function filterActive() { return !!filterText || filterUndrawn; }
+
+  function groupFor(key) {
+    var hit = null;
+    window.GLYPH_GROUPS.forEach(function (g) { if (g.key === key) hit = g; });
+    return hit;
+  }
+
+  function glyphMatches(g) {
+    if (filterUndrawn && window.Store.hasInk(g.name)) return false;
+    if (!filterText) return true;
+    var q = filterText;                       // already lower-cased
+    if (g.name.toLowerCase().indexOf(q) >= 0) return true;
+    if (g.label && g.label.indexOf(filterText) >= 0) return true;
+    if (g.hint && g.hint.toLowerCase().indexOf(q) >= 0) return true;
+    if (g.hintMy && g.hintMy.indexOf(filterText) >= 0) return true;
+    if (g.cp && ("u+" + g.cp.toString(16)).indexOf(q) >= 0) return true;
+    var grp = groupFor(g.group);
+    if (grp && (grp.en.toLowerCase().indexOf(q) >= 0 ||
+                (grp.my && grp.my.indexOf(filterText) >= 0))) return true;
+    return false;
+  }
+
+  function visibleGlyphs() {
+    if (!filterActive()) return window.GLYPHS;
+    var out = window.GLYPHS.filter(glyphMatches);
+    return out.length ? out : window.GLYPHS;
+  }
+
+  function applyFilter() {
+    var on = filterActive();
+    var shown = 0;
+    var byGroup = {};
+    window.GLYPHS.forEach(function (g) {
+      var hit = !on || glyphMatches(g);
+      if (hit) { shown++; byGroup[g.group] = (byGroup[g.group] || 0) + 1; }
+    });
+    document.querySelectorAll(".chip").forEach(function (chip) {
+      var name = chip.dataset.glyph;
+      var g = null;
+      window.GLYPHS.forEach(function (x) { if (x.name === name) g = x; });
+      chip.hidden = !!(on && g && !glyphMatches(g));
+    });
+    document.querySelectorAll("#glyphBrowser details").forEach(function (det) {
+      var n = byGroup[det.dataset.group] || 0;
+      det.hidden = on && !n;
+      if (on) {
+        if (det.dataset.wasOpen == null) det.dataset.wasOpen = det.open ? "1" : "";
+        det.open = n > 0;
+      } else if (det.dataset.wasOpen != null) {
+        det.open = det.dataset.wasOpen === "1";
+        delete det.dataset.wasOpen;
+      }
+    });
+    var count = $("#filterCount");
+    count.textContent = on ? shown + " / " + window.GLYPHS.length : "";
+    count.hidden = !on;
   }
 
   function refreshBrowser() {
@@ -162,24 +232,66 @@
     $("#advanceInput").value = adv || "";
     $("#advanceInput").placeholder = "auto " + window.Editor.measureGuideAdvance();
     refreshBrowser();
+    applyFilter();
+    var chip = document.querySelector('.chip[data-glyph="' + g.name + '"]');
+    if (chip && !chip.hidden && !isMobile()) {
+      chip.scrollIntoView({ block: "nearest" });
+    }
   }
 
   function step(dir) {
     if (!current) return;
-    var idx = window.GLYPHS.indexOf(current);
-    var next = window.GLYPHS[idx + dir];
-    if (next) selectGlyph(next);
+    var list = visibleGlyphs();
+    var idx = list.indexOf(current);
+    if (idx >= 0) {
+      var next = list[idx + dir];
+      if (next) selectGlyph(next);
+      return;
+    }
+    // the current glyph is filtered out: step to its neighbour among the
+    // matches, in inventory order
+    var at = window.GLYPHS.indexOf(current), cand = null;
+    for (var i = 0; i < list.length; i++) {
+      var pos = window.GLYPHS.indexOf(list[i]);
+      if (dir > 0 && pos > at) { cand = list[i]; break; }
+      if (dir < 0 && pos < at) cand = list[i];
+    }
+    if (cand) selectGlyph(cand);
   }
 
   function nextUndrawn() {
     if (!current) return;
-    var list = window.GLYPHS;
+    var list = visibleGlyphs();
     var start = list.indexOf(current);
     for (var i = 1; i <= list.length; i++) {
-      var g = list[(start + i) % list.length];
+      var g = list[((start < 0 ? -1 : start) + i + list.length) % list.length];
       if (!window.Store.hasInk(g.name)) { selectGlyph(g); return; }
     }
-    toast("All " + list.length + " glyphs have ink — congratulations! 🎉");
+    toast(window.I18N.t("allDrawn").replace("{n}", list.length));
+  }
+
+  /* Brush width / eraser size from the keyboard, so focus mode and a
+     stylus in the other hand do not mean reaching for a slider. */
+  function adjustSize(delta) {
+    var ed = window.Editor;
+    if (ed.tool === "eraser") {
+      var v = Math.max(20, Math.min(200, ed.eraserSize + delta));
+      ed.eraserSize = v;
+      prefs.eraserSize = v; savePrefs();
+      $("#eraserSize").value = v;
+      $("#eraserSizeVal").textContent = v;
+      ed.render();
+      return;
+    }
+    var w = Math.max(20, Math.min(140, prefs.penWidth + delta));
+    prefs.penWidth = w; savePrefs();
+    ed.penWidth = w;
+    $("#penWidth").value = w;
+    $("#penWidthVal").textContent = w;
+    if (ed.tool === "select" && window.VecTools.hasSelection()) {
+      window.VecTools.applyWidth(ed, w);
+    }
+    ed.render();
   }
 
   // ---- mobile: project menu sheet, thumb bar, folding test drive ---------
@@ -340,7 +452,13 @@
     });
     $("#stabilizer").addEventListener("input", function () {
       window.Editor.stabilizer = +this.value;
+      $("#stabilizerVal").textContent = this.value;
       prefs.stabilizer = +this.value; savePrefs();
+    });
+    $("#taper").addEventListener("input", function () {
+      window.Editor.taper = +this.value;
+      $("#taperVal").textContent = this.value;
+      prefs.taper = +this.value; savePrefs();
     });
     $("#fillShape").addEventListener("change", function () {
       window.Editor.fillShape = this.checked;
@@ -428,6 +546,28 @@
       window.Store.emit();
       window.Editor.render();
     });
+    // letter filter
+    $("#glyphFilter").addEventListener("input", function () {
+      filterText = this.value.trim().toLowerCase();
+      applyFilter();
+    });
+    $("#glyphFilter").addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        this.value = ""; filterText = ""; applyFilter(); this.blur();
+      } else if (e.key === "Enter") {
+        // jump straight to the first match — type, Enter, draw
+        var list = visibleGlyphs();
+        if (list.length) {
+          selectGlyph(list[0]);
+          if (isMobile()) closeDrawer(); else this.blur();
+        }
+      }
+    });
+    $("#filterUndrawn").addEventListener("change", function () {
+      filterUndrawn = this.checked;
+      applyFilter();
+    });
+
     $("#btnPrev").addEventListener("click", function () { step(-1); });
     $("#btnNext").addEventListener("click", function () { step(1); });
     $("#btnNextUndrawn").addEventListener("click", nextUndrawn);
@@ -670,6 +810,14 @@
       else if (k === "o") setTool("circle");
       else if (k === "e") setTool("eraser");
       else if (k === "a") $("#btnAnchors").click();
+      else if (k === ",") adjustSize(e.shiftKey ? -20 : -5);
+      else if (k === ".") adjustSize(e.shiftKey ? 20 : 5);
+      else if (k === "/") {
+        e.preventDefault();
+        if (isMobile()) openDrawer();
+        $("#glyphFilter").focus();
+        $("#glyphFilter").select();
+      }
       else if (k === "+" || k === "=") ed.zoomStep(1.25);
       else if (k === "-") ed.zoomStep(0.8);
       else if (k === "0") ed.resetView();
@@ -787,6 +935,7 @@
     // restore preferences into the editor + controls
     window.Editor.penWidth = prefs.penWidth;
     window.Editor.stabilizer = prefs.stabilizer;
+    window.Editor.taper = prefs.taper || 0;
     window.Editor.guideOpacity = prefs.guideOpacity / 100;
     window.Editor.guideSize = prefs.guideSize;
     window.Editor.pressureEnabled = prefs.pressure;
@@ -799,6 +948,9 @@
     $("#penWidth").value = prefs.penWidth;
     $("#penWidthVal").textContent = prefs.penWidth;
     $("#stabilizer").value = prefs.stabilizer;
+    $("#stabilizerVal").textContent = prefs.stabilizer;
+    $("#taper").value = prefs.taper || 0;
+    $("#taperVal").textContent = prefs.taper || 0;
     $("#guideOpacity").value = prefs.guideOpacity;
     $("#guideSize").value = prefs.guideSize;
     $("#pressureToggle").checked = prefs.pressure;

@@ -30,6 +30,9 @@
   var GUIDE_FONTS = '"GlyphStudioGuide", Padauk, "Myanmar MN", "Noto Sans Myanmar", "Myanmar Text", sans-serif';
   var ZOOM_MIN = 0.4, ZOOM_MAX = 6;
   var TAP_MS = 350, TAP_SLOP = 14;  // multi-finger tap tolerances
+  var HISTORY_GLYPHS = 12;   // glyphs whose undo history is kept in memory
+  var HISTORY_STEPS = 20;    // steps kept for a glyph you have left
+  var TAPER_FULL = 2.2;      // screen px per ms counted as "a fast sweep"
 
   function buzz(ms) {
     try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {}
@@ -62,12 +65,21 @@
     ghostName: null,   // another glyph's strokes shown as a style reference
     fillPreview: false,
     pressureEnabled: true,
-    stabilizer: 3,     // 0 (off) … 10 (heavy)
+    stabilizer: 3,     // 0 (off) … 10 (heavy) — see js/stabilizer.js
+    taper: 0,          // 0 (off) … 10: speed varies the width, for people
+                       // drawing with a mouse or a finger instead of a pen
     touchDraws: true,  // flips off automatically once a stylus is detected
     penSeen: false,
     touchSeen: false,  // first finger on the canvas (gesture-hint hook)
     liveStroke: null,
-    _stabPoint: null,
+    _stab: null,       // Stabilizer for the stroke being drawn
+    _rawScr: null,     // where the pointer really is, screen px (the leash)
+    _speed: 0,         // smoothed pointer speed, SCREEN px per ms
+    _lastSample: null, // {x, y, t} of the previous raw sample, for the speed
+    _shiftAnchor: null,// index the Shift-straight segment hinges on
+    _penEraser: null,  // {id, tool} while the stylus's eraser end is down
+    _histories: {},    // glyph name -> {undo, redo}: history survives a switch
+    _histOrder: [],    // LRU of the glyph names holding history
     _rect: null,       // cached canvas rect: cleared on resize, refreshed per stroke
     _rafPending: false,
     pointers: {},      // pointerId -> {type, x, y} (screen px)
@@ -120,7 +132,7 @@
         window.VecTools.softReset();
       }
       this.liveStroke = null;
-      this._stabPoint = null;
+      this.endStroke();
       this._eraseGesture = null;
       this.hoverScr = null;
       this.tool = t;
@@ -180,22 +192,51 @@
 
     s: function () { return this.baseScale * this.zoom; },
 
+    /*
+     * Switching glyphs used to throw the undo history away, so a wrong
+     * turn discovered after a hop to the next letter was unrecoverable.
+     * Each glyph now keeps its own stacks; the last HISTORY_GLYPHS of them
+     * stay in memory (snapshots are whole-glyph JSON, so the count is
+     * bounded on purpose) and the oldest is dropped.
+     */
     setGlyph: function (g) {
+      if (this.glyph && this.glyph.name !== g.name) this.stashHistory();
       this.glyph = g;
       this.liveStroke = null;
       this._dragAnchor = null;
       this._eraseGesture = null;
-      this.undoStack = [];
-      this.redoStack = [];
+      var h = this._histories[g.name];
+      this.undoStack = h ? h.undo : [];
+      this.redoStack = h ? h.redo : [];
       if (window.VecTools) window.VecTools.reset();
       this.render();
+    },
+
+    stashHistory: function () {
+      var name = this.glyph.name;
+      if (!this.undoStack.length && !this.redoStack.length) {
+        delete this._histories[name];
+        return;
+      }
+      // Snapshots are whole-glyph JSON. Sixty of them per glyph is fine
+      // while you are on it; twelve glyphs' worth of sixty is not, so a
+      // stashed history keeps only its most recent steps.
+      this._histories[name] = {
+        undo: this.undoStack.slice(-HISTORY_STEPS),
+        redo: this.redoStack.slice(-HISTORY_STEPS)
+      };
+      var order = this._histOrder;
+      var at = order.indexOf(name);
+      if (at >= 0) order.splice(at, 1);
+      order.push(name);
+      while (order.length > HISTORY_GLYPHS) delete this._histories[order.shift()];
     },
 
     setAnchorMode: function (on) {
       this.anchorMode = !!on;
       this.liveStroke = null;
       this._dragAnchor = null;
-      this._stabPoint = null;
+      this.endStroke();
       if (on && window.VecTools) {
         if (this.tool === "pen" && window.VecTools.penActive()) {
           window.VecTools.penCancel(this);
@@ -311,6 +352,14 @@
         this.touchDraws = false;
         if (this.onPenDetected) this.onPenDetected();
       }
+      // Flip the stylus over: the eraser end of a Wacom/Surface pen reports
+      // button 5 (buttons bit 32). Borrow the eraser for as long as that
+      // end is down, then hand the tool back.
+      if (e.pointerType === "pen" && (e.button === 5 || (e.buttons & 32)) &&
+          this.tool !== "eraser" && !this.anchorMode) {
+        this._penEraser = { id: e.pointerId, tool: this.tool };
+        this.setTool("eraser");
+      }
       if (e.pointerType === "touch" && !this.touchSeen) {
         this.touchSeen = true;
         if (this.onTouchSeen) this.onTouchSeen();
@@ -338,6 +387,7 @@
             this.liveStroke.points.length >= 2 &&
             (e.timeStamp - this._multi.t0 > 250 ||
              this.strokeLength(this.liveStroke.points) > 120)) {
+          this.flushStab();
           this.pushUndo();
           window.Store.getGlyph(this.glyph.name).strokes.push(this.liveStroke);
           window.Store.emit();
@@ -353,7 +403,7 @@
           if (this.onInkChange) this.onInkChange(this.glyph.name);
         }
         this.liveStroke = null;
-        this._stabPoint = null;
+        this.endStroke();
         this._eraseGesture = null;
         if (window.VecTools) window.VecTools.cancelDrag(this);
         var a = touches[0], b = touches[1];
@@ -408,8 +458,7 @@
         this.render();
         return;
       }
-      this._stabPoint = p.slice(0, 2);
-      this.liveStroke = { width: this.penWidth, points: [this.inputPoint(e, p)] };
+      this.beginStroke(e, p);
       this.render();
     },
 
@@ -440,25 +489,109 @@
       return L;
     },
 
-    inputPoint: function (e, unitP) {
-      // stabilize: exponential pull toward the raw point
-      var raw = unitP || this.toUnits(e);
-      var pt;
-      if (this.stabilizer > 0 && this._stabPoint) {
-        var k = 1 / (1 + this.stabilizer * 0.6);
-        this._stabPoint = [
-          this._stabPoint[0] + (raw[0] - this._stabPoint[0]) * k,
-          this._stabPoint[1] + (raw[1] - this._stabPoint[1]) * k
-        ];
-        pt = [Math.round(this._stabPoint[0]), Math.round(this._stabPoint[1])];
-      } else {
-        pt = [raw[0], raw[1]];
+    // ---- freehand input: stabilizer, width dynamics ---------------------
+    /* A rope for this stroke, at this zoom. Null when steadying is off. */
+    newStab: function (p) {
+      if (!window.Stabilizer || !(this.stabilizer > 0)) return null;
+      return window.Stabilizer.create({
+        strength: this.stabilizer,
+        unitsPerPx: 1 / this.s(),
+        start: p
+      });
+    },
+
+    beginStroke: function (e, p) {
+      this._lastSample = null;
+      // Seed the speed at a middling value: measured from zero, the first
+      // points of every tapered stroke would come out at full thickness
+      // before the real speed caught up, blobbing each entry.
+      this._speed = TAPER_FULL * 0.35;
+      this._shiftAnchor = null;
+      this._rawScr = this.toScreen(e);
+      this._stab = this.newStab(p);
+      this.liveStroke = { width: this.penWidth, points: [this.strokePoint(p, e)] };
+    },
+
+    endStroke: function () {
+      this._stab = null;
+      this._rawScr = null;
+      this._shiftAnchor = null;
+      this._lastSample = null;
+      this._speed = 0;
+    },
+
+    /* Pointer speed in SCREEN px per ms — a property of the hand, so it
+       must not change meaning when the view is zoomed. */
+    trackSpeed: function (e, scr) {
+      var t = e.timeStamp || 0;
+      var prev = this._lastSample;
+      this._lastSample = { x: scr[0], y: scr[1], t: t };
+      if (!prev) return;
+      var dt = t - prev.t;
+      if (dt <= 0) return;
+      var v = Math.hypot(scr[0] - prev.x, scr[1] - prev.y) / dt;
+      this._speed += (v - this._speed) * 0.3;
+    },
+
+    /*
+     * One stored point, with its width. A stylus gives real pressure;
+     * everyone else can have SPEED stand in for it — slow means pressing
+     * in, fast means flicking away, which is how a brush behaves and how
+     * the strokes of a Myanmar letter are actually written. Both land in
+     * the same optional third element, which outline.js and the Python
+     * pipeline already read.
+     */
+    strokePoint: function (pt, e) {
+      var w = null;
+      if (this.pressureEnabled && e && e.pointerType === "pen" && e.pressure > 0) {
+        w = this.penWidth * (0.35 + 1.3 * e.pressure);
+      } else if (this.taper > 0) {
+        var k = this.taper / 10;
+        var vn = Math.min(1, this._speed / TAPER_FULL);
+        w = this.penWidth *
+          Math.max(0.4, Math.min(1.5, 1 + k * (0.45 - 0.9 * vn)));
       }
-      // stylus pressure → per-point width
-      if (this.pressureEnabled && e.pointerType === "pen" && e.pressure > 0) {
-        pt.push(Math.round(this.penWidth * (0.35 + 1.3 * e.pressure)));
+      var out = [Math.round(pt[0]), Math.round(pt[1])];
+      if (w != null) out.push(Math.max(2, Math.round(w)));
+      return out;
+    },
+
+    /*
+     * Hold Shift while brushing and the stroke runs dead straight from
+     * where Shift went down to the pointer — the stems and cross-bars of
+     * a letter, drawn by hand but true. Let go and freehand resumes from
+     * the end of the straight run.
+     */
+    shiftSegment: function (raw) {
+      var pts = this.liveStroke.points;
+      if (this._shiftAnchor == null) {
+        this.flushStab();          // spend the rope's lag before hinging
+        this._shiftAnchor = pts.length - 1;
       }
-      return pt;
+      pts.length = this._shiftAnchor + 1;
+      var prev = pts[pts.length - 1];
+      var end = [Math.round(raw[0]), Math.round(raw[1])];
+      if (prev.length > 2) end.push(prev[2]);
+      pts.push(end);
+    },
+
+    releaseShift: function (raw) {
+      this._shiftAnchor = null;
+      this._stab = this.newStab(raw);
+    },
+
+    /* Append whatever the rope is still holding, so a stroke ends where
+       the hand lifted instead of one rope-length behind it. */
+    flushStab: function () {
+      if (!this._stab || !this.liveStroke || this._shiftAnchor != null) return;
+      var pts = this.liveStroke.points;
+      var prev = pts[pts.length - 1];
+      var w = prev && prev.length > 2 ? prev[2] : null;
+      this._stab.finish().forEach(function (q) {
+        var out = [Math.round(q[0]), Math.round(q[1])];
+        if (w != null) out.push(w);
+        pts.push(out);
+      });
     },
 
     move: function (e) {
@@ -506,6 +639,7 @@
       }
 
       if (rec) { rec.x = scr[0]; rec.y = scr[1]; }
+      this.hoverScr = scr;    // size ring + the corner coordinate readout
       var p = this.toUnits(e);
 
       if (this._dragAnchor) {
@@ -529,7 +663,11 @@
         else this.requestRender();
         return;
       }
-      if (!this.liveStroke) return;
+      if (!this.liveStroke) {
+        // hovering with the brush: keep the nib ring under the cursor
+        if (this.tool === "brush") this.requestRender();
+        return;
+      }
 
       if (this.tool === "line") {
         var lp = this.snapPoint(p);
@@ -570,15 +708,39 @@
       var pts = this.liveStroke.points;
       var minDist2 = Math.pow(2.5 / this.s(), 2) * 4; // denser when zoomed in
       for (var i = 0; i < events.length; i++) {
-        var pt = this.inputPoint(events[i], this.toUnits(events[i]));
-        var q = pts[pts.length - 1];
-        var dx = pt[0] - q[0], dy = pt[1] - q[1];
-        if (dx * dx + dy * dy > minDist2) pts.push(pt);
+        var ev = events[i];
+        var evScr = this.toScreen(ev);
+        this.trackSpeed(ev, evScr);
+        this._rawScr = evScr;
+        // unrounded: the stabilizer works below one font unit
+        var raw = this.px2units(evScr[0], evScr[1]);
+        if (e.shiftKey) { this.shiftSegment(raw); continue; }
+        if (this._shiftAnchor != null) this.releaseShift(raw);
+        var got = this._stab ? this._stab.push(raw) : [raw];
+        for (var j = 0; j < got.length; j++) {
+          var pt = this.strokePoint(got[j], ev);
+          var q = pts[pts.length - 1];
+          var dx = pt[0] - q[0], dy = pt[1] - q[1];
+          if (dx * dx + dy * dy > minDist2) pts.push(pt);
+        }
       }
       this.requestRender();
     },
 
     up: function (e) {
+      // A flipped stylus borrowed the eraser (see down): give the tool
+      // back however this gesture ends — but only when it is the PEN
+      // lifting, or a resting finger coming up would end the erase.
+      var back = null;
+      if (this._penEraser && this._penEraser.id === e.pointerId) {
+        back = this._penEraser.tool;
+        this._penEraser = null;
+      }
+      this.upGesture(e);
+      if (back) this.setTool(back);
+    },
+
+    upGesture: function (e) {
       delete this.pointers[e.pointerId];
       if (this.activeTouches().length < 2) this.gesture = null;
 
@@ -622,6 +784,7 @@
         return;
       }
       if (!this.liveStroke) return;
+      this.flushStab();
       if (this.liveStroke.points.length >= 1) {
         // shapes drawn with Fill on become closed filled contours
         if (this.fillShape && (this.tool === "rect" || this.tool === "circle") &&
@@ -636,7 +799,7 @@
         if (this.onInkChange) this.onInkChange(this.glyph.name);
       }
       this.liveStroke = null;
-      this._stabPoint = null;
+      this.endStroke();
       this.render();
     },
 
@@ -897,6 +1060,7 @@
       var colFaint = css.getPropertyValue("--line").trim() || "#ddd";
       var colAccent = css.getPropertyValue("--accent").trim() || "#a8352f";
       var colBg = css.getPropertyValue("--canvas-bg").trim() || "#fff";
+      var colMuted = css.getPropertyValue("--muted").trim() || "#777";
 
       ctx.save();
       ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1062,10 +1226,63 @@
         ctx.restore();
       }
 
+      // brush: a ring the size of the nib, so the width can be seen
+      // BEFORE the stroke instead of judged after it
+      if (this.tool === "brush" && this.hoverScr && !this.anchorMode) {
+        ctx.save();
+        ctx.strokeStyle = colInk;
+        ctx.globalAlpha = 0.32;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(this.hoverScr[0], this.hoverScr[1],
+                Math.max(2, (this.penWidth / 2) * s), 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // The leash. A steadied stroke lags the pointer by design, and
+      // without a line drawn between the two that lag reads as a dropped
+      // frame. Shown only once the gap is big enough to notice.
+      if (this.liveStroke && this._stab && this._rawScr &&
+          this._shiftAnchor == null) {
+        var tipU = this._stab.tip();
+        var tx = this.ux(tipU[0]), ty = this.uy(tipU[1]);
+        var rx = this._rawScr[0], ry = this._rawScr[1];
+        if (Math.hypot(rx - tx, ry - ty) > 4) {
+          ctx.save();
+          ctx.strokeStyle = colAccent;
+          ctx.globalAlpha = 0.45;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(tx, ty); ctx.lineTo(rx, ry);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.beginPath();
+          ctx.arc(rx, ry, 4, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
       // selection boxes, node handles, pen path preview
       if (this.isVecTool() && window.VecTools) window.VecTools.render(this, ctx);
 
       if (this.anchorMode) this.renderAnchors(ctx, colAccent, colBg);
+
+      // Where the pointer is, in font units. These are the numbers that
+      // matter when a stroke has to land on the body line or stay inside
+      // the advance, and reading them off the guides was guesswork.
+      if (this.hoverScr) {
+        var u = this.px2units(this.hoverScr[0], this.hoverScr[1]);
+        ctx.save();
+        ctx.fillStyle = colMuted;
+        ctx.globalAlpha = 0.85;
+        ctx.font = "11px ui-monospace, Menlo, Consolas, monospace";
+        ctx.fillText("x " + Math.round(u[0]) + "   y " + Math.round(u[1]),
+                     8, this.cssH - 8);
+        ctx.restore();
+      }
     },
 
     /* Anchor handles: solid ring = dragged (stored), dashed ring = auto. */
