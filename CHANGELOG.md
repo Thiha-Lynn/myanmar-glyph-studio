@@ -14,9 +14,14 @@ versions are git tags with installable font zips on the
   workflow installs them with `--require-hashes`. `pip install fonttools`
   takes whatever PyPI serves that minute; a hashed pin cannot be
   substituted, so a tampered or yanked-and-replaced release cannot enter
-  a build. Verified by installing both files into clean environments
-  under `--require-hashes` and importing the whole toolchain, not only by
-  compiling them.
+  a build. The locks are resolved **universally** (`uv pip compile
+  --universal`), because a lock compiled on one platform omits the
+  dependencies only another needs — the first attempt, compiled on
+  macOS, installed perfectly there and failed the Linux runner outright,
+  since `keyring` pulls `SecretStorage` on Linux and nowhere else.
+  Verified by installing into clean environments under
+  `--require-hashes` and importing the whole toolchain, not only by
+  compiling.
 - Mobile CI installs the committed lockfile (`npm ci`) instead of
   resolving afresh (`npm install`), which could otherwise have quietly
   undone the `uuid` override.

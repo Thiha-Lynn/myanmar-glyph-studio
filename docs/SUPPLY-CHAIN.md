@@ -55,10 +55,18 @@ a tampered or yanked-and-replaced release cannot enter a build.
 Edit the `.in`, then recompile:
 
 ```bash
-pip install pip-tools
-cd pipeline && pip-compile --generate-hashes --strip-extras --allow-unsafe \
-  --output-file requirements.txt requirements.in
+pip install uv
+cd pipeline && uv pip compile --universal --generate-hashes \
+  --python-version 3.12 --output-file requirements.txt requirements.in
 ```
+
+**`--universal` is the part that matters.** A lock resolved on one
+platform silently omits the dependencies only another platform needs:
+`keyring` requires `SecretStorage` on Linux and nowhere else, so the
+first version of these files — compiled on macOS — installed perfectly
+there and failed the Linux runner with *"In --require-hashes mode, all
+requirements must have their versions pinned"*. The universal resolution
+carries every platform's branch, each with its marker.
 
 The package's own dependencies in `pyproject.toml` stay as `>=` ranges —
 pinning the toolchain a project builds *with* is not the same as pinning
