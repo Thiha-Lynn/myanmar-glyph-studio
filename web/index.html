@@ -109,6 +109,7 @@
       <div class="glyph-id">
         <div id="glyphName" class="mono"></div>
         <div id="glyphHint" class="hint"></div>
+        <div id="glyphMetrics" class="metrics mono" title="Ink bounds and sidebearings, in font units"></div>
       </div>
       <div class="stepper">
         <button id="btnPrev" class="btn icon-btn" title="Previous glyph  [">←</button>
@@ -194,9 +195,14 @@
         <label title="Guide visibility"><span data-i18n="guide">Guide</span> <input id="guideOpacity" type="range" min="0" max="60" value="22"></label>
         <label title="Guide character size (font units)"><span data-i18n="size">Size</span> <input id="guideSize" type="range" min="800" max="1200" value="1000"></label>
         <label title="Horizontal space this glyph occupies (font units)"><span data-i18n="advance">Advance</span> <input id="advanceInput" type="number" min="0" max="2000" step="10" class="advance"></label>
+        <label title="How far stylus pressure may change the stroke width — 0 keeps it constant"><span data-i18n="penPressure">Pressure</span>
+          <input id="pressureAmount" type="range" min="0" max="10" value="10">
+          <span id="pressureVal" class="opt-val">10</span></label>
+        <label title="Laying an Apple Pencil over broadens the stroke, the way a chisel nib does"><span data-i18n="tilt">Tilt</span>
+          <input id="tiltAmount" type="range" min="0" max="10" value="0">
+          <span id="tiltVal" class="opt-val">0</span></label>
       </div>
       <div class="tool-group checks">
-        <label class="check" title="Vary stroke width with stylus pressure"><input id="pressureToggle" type="checkbox" checked> <span data-i18n="penPressure">Pen pressure</span></label>
         <label class="check" title="Let fingers draw (off = fingers pan, stylus draws)"><input id="touchDraws" type="checkbox" checked> <span data-i18n="fingerDraws">Finger draws</span></label>
         <label class="check"><input id="fillPreview" type="checkbox"> <span data-i18n="fillPreview">Fill preview</span></label>
       </div>
@@ -208,6 +214,7 @@
           <select id="copySelect" class="sel mm"><option value="">—</option></select>
         </label>
         <button id="btnCenter" class="btn" data-i18n="center" title="Center the ink horizontally in the advance width">Center</button>
+        <button id="btnFitAdvance" class="btn" data-i18n="fitWidth" title="Set the advance width from the ink, with the same sidebearing on both sides">Fit width</button>
         <button id="btnSVG" class="btn" data-i18n="svg" title="Download this glyph as an SVG for design tools">SVG</button>
         <button id="btnSVGImport" class="btn" data-i18n="importSvg" title="Import an SVG's outlines onto this glyph — the path for vectorized paper sketches (Inkscape/Illustrator trace)">Import SVG</button>
         <input id="svgFileInput" type="file" accept=".svg,image/svg+xml" hidden>
@@ -325,10 +332,11 @@
         <li><strong>Ctrl/Cmd+Z</strong> undo · <strong>Ctrl/Cmd+Shift+Z</strong> redo · <strong>[ ]</strong> previous / next glyph · <strong>N</strong> next empty · <strong>, .</strong> brush or eraser size (hold Shift for bigger steps) · <strong>/</strong> jump to the letter filter · <strong>+ − 0</strong> zoom · <strong>F</strong> focus mode · hold <strong>Space</strong> or drag the middle mouse button to pan. Undo history now belongs to each glyph, so it survives hopping to the next letter and back.</li>
         <li><strong>Find a letter</strong> at the top of the glyph list: type Burmese (က), the Unicode name (<code>ka</code>, <code>medialRa</code>), a code point (<code>1004</code>) or an English hint, and the list narrows to what matches. Tick <strong>Only empty</strong> to see just the letters still to draw. While a filter is on, <strong>[ ]</strong> and <strong>Next empty</strong> walk only the matches — filter to “shan”, and the arrows step through the Shan block alone.</li>
         <li><strong>Ghost</strong> overlays a glyph you already drew (e.g. your က) so every letter keeps the same style; <strong>Copy from</strong> duplicates strokes between similar letters (ခ→ဂ, ပ→ဖ…). Both live under <strong>⚙</strong>.</li>
+        <li>The line under the glyph name is its <strong>metrics</strong>: ink width, the left and right sidebearings, and how far the ink reaches above and below the baseline — shown in red when it passes the ascender (900) or descender (−600), which the full build checks and reports far later. <strong>⚙ → Fit width</strong> sets the advance from the ink with even sidebearings; <strong>Center</strong> moves the ink inside the advance you have.</li>
         <li><strong>⚓ Anchors</strong> shows where vowel signs and marks will attach in the full build — drag a point to adjust it, double-click to reset. <strong>Import SVG</strong> brings a vectorized paper sketch (Inkscape/Illustrator trace) onto the current glyph.</li>
         <li><strong>⚙ → Copy glyph / Paste glyph</strong> turns one drawing into a small text snippet — share it in a GitHub issue, a chat, or an e-mail, and anyone can paste it into their studio. It's how you contribute a glyph <em>without knowing Git</em>. The page address always points at the glyph you're on (<code>#g=…</code>), so you can link someone straight to a letter.</li>
         <li>On a Wacom or Surface pen, <strong>flipping the stylus over</strong> switches to the eraser while the eraser end is down, then hands your tool straight back.</li>
-        <li>On iPad: draw with the Apple Pencil (pressure varies the stroke), pan &amp; zoom with two fingers. Add the studio to your Home Screen — it works offline.</li>
+        <li>On iPad: draw with the Apple Pencil, pan &amp; zoom with two fingers. Under <strong>⚙</strong>, <strong>Pressure</strong> sets how far pressure may move the width (0 keeps it constant, for a pen with a narrow usable range) and <strong>Tilt</strong> broadens the stroke as you lay the Pencil over, the way a chisel nib does. Hovering the Pencil is enough to switch to pen-draws/finger-pans. <strong>☰</strong> folds the glyph list away so the canvas gets the whole width. Add the studio to your Home Screen — it works offline.</li>
       </ul>
       <h3>Touch gestures (phone &amp; tablet)</h3>
       <ul>
