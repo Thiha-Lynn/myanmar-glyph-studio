@@ -295,7 +295,15 @@ def _dedupe(points, min_dist):
         q = out[-1]
         if (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 >= min_dist ** 2:
             out.append(p)
-    if out and len(points) > 1 and tuple(points[-1]) != tuple(out[-1]):
+    # Keep the true endpoint so short strokes do not shrink — comparing
+    # POSITION only, as web/js/outline.js does. Comparing whole points
+    # made a per-point width count as a different place, so a stroke
+    # ending on a repeated position with a new width (which the studio's
+    # Taper and the stabilizer's catch-up can both produce) grew a
+    # duplicate point here and not in the browser: two different
+    # letterforms from one drawing.
+    if out and len(points) > 1 and (points[-1][0] != out[-1][0] or
+                                    points[-1][1] != out[-1][1]):
         out.append(points[-1])
     return out
 
