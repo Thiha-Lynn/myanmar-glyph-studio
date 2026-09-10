@@ -1,6 +1,6 @@
 # The light subset: jobs that only inspect or repack already-built fonts
 # (the DirectWrite shaping check, the gallery webfont kits) install this
 # instead of the whole toolchain, which drags in fontmake and fontbakery.
-fonttools>=4.63.0
-uharfbuzz>=0.56.0
+fonttools>=4.64.0
+uharfbuzz>=0.56.1
 brotli>=1.2.0
