@@ -13,4 +13,4 @@ pytest>=9.1.1
 # transitively today, and a test that quietly skips is not a test
 pyyaml>=6.0.3
 # WOFF2 web-font compression (fonttools ttLib.woff2)
-brotli>=1.2.0
+brotli>=1.2.1
